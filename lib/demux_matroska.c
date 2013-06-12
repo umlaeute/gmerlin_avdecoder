@@ -849,12 +849,19 @@ static int open_matroska(bgav_demuxer_context_t * ctx)
     ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
 
   if(!strcmp(p->ebml_header.DocType, "matroska"))
+    {
     gavl_metadata_set(&ctx->tt->cur->metadata, 
                       GAVL_META_FORMAT, "Matroska");
+    gavl_metadata_set(&ctx->tt->cur->metadata, 
+                      GAVL_META_MIMETYPE, "video/x-matroska");
+    }
   else if(!strcmp(p->ebml_header.DocType, "webm"))
+    {
     gavl_metadata_set(&ctx->tt->cur->metadata, 
                       GAVL_META_FORMAT, "Webm");
-  
+    gavl_metadata_set(&ctx->tt->cur->metadata, 
+                      GAVL_META_MIMETYPE, "video/webm");
+    }
   bgav_input_close(input_mem);
   bgav_input_destroy(input_mem);
   

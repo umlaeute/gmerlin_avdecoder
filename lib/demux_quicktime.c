@@ -1893,11 +1893,15 @@ static int open_quicktime(bgav_demuxer_context_t * ctx)
     case BGAV_MK_FOURCC('i','s','o','m'):
       gavl_metadata_set(&ctx->tt->cur->metadata, 
                         GAVL_META_FORMAT, "MPEG-4 video (mp4)");
+      gavl_metadata_set(&ctx->tt->cur->metadata, 
+                        GAVL_META_MIMETYPE, "video/mp4");
       break;
     case 0:
     case BGAV_MK_FOURCC('q','t',' ',' '):
       gavl_metadata_set(&ctx->tt->cur->metadata, 
                         GAVL_META_FORMAT, "Quicktime");
+      gavl_metadata_set(&ctx->tt->cur->metadata, 
+                        GAVL_META_MIMETYPE, "video/quicktime");
       break;
     default:
       gavl_metadata_set(&ctx->tt->cur->metadata, 
