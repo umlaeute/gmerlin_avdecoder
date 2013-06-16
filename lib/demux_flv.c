@@ -999,7 +999,9 @@ static int open_flv(bgav_demuxer_context_t * ctx)
   
   gavl_metadata_set(&ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "FLV");
-
+  gavl_metadata_set(&ctx->tt->cur->metadata, 
+                    GAVL_META_MIMETYPE, "video/x-flv");
+  
   return 1;
   
   fail:
