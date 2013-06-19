@@ -1019,6 +1019,7 @@ static int bgav_build_file_index_parseall(bgav_t * b)
         }
       }
     }
+  ret = 1;
   return ret;
   }
 
