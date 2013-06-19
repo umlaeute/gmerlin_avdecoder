@@ -1057,7 +1057,7 @@ int bgav_open_fd(bgav_t * bgav, int fd,
 BGAV_PUBLIC
 int bgav_open_callbacks(bgav_t * bgav,
                         int (*read_callback)(void * priv, uint8_t * data, int len),
-                        int64_t (*seek_callback)(void * priv, uint64_t pos, int whence),
+                        int64_t (*seek_callback)(void * priv, int64_t pos, int whence),
                         void * priv,
                         const char * filename, const char * mimetype, int64_t total_bytes);
  
@@ -1488,6 +1488,23 @@ int bgav_get_video_compression_info(bgav_t * bgav, int stream,
                                     gavl_compression_info_t * info);
 
 /** \ingroup readraw
+ *  \brief Get overlay compression info
+ *  \param bgav A decoder instance
+ *  \param stream Stream index (starting with 0)
+ *  \param info Returns the compression info
+ *  \returns 1 if a compression info was returned, 0 else
+ *
+ *  This function must be called after \ref bgav_select_track. Before
+ *  selecting the track the compression info might not be complete.
+ *  Free the returned compression info with \ref gavl_compression_info_free.
+ */
+
+BGAV_PUBLIC
+int bgav_get_overlay_compression_info(bgav_t * bgav, int stream,
+                                      gavl_compression_info_t * info);
+
+  
+/** \ingroup readraw
  *  \brief Read compressed audio packet
  *  \param bgav A decoder instance
  *  \param stream Stream index (starting with 0)
@@ -1497,7 +1514,7 @@ int bgav_get_video_compression_info(bgav_t * bgav, int stream,
  *  You can pass the same packet multiple times to a read fuction.
  *  Use \ref gavl_packet_free when it's no longer used.
  */
-
+  
 BGAV_PUBLIC
 int bgav_read_audio_packet(bgav_t * bgav, int stream, gavl_packet_t * p);
 

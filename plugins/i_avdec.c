@@ -71,7 +71,7 @@ static int read_callback(void * priv, uint8_t * data, int len)
   return gavf_io_read_data(priv, data, len);
   }
 
-static int seek_callback(void * priv, int64_t pos, int whence)
+static int64_t seek_callback(void * priv, int64_t pos, int whence)
   {
   return gavf_io_seek(priv, pos, whence);
   }
@@ -410,7 +410,8 @@ const bg_input_plugin_t the_plugin =
 
     /* Get compression infos */
     .get_audio_compression_info = bg_avdec_get_audio_compression_info,
-   .get_video_compression_info = bg_avdec_get_video_compression_info,
+    .get_video_compression_info = bg_avdec_get_video_compression_info,
+    .get_overlay_compression_info = bg_avdec_get_overlay_compression_info,
     
     /* Set streams */
     

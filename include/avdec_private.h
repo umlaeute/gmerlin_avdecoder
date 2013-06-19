@@ -1750,6 +1750,9 @@ void bgav_subtitle_resync(bgav_stream_t * stream);
 int bgav_subtitle_skipto(bgav_stream_t * stream, int64_t * t, int scale);
 
 
+
+extern const uint32_t bgav_dvdsub_fourccs[];
+
 /* codecs.c */
 
 void bgav_codecs_init(bgav_options_t * opt);

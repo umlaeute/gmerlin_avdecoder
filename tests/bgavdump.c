@@ -480,8 +480,26 @@ int main(int argc, char ** argv)
         }
       }
     for(i = 0; i < num_subtitle_streams; i++)
+      {
       bgav_set_subtitle_stream(file, i, BGAV_STREAM_DECODE);
-    
+
+      if(dump_ci && !bgav_subtitle_is_text(file, i))
+        {
+        if(bgav_get_overlay_compression_info(file, i, &ci))
+          {
+          fprintf(stderr, "Subtitle stream %d ", i+1);
+          gavl_compression_info_dump(&ci);
+          gavl_compression_info_free(&ci);
+          video_format = bgav_get_overlay_format(file, i);
+          fprintf(stderr, "Format (exported when reading compressed)\n");
+          gavl_video_format_dump(video_format);
+          }
+        else
+          fprintf(stderr, "Subtitle stream %d cannot output compressed packets\n",
+                  i+1);
+        }
+
+      }
     fprintf(stderr, "Starting decoders...\n");
     if(!bgav_start(file))
       {

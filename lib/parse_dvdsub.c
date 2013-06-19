@@ -198,12 +198,26 @@ static int find_frame_boundary_dvdsub(bgav_video_parser_t * parser, int * skip)
 
 void bgav_video_parser_init_dvdsub(bgav_video_parser_t * parser)
   {
+  
   dvdsub_t * priv;
   priv = calloc(1, sizeof(*priv));
   parser->priv = priv;
 
   priv->pts_mult = parser->s->timescale / 100;
 
+  /* Initialize format */
+  if(parser->s->data.subtitle.video_stream)
+    {
+    gavl_video_format_t * video_stream_format;
+    video_stream_format = &parser->s->data.subtitle.video_stream->data.video.format;
+    gavl_video_format_copy(&parser->s->data.subtitle.video.format,
+                           video_stream_format);
+    }
+  
+  parser->s->data.subtitle.video.format.pixelformat = GAVL_YUVA_32;
+  parser->s->data.subtitle.video.format.timescale = parser->s->timescale;
+  parser->s->data.subtitle.video.format.framerate_mode = GAVL_FRAMERATE_VARIABLE;
+  
   parser->parse_frame = parse_frame_dvdsub;
   parser->cleanup = cleanup_dvdsub;
   parser->reset = reset_dvdsub;

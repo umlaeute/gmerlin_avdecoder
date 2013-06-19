@@ -36,7 +36,7 @@ typedef struct
   
   int pts_mult;
   int field_height;
-  gavl_video_format_t vs_format;
+  // gavl_video_format_t vs_format;
 
   } dvdsub_t;
 
@@ -55,7 +55,7 @@ static int init_dvdsub(bgav_stream_t * s)
      !s->data.subtitle.video.format.image_height)
     gavl_video_format_copy(&s->data.subtitle.video.format, video_stream_format);
 
-  gavl_video_format_copy(&priv->vs_format, video_stream_format);
+  // gavl_video_format_copy(&priv->vs_format, video_stream_format);
   
   s->data.subtitle.video.format.pixelformat = GAVL_YUVA_32;
   s->data.subtitle.video.format.timescale = s->timescale;
@@ -303,11 +303,11 @@ static gavl_source_status_t decode_dvdsub(bgav_stream_t * s, gavl_overlay_t * ov
   ovl->dst_y = y1;
 
   /* Shift the overlays (can happen in some pathological cases) */
-  if(ovl->dst_x + ovl->src_rect.w > priv->vs_format.image_width)
-    ovl->dst_x = priv->vs_format.image_width - ovl->src_rect.w;
+  if(ovl->dst_x + ovl->src_rect.w > s->data.subtitle.video.format.image_width)
+    ovl->dst_x = s->data.subtitle.video.format.image_width - ovl->src_rect.w;
 
-  if(ovl->dst_y + ovl->src_rect.h > priv->vs_format.image_height)
-    ovl->dst_y = priv->vs_format.image_height - ovl->src_rect.h;
+  if(ovl->dst_y + ovl->src_rect.h > s->data.subtitle.video.format.image_height)
+    ovl->dst_y = s->data.subtitle.video.format.image_height - ovl->src_rect.h;
 
 #if 0
   fprintf(stderr, "Got overlay ");
@@ -332,18 +332,9 @@ static void close_dvdsub(bgav_stream_t * s)
   free(priv);
   }
 
-#if 0
-static void resync_dvdsub(bgav_stream_t * s)
-  {
-  dvdsub_t * priv;
-  priv = s->decoder_priv;
-  }
-#endif
-
 static bgav_video_decoder_t decoder =
   {
-    .fourccs = (uint32_t[]){ BGAV_MK_FOURCC('D', 'V', 'D', 'S'),
-                             BGAV_MK_FOURCC('m', 'p', '4', 's'), 0 },
+    .fourccs = bgav_dvdsub_fourccs,
     .name =    "DVD subtitle decoder",
     .init =         init_dvdsub,
     //    .has_subtitle = has_subtitle_dvdsub,

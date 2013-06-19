@@ -117,6 +117,9 @@ void bg_avdec_set_callbacks(void * priv,
 int bg_avdec_get_audio_compression_info(void * priv, int stream,
                                         gavl_compression_info_t * info);
 
+int bg_avdec_get_overlay_compression_info(void * priv, int stream,
+                                          gavl_compression_info_t * info);
+
 
 int bg_avdec_get_video_compression_info(void * priv, int stream,
                                         gavl_compression_info_t * info);

@@ -244,6 +244,14 @@ int bgav_text_start(bgav_stream_t * s)
   return 1;
   }
 
+const uint32_t bgav_dvdsub_fourccs[] =
+  {
+    BGAV_MK_FOURCC('D', 'V', 'D', 'S'),
+    BGAV_MK_FOURCC('m', 'p', '4', 's'),
+    0x00
+  };
+
+
 int bgav_overlay_start(bgav_stream_t * s)
   {
   bgav_video_decoder_t * dec;
@@ -258,8 +266,7 @@ int bgav_overlay_start(bgav_stream_t * s)
       return 1;
     }
 
-  if((s->fourcc == BGAV_MK_FOURCC('m', 'p', '4', 's')) ||
-     (s->fourcc == BGAV_MK_FOURCC('D', 'V', 'D', 'S')))
+  if(bgav_check_fourcc(s->fourcc, bgav_dvdsub_fourccs))
     s->flags |= STREAM_PARSE_FULL;
     
   if((s->flags & (STREAM_PARSE_FULL|STREAM_PARSE_FRAME)) &&
@@ -426,4 +433,52 @@ gavl_video_source_t *
 bgav_get_overlay_source(bgav_t * b, int stream)
   {
   return b->tt->cur->overlay_streams[stream].data.subtitle.video.vsrc;
+  }
+
+int bgav_get_overlay_compression_info(bgav_t * bgav, int stream,
+                                      gavl_compression_info_t * ret)
+  {
+  gavl_codec_id_t id;
+  bgav_stream_t * s = &bgav->tt->cur->overlay_streams[stream];
+  
+  if(ret)
+    memset(ret, 0, sizeof(*ret));
+  
+  if(s->flags & STREAM_GOT_CI)
+    {
+    if(ret)
+      gavl_compression_info_copy(ret, &s->ci);
+    return 1;
+    }
+  else if(s->flags & STREAM_GOT_NO_CI)
+    return 0;
+
+  bgav_track_get_compression(bgav->tt->cur);
+  
+  if(bgav_check_fourcc(s->fourcc, bgav_png_fourccs))
+    id = GAVL_CODEC_ID_PNG;
+  else if(bgav_check_fourcc(s->fourcc, bgav_dvdsub_fourccs))
+    id = GAVL_CODEC_ID_DVDSUB;
+  
+  s->ci.id = id;
+
+  if(s->ext_size)
+    {
+    s->ci.global_header = malloc(s->ext_size);
+    memcpy(s->ci.global_header, s->ext_data, s->ext_size);
+    s->ci.global_header_len = s->ext_size;
+    }
+  
+  if(s->codec_bitrate)
+    s->ci.bitrate = s->codec_bitrate;
+  else if(s->container_bitrate)
+    s->ci.bitrate = s->container_bitrate;
+  
+  s->ci.max_packet_size = s->max_packet_size;
+
+  if(ret)
+    gavl_compression_info_copy(ret, &s->ci);
+  s->flags |= STREAM_GOT_CI;
+  
+  return 1;
   }

@@ -729,6 +729,9 @@ fourccs[] =
     { GAVL_CODEC_ID_DIRAC,     BGAV_MK_FOURCC('d','r','a','c') },
     { GAVL_CODEC_ID_DV,        BGAV_MK_FOURCC('D','V',' ',' ') },
     { GAVL_CODEC_ID_VP8,       BGAV_MK_FOURCC('V','P','8','0') },
+
+    /* Overlay */
+    { GAVL_CODEC_ID_DVDSUB,    BGAV_MK_FOURCC('D','V','D','S') },
     { /* End */                                                },
   };
 

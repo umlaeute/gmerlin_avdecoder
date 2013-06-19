@@ -30,7 +30,7 @@ typedef struct
   {
   void * priv;
   int   (*read_callback)(void * priv, uint8_t * data, int len);
-  int64_t (*seek_callback)(void * priv, uint64_t pos, int whence);
+  int64_t (*seek_callback)(void * priv, int64_t pos, int whence);
   } cb_t;
 
 static int     read_callbacks(bgav_input_context_t* ctx,
@@ -72,7 +72,7 @@ const bgav_input_t bgav_input_callbacks_noseek =
 static
 bgav_input_context_t *
 bgav_input_open_callbacks(int (*read_callback)(void * priv, uint8_t * data, int len),
-                          int64_t (*seek_callback)(void * priv, uint64_t pos, int whence),
+                          int64_t (*seek_callback)(void * priv, int64_t pos, int whence),
                           void * priv,
                           const char * filename, const char * mimetype, int64_t total_bytes,
                           bgav_options_t * opt)
@@ -118,7 +118,7 @@ bgav_input_open_callbacks(int (*read_callback)(void * priv, uint8_t * data, int 
 
 int bgav_open_callbacks(bgav_t * b,
                         int (*read_callback)(void * priv, uint8_t * data, int len),
-                        int64_t (*seek_callback)(void * priv, uint64_t pos, int whence),
+                        int64_t (*seek_callback)(void * priv, int64_t pos, int whence),
                         void * priv,
                         const char * filename, const char * mimetype, int64_t total_bytes)
   {
