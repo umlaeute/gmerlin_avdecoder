@@ -168,8 +168,8 @@ static gavl_source_status_t decode_dvdsub(bgav_stream_t * s, gavl_overlay_t * ov
 
   bgav_stream_get_packet_read(s, &p);
 
-  //  fprintf(stderr, "Got overlay\n");
-  //  bgav_packet_dump(p);
+  fprintf(stderr, "Got overlay\n");
+  bgav_packet_dump(p);
   
   /* Data size */
   ctrl_offset = BGAV_PTR_2_16BE(p->data+2);

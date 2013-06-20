@@ -60,8 +60,7 @@ static int parse_frame_dvdsub(bgav_video_parser_t * parser, bgav_packet_t * p,
   int ctrl_seq_end;
   uint16_t ctrl_offset, ctrl_start, next_ctrl_offset;
   uint8_t cmd;
-
-  // fprintf(stderr, "Parse frame dvdsub %ld\n", pts_orig);
+  
   PACKET_SET_CODING_TYPE(p, BGAV_CODING_TYPE_I);
 
   ctrl_offset = BGAV_PTR_2_16BE(p->data+2);
@@ -145,6 +144,9 @@ static int parse_frame_dvdsub(bgav_video_parser_t * parser, bgav_packet_t * p,
   //          start_date, end_date, priv->pts_mult);
   
   p->duration = priv->pts_mult * (end_date - start_date);
+
+  //  fprintf(stderr, "Parse frame dvdsub\n");
+  //  bgav_packet_dump(p);
   return 1;
   }
 

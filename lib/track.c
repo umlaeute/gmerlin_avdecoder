@@ -955,7 +955,7 @@ void bgav_track_get_compression(bgav_track_t * t)
     {
     s = &t->overlay_streams[i];
     bgav_stream_start(s);
-    bgav_stream_peek_packet_read(s, NULL, 1);
+    bgav_stream_peek_packet_read(s, NULL, 0);
     }
   
   /* Set all streams back to mute mode */

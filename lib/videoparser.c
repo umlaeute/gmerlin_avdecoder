@@ -528,6 +528,8 @@ peek_packet_parse_full(void * parser1, bgav_packet_t ** ret_p,
   gavl_source_status_t st;
   bgav_video_parser_t * parser = parser1;
 
+  //  fprintf(stderr, "peek_packet_parse_full\n");
+  
   if(!parser->out_packet)
     {
     while(1)
