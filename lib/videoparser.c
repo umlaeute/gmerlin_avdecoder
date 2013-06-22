@@ -304,9 +304,13 @@ parse_next_packet(bgav_video_parser_t * parser, int force, int64_t *pts_ret,
       break;
     if((st = get_input_packet(parser, force)) != GAVL_SOURCE_OK)
       {
-      // EOF: Take this packet as the last one
+      // EOF: Take this packet as the last one if there is data left
       if(st == GAVL_SOURCE_EOF)
+        {
+        if(!parser->buf.size)
+          return GAVL_SOURCE_EOF;
         parser->pos = parser->buf.size;
+        }
       else if(st == GAVL_SOURCE_AGAIN)
         return st;
       break;

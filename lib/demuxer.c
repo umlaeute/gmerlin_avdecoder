@@ -755,6 +755,9 @@ bgav_demuxer_peek_packet_read(void * stream1, bgav_packet_t ** ret,
       *ret = p;
     return GAVL_SOURCE_OK;
     }
+
+  if(s->flags & STREAM_EOF_D)
+    return GAVL_SOURCE_EOF;
   
   if(!force)
     return GAVL_SOURCE_AGAIN;
