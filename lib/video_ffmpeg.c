@@ -506,7 +506,7 @@ static gavl_source_status_t decode_picture(bgav_stream_t * s)
 #endif
     
     //    dump_frame(frame_buffer, frame_buffer_len);
-
+    priv->frame->format = priv->ctx->pix_fmt;
     bytes_used = avcodec_decode_video2(priv->ctx,
                                        priv->frame,
                                        &have_picture,
@@ -796,6 +796,7 @@ static int init_vdpau(bgav_stream_t * s, enum CodecID id)
     priv->vdpau_states[i].state.surface = VDP_INVALID_HANDLE;
   
   priv->ctx->slice_flags = SLICE_FLAG_CODED_ORDER|SLICE_FLAG_ALLOW_FIELD;
+  priv->ctx->pix_fmt = PIX_FMT_YUV420P;
   return 1;
   
   fail:
@@ -836,20 +837,32 @@ static int init_ffmpeg(bgav_stream_t * s)
   
   /* Check for vdpau */
 #ifdef HAVE_VDPAU
-  if((codec->capabilities & CODEC_CAP_HWACCEL_VDPAU) &&
-     s->data.video.format.image_width &&
-     s->data.video.format.image_height &&
-     s->data.video.max_ref_frames)
+  if(codec->capabilities & CODEC_CAP_HWACCEL_VDPAU)
+
     {
-    if(!init_vdpau(s, priv->info->ffmpeg_id))
-      {
-      codec = avcodec_find_decoder(priv->info->ffmpeg_id);
-      }
-    else
+    int vdpau_ok = 1;
+    
+    if(!s->data.video.format.image_width ||
+       !s->data.video.format.image_height ||
+       !s->data.video.max_ref_frames)
       {
       bgav_log(s->opt, BGAV_LOG_INFO, LOG_DOMAIN,
-               "Using VDPAU for decoding");
+               "Not using VDPAU for decoding: Parameters missing");
+      vdpau_ok = 0;
       }
+    
+    if(vdpau_ok && !init_vdpau(s, priv->info->ffmpeg_id))
+      {
+      bgav_log(s->opt, BGAV_LOG_INFO, LOG_DOMAIN,
+               "Not using VDPAU for decoding: Initialization failed");
+      vdpau_ok = 0;
+      }
+    
+    if(!vdpau_ok)
+      codec = avcodec_find_decoder(priv->info->ffmpeg_id);
+    else
+      bgav_log(s->opt, BGAV_LOG_INFO, LOG_DOMAIN,
+               "Using VDPAU for decoding");
     }
 #endif
   
