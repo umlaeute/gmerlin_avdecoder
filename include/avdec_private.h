@@ -409,7 +409,7 @@ typedef struct
   bgav_video_parser_t * parser;
   bgav_keyframe_table_t * kft;
       
-  int max_ref_frames; /* Needed for VDPAU */
+  //  int max_ref_frames; /* Needed for VDPAU */
       
   bgav_video_format_tracker_t * ft;
 

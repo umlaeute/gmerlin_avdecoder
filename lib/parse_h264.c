@@ -517,7 +517,7 @@ static void handle_sps(bgav_video_parser_t * parser)
         
   bgav_h264_sps_get_image_size(&priv->sps,
                                parser->format);
-  parser->s->data.video.max_ref_frames = priv->sps.num_ref_frames;
+  parser->s->ci.max_ref_frames = priv->sps.num_ref_frames;
         
   if(!priv->sps.frame_mbs_only_flag)
     parser->s->ci.flags |= GAVL_COMPRESSION_HAS_FIELD_PICTURES;

@@ -782,7 +782,7 @@ static int init_vdpau(bgav_stream_t * s, enum CodecID id)
                                       profile,
                                       s->data.video.format.image_width,
                                       s->data.video.format.image_height,
-                                      s->data.video.max_ref_frames);
+                                      s->ci.max_ref_frames);
   
   if(priv->vdpau_decoder == VDP_INVALID_HANDLE)
     goto fail;
@@ -844,7 +844,7 @@ static int init_ffmpeg(bgav_stream_t * s)
     
     if(!s->data.video.format.image_width ||
        !s->data.video.format.image_height ||
-       !s->data.video.max_ref_frames)
+       !s->ci.max_ref_frames)
       {
       bgav_log(s->opt, BGAV_LOG_INFO, LOG_DOMAIN,
                "Not using VDPAU for decoding: Parameters missing");
