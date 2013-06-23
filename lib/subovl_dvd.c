@@ -59,6 +59,7 @@ static int init_dvdsub(bgav_stream_t * s)
   
   s->data.subtitle.video.format.pixelformat = GAVL_YUVA_32;
   s->data.subtitle.video.format.timescale = s->timescale;
+  s->data.subtitle.video.format.frame_duration = 0;
   s->data.subtitle.video.format.framerate_mode = GAVL_FRAMERATE_VARIABLE;
   
   priv->pts_mult = s->timescale / 100;
