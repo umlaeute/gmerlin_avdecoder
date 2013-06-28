@@ -135,6 +135,7 @@ static bgav_stream_t * add_overlay_stream(bgav_track_t * t,
   bgav_stream_create_packet_pool(ret);
 
   ret->flags |= STREAM_DISCONT;
+  ret->src_flags |= GAVL_SOURCE_SRC_DISCONTINUOUS;
   if(!r)
     bgav_stream_create_packet_buffer(ret);
   else

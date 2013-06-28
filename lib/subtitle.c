@@ -270,10 +270,10 @@ int bgav_overlay_start(bgav_stream_t * s)
     s->flags |= STREAM_PARSE_FULL;
     
   if((s->flags & (STREAM_PARSE_FULL|STREAM_PARSE_FRAME)) &&
-     !s->data.subtitle.parser)
+     !s->data.subtitle.video.parser)
     {
-    s->data.subtitle.parser = bgav_video_parser_create(s);
-    if(!s->data.subtitle.parser)
+    s->data.subtitle.video.parser = bgav_video_parser_create(s);
+    if(!s->data.subtitle.video.parser)
       {
       bgav_log(s->opt, BGAV_LOG_WARNING, LOG_DOMAIN,
                "No subtitle parser found for fourcc %c%c%c%c (0x%08x)",
@@ -319,7 +319,7 @@ int bgav_overlay_start(bgav_stream_t * s)
       {
       s->data.subtitle.video.vsrc =
         gavl_video_source_create(read_video_copy,
-                                 s, 0,
+                                 s, s->src_flags,
                                  &s->data.subtitle.video.format);
       }
     }
@@ -351,6 +351,11 @@ void bgav_subtitle_stop(bgav_stream_t * s)
     {
     s->data.subtitle.video.decoder->close(s);
     s->data.subtitle.video.decoder = NULL;
+    }
+  if(s->data.subtitle.video.parser)
+    {
+    bgav_video_parser_destroy(s->data.subtitle.video.parser);
+    s->data.subtitle.video.parser = NULL;
     }
   if(s->data.subtitle.video.vsrc)
     {

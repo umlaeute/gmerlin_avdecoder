@@ -605,8 +605,8 @@ struct bgav_stream_s
     bgav_stream_video_t video;
     struct
       {
-      bgav_stream_video_t video;
-      bgav_video_parser_t * parser;
+      bgav_stream_video_t video; // Must be first element
+//      bgav_video_parser_t * parser;
       /* Charset converter for text subtitles */
       bgav_subtitle_converter_t * cnv;
       
