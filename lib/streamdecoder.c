@@ -164,6 +164,29 @@ bgav_stream_decoder_connect_video(bgav_stream_decoder_t * dec,
   return dec->s.data.video.vsrc;
   }
 
+
+gavl_video_source_t *
+bgav_stream_decoder_connect_overlay(bgav_stream_decoder_t * dec,
+                                    gavl_packet_source_t * src,
+                                    const gavl_compression_info_t * ci,
+                                    const gavl_video_format_t * fmt,
+                                    gavl_metadata_t * m)
+  {
+  dec->s.type = BGAV_STREAM_VIDEO;
+  dec->s.flags |= STREAM_STANDALONE;
+  dec->s.src_flags |= GAVL_SOURCE_SRC_DISCONTINUOUS;
+
+  bgav_stream_set_from_gavl(&dec->s, ci, NULL, fmt, m);
+
+  if(!init_common(dec, src, ci, m))
+    return NULL;
+
+  gavl_metadata_copy(m, &dec->s.m);
+
+  return dec->s.data.subtitle.video.vsrc;
+  }
+
+
 int64_t
 bgav_stream_decoder_skip(bgav_stream_decoder_t * dec, int64_t t)
   {

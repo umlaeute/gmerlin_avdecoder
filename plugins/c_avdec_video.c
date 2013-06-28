@@ -53,6 +53,20 @@ connect_decode_video(void * priv,
   
   }
 
+static gavl_video_source_t *
+connect_decode_overlay(void * priv,
+                      gavl_packet_source_t * src,
+                      const gavl_compression_info_t * ci,
+                      const gavl_video_format_t * fmt,
+                      gavl_metadata_t * m)
+  {
+  bg_avdec_codec_t * c = priv;
+  return bgav_stream_decoder_connect_overlay(c->dec, src, ci,
+                                             fmt, m);
+
+  }
+
+
 static const bg_parameter_info_t parameters[] =
   {
     PARAM_VIDEO_GENERIC,
@@ -73,7 +87,7 @@ const bg_codec_plugin_t the_plugin =
       .long_name =      TRS("AVDecoder video decompressor"),
       .description =    TRS("Video decompressor based on the Gmerlin avdecoder library."),
       .type =           BG_PLUGIN_CODEC,
-      .flags =          BG_PLUGIN_VIDEO_DECOMPRESSOR,
+      .flags =          BG_PLUGIN_VIDEO_DECOMPRESSOR | BG_PLUGIN_OVERLAY_DECOMPRESSOR,
       .priority =       BG_PLUGIN_PRIORITY_MAX,
       .create =         bg_avdec_codec_create,
       .destroy =        bg_avdec_codec_destroy,

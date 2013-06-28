@@ -2452,6 +2452,29 @@ bgav_stream_decoder_connect_video(bgav_stream_decoder_t * dec,
                                   const gavl_video_format_t * fmt,
                                   gavl_metadata_t * m);
 
+/** \brief Connect an overlay stream decoder
+ *  \param dec A stream decoder
+ *  \param src Packet source
+ *  \param ci Compression info
+ *  \param fmt Format (possibly incomplete)
+ *  \param m Stream metadata (might get changed)
+ *  \returns Source for reading the uncompressed overlays
+ *
+ *  You can call either \ref bgav_stream_decoder_connect_audio or
+ *  \ref bgav_stream_decoder_connect_video for a decoder instance,
+ *  not both.
+ *
+ *  The updated video format can be ontained by calling
+ *  \ref gavl_video_source_get_src_format with the returned source.
+ */
+
+BGAV_PUBLIC gavl_video_source_t *
+bgav_stream_decoder_connect_overlay(bgav_stream_decoder_t * dec,
+                                    gavl_packet_source_t * src,
+                                    const gavl_compression_info_t * ci,
+                                    const gavl_video_format_t * fmt,
+                                    gavl_metadata_t * m);
+
 /** \brief Skip to a specified time
  *  \param dec A stream decoder
  *  \param t Time to skip to
