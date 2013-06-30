@@ -237,6 +237,8 @@ static int tune_in(bgav_input_context_t * ctx,
   
   priv = ctx->priv;
 
+  bgav_log(ctx->opt, BGAV_LOG_INFO, LOG_DOMAIN, "Tuning to %s", channel->name);
+  
   /* set_diseqc for satellite tuners */
 
   if(priv->fe_info.type==FE_QPSK)
@@ -246,7 +248,6 @@ static int tune_in(bgav_input_context_t * ctx,
     if (!set_diseqc(ctx, channel))
       return 0;
     }
-  
   
   /* Flush events */
   while (ioctl(priv->fe_fd, FE_GET_EVENT, &event) != -1);
@@ -291,7 +292,7 @@ static int tune_in(bgav_input_context_t * ctx,
   do{
     status = 0;
     try++;
-    if(try > 20)
+    if(try > 40)
       {
       status |= FE_TIMEDOUT;
       break;
