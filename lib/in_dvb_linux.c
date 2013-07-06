@@ -239,7 +239,7 @@ static int tune_in(bgav_input_context_t * ctx,
 
   bgav_log(ctx->opt, BGAV_LOG_INFO, LOG_DOMAIN, "Tuning to %s", channel->name);
   
-  dvb_channels_dump(channel, priv->fe_info.type, 1);
+  //  dvb_channels_dump(channel, priv->fe_info.type, 1);
   
   /* set_diseqc for satellite tuners */
   if(priv->fe_info.type==FE_QPSK)
