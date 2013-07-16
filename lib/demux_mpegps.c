@@ -383,7 +383,8 @@ static int select_track_mpegps(bgav_demuxer_context_t * ctx, int track)
        BGAV_MK_FOURCC('L','P','C','M'))
       {
       lpcm_t * lp = ctx->tt->cur->audio_streams[i].priv;
-      lp->out_pts = GAVL_TIME_UNDEFINED;
+      if(lp)
+        lp->out_pts = GAVL_TIME_UNDEFINED;
       }
     }
 
@@ -1344,7 +1345,8 @@ static void seek_mpegps(bgav_demuxer_context_t * ctx, int64_t time, int scale)
        BGAV_MK_FOURCC('L','P','C','M'))
       {
       lpcm_t * lp = ctx->tt->cur->audio_streams[i].priv;
-      lp->out_pts = GAVL_TIME_UNDEFINED;
+      if(lp)
+        lp->out_pts = GAVL_TIME_UNDEFINED;
       }
     }
 

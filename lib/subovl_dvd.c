@@ -140,6 +140,8 @@ static void decode_field(uint8_t * ptr, int len,
     }
   }
 
+static const float fill_color[4] = { 0.0, 0.0, 0.0, 0.0 };
+
 static gavl_source_status_t decode_dvdsub(bgav_stream_t * s, gavl_overlay_t * ovl)
   {
   gavl_source_status_t st;
@@ -171,6 +173,9 @@ static gavl_source_status_t decode_dvdsub(bgav_stream_t * s, gavl_overlay_t * ov
 
   fprintf(stderr, "Got overlay\n");
   bgav_packet_dump(p);
+
+  gavl_video_frame_fill(ovl, &s->data.subtitle.video.format,
+                        fill_color);
   
   /* Data size */
   ctrl_offset = BGAV_PTR_2_16BE(p->data+2);

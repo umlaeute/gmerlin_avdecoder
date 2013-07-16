@@ -315,6 +315,7 @@ static const codec_info_t audio_codecs[] =
     { "A_VORBIS",        0x00,                            init_vorbis, 0  },
     { "A_MPEG/",         0x00,                            init_mpa,    CODEC_FLAG_INCOMPLETE },
     { "A_AAC/",          BGAV_MK_FOURCC('m','p','4','a'), init_aac,    CODEC_FLAG_INCOMPLETE },
+    { "A_AAC",           BGAV_MK_FOURCC('m','p','4','a'), init_aac,    0 },
     { "A_AC3",           BGAV_MK_FOURCC('.','a','c','3'), init_ac3,    0 },
     { "A_DTS",           BGAV_MK_FOURCC('d','t','s',' '), init_dts,    0 },
     { /* End */ }
