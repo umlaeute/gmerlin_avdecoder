@@ -138,7 +138,8 @@ static gavl_source_status_t decode_frame_faad2(bgav_stream_t * s)
   else
     s->data.audio.frame->valid_samples = frame_info.samples  / s->data.audio.format.num_channels;
 
-  if(s->data.audio.frame->valid_samples > priv->last_duration)
+  if((priv->last_duration >= 0) &&
+     (s->data.audio.frame->valid_samples > priv->last_duration))
     s->data.audio.frame->valid_samples = priv->last_duration;
   
   s->flags |= STREAM_HAVE_FRAME;
