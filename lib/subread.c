@@ -826,7 +826,10 @@ bgav_subtitle_reader_open(bgav_input_context_t * input_ctx)
     if(*name != '\0')
       {
       pos = strrchr(name, '.');
-      new->info = gavl_strndup(name, pos);
+      if(pos)
+        new->info = gavl_strndup(name, pos);
+      else
+        new->info = gavl_strdup(name);
       }
     
     /* Apped to list */
