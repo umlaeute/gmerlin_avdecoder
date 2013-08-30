@@ -63,8 +63,10 @@ static gavl_source_status_t decode_frame_a52(bgav_stream_t * s)
   priv = s->decoder_priv;
   
   if((st = bgav_stream_get_packet_read(s, &p)) != GAVL_SOURCE_OK)
+    {
+    fprintf(stderr, "Reading AC3 packet failed\n");
     return st;
-
+    }
 #ifdef DUMP_PACKET
   bgav_dprintf("a52 packet: ");
   bgav_packet_dump(p);
@@ -76,8 +78,10 @@ static gavl_source_status_t decode_frame_a52(bgav_stream_t * s)
     bgav_a52_header_t h;
     
     if(!bgav_a52_header_read(&h, p->data))
+      {
+      bgav_log(s->opt, BGAV_LOG_ERROR, LOG_DOMAIN, "Getting initial AC3 frame failed");
       return GAVL_SOURCE_EOF;
-
+      }
     //    bgav_a52_header_dump(&h);
 
     s->codec_bitrate = h.bitrate;
@@ -101,11 +105,15 @@ static gavl_source_status_t decode_frame_a52(bgav_stream_t * s)
                              &sample_rate, &bit_rate);
 
   if(!frame_bytes)
+    {
+    bgav_log(s->opt, BGAV_LOG_ERROR, LOG_DOMAIN, "Getting initial AC3 frame failed");
     return GAVL_SOURCE_EOF;
-
+    }
   if(frame_bytes < p->data_size)
+    {
+    bgav_log(s->opt, BGAV_LOG_ERROR, LOG_DOMAIN, "Too little data");
     return GAVL_SOURCE_EOF;
-  
+    }
   a52_frame(priv->state, p->data, &flags, &level, 0.0);
   if(!s->opt->audio_dynrange)
     {

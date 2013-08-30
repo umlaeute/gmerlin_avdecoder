@@ -1185,7 +1185,10 @@ static int next_packet_matroska(bgav_demuxer_context_t * ctx)
     {
     pos = ctx->input->position;
     if(!bgav_mkv_element_read(ctx->input, &e))
+      {
+      fprintf(stderr, "bgav_mkv_element_read failed\n");
       return 0;
+      }
     //  bgav_mkv_element_dump(&e);
     
     switch(e.id)
@@ -1193,7 +1196,10 @@ static int next_packet_matroska(bgav_demuxer_context_t * ctx)
       case MKV_ID_Cluster:
         //        fprintf(stderr, "Got Cluster\n");
         if(!bgav_mkv_cluster_read(ctx->input, &priv->cluster, &e))
+          {
+          fprintf(stderr, "bgav_mkv_cluster_read failed\n");
           return 0;
+          }
         //        bgav_mkv_cluster_dump(&priv->cluster);
 
         if(priv->pts_offset == GAVL_TIME_UNDEFINED)
@@ -1202,28 +1208,41 @@ static int next_packet_matroska(bgav_demuxer_context_t * ctx)
         break;
       case MKV_ID_BlockGroup:
         if(!bgav_mkv_block_group_read(ctx->input, &priv->bg, &e))
+          {
+          fprintf(stderr, "bgav_mkv_block_group_read\n");
           return 0;
+          }
         
         //        fprintf(stderr, "Got Block group\n");
         //        bgav_mkv_block_group_dump(&priv->bg);
         
         if(!process_block(ctx, &priv->bg.block, &priv->bg))
+          {
+          fprintf(stderr, "process_block failed\n");
           return 0;
+          }
         num_blocks++;
         break;
       case MKV_ID_Block:
       case MKV_ID_SimpleBlock:
         if(!bgav_mkv_block_read(ctx->input, &priv->bg.block, &e))
+          {
+          fprintf(stderr, "bgav_mkv_block_read failed\n");
           return 0;
-
+          }
         //        fprintf(stderr, "Got Block\n");
         //        bgav_mkv_block_dump(0, &priv->bg.block);
         
         if(!process_block(ctx, &priv->bg.block, NULL))
+          {
+          fprintf(stderr, "process_block failed\n");
           return 0;
+          }
         num_blocks++;
         break;
       default:
+        fprintf(stderr, "End of file: %08x\n", e.id);
+        bgav_mkv_element_dump(&e);
         /* Probably reached end of file */
         return num_blocks;
       }
