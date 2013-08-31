@@ -64,7 +64,7 @@ static gavl_source_status_t decode_frame_a52(bgav_stream_t * s)
   
   if((st = bgav_stream_get_packet_read(s, &p)) != GAVL_SOURCE_OK)
     {
-    fprintf(stderr, "Reading AC3 packet failed\n");
+    // fprintf(stderr, "Reading AC3 packet failed\n");
     return st;
     }
 #ifdef DUMP_PACKET

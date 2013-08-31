@@ -1186,10 +1186,11 @@ static int next_packet_matroska(bgav_demuxer_context_t * ctx)
     pos = ctx->input->position;
     if(!bgav_mkv_element_read(ctx->input, &e))
       {
-      fprintf(stderr, "bgav_mkv_element_read failed\n");
+      //      fprintf(stderr, "bgav_mkv_element_read failed %ld\n",
+      //              ctx->input->position);
       return 0;
       }
-    //  bgav_mkv_element_dump(&e);
+    //    bgav_mkv_element_dump(&e);
     
     switch(e.id)
       {
@@ -1197,7 +1198,7 @@ static int next_packet_matroska(bgav_demuxer_context_t * ctx)
         //        fprintf(stderr, "Got Cluster\n");
         if(!bgav_mkv_cluster_read(ctx->input, &priv->cluster, &e))
           {
-          fprintf(stderr, "bgav_mkv_cluster_read failed\n");
+          //          fprintf(stderr, "bgav_mkv_cluster_read failed\n");
           return 0;
           }
         //        bgav_mkv_cluster_dump(&priv->cluster);
@@ -1209,7 +1210,7 @@ static int next_packet_matroska(bgav_demuxer_context_t * ctx)
       case MKV_ID_BlockGroup:
         if(!bgav_mkv_block_group_read(ctx->input, &priv->bg, &e))
           {
-          fprintf(stderr, "bgav_mkv_block_group_read\n");
+          //          fprintf(stderr, "bgav_mkv_block_group_read\n");
           return 0;
           }
         
@@ -1218,7 +1219,7 @@ static int next_packet_matroska(bgav_demuxer_context_t * ctx)
         
         if(!process_block(ctx, &priv->bg.block, &priv->bg))
           {
-          fprintf(stderr, "process_block failed\n");
+          //          fprintf(stderr, "process_block failed\n");
           return 0;
           }
         num_blocks++;
@@ -1227,7 +1228,7 @@ static int next_packet_matroska(bgav_demuxer_context_t * ctx)
       case MKV_ID_SimpleBlock:
         if(!bgav_mkv_block_read(ctx->input, &priv->bg.block, &e))
           {
-          fprintf(stderr, "bgav_mkv_block_read failed\n");
+          //          fprintf(stderr, "bgav_mkv_block_read failed\n");
           return 0;
           }
         //        fprintf(stderr, "Got Block\n");
@@ -1235,14 +1236,15 @@ static int next_packet_matroska(bgav_demuxer_context_t * ctx)
         
         if(!process_block(ctx, &priv->bg.block, NULL))
           {
-          fprintf(stderr, "process_block failed\n");
+          //          fprintf(stderr, "process_block failed\n");
           return 0;
           }
         num_blocks++;
         break;
       default:
-        fprintf(stderr, "End of file: %08x\n", e.id);
-        bgav_mkv_element_dump(&e);
+        //        fprintf(stderr, "End of file: %08x %ld\n", e.id,
+        //                ctx->input->position);
+        //        bgav_mkv_element_dump(&e);
         /* Probably reached end of file */
         return num_blocks;
       }
