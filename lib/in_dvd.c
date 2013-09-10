@@ -168,7 +168,8 @@ static gavl_time_t convert_time(dvd_time_t * time)
   return ret;
   }
 
-static gavl_time_t get_duration(pgc_t * pgc, int start_cell, int end_cell, int angle)
+static gavl_time_t get_duration(pgc_t * pgc, int start_cell,
+                                int end_cell, int angle)
   {
   int i;
   gavl_time_t ret = 0;
@@ -192,7 +193,25 @@ static gavl_time_t get_duration(pgc_t * pgc, int start_cell, int end_cell, int a
       }
     }
   return ret;
-  
+  }
+
+/* Skip cells at the beginning of a title, which have a cell command set
+   and which are shorter than one second. Cells of this type are on
+   Woodstock (CD 2) */
+
+static int get_cell_offset(pgc_t * pgc, int start_cell,
+                           int end_cell, int angle)
+  {
+  int i = start_cell;
+
+  while(i < end_cell)
+    {
+    if((pgc->cell_playback[i].cell_cmd_nr == 0) ||
+       (get_duration(pgc, i, i+1, angle) >= GAVL_TIME_SCALE))
+      break;
+    i++;
+    }
+  return i - start_cell;
   }
 
 static const struct
@@ -260,6 +279,8 @@ static int setup_track(bgav_input_context_t * ctx,
   const char * language_3cc;
   char language_2cc[3];
   dvd_t * dvd = ctx->priv;
+  int cell_offset;
+  
   ttsrpt = dvd->vmg_ifo->tt_srpt;
 
   /* Open VTS */
@@ -278,109 +299,78 @@ static int setup_track(bgav_input_context_t * ctx,
   ttn = ttsrpt->title[title].vts_ttn;
   vts_ptt_srpt = dvd->vts_ifo->vts_ptt_srpt;
 
-#if 0  
-  /* Get name and chapters */
-  if(ctx->opt->dvd_chapters_as_tracks)
+  if(ttsrpt->title[title].nr_of_angles > 1)
+    gavl_metadata_set_nocpy(&new_track->metadata, GAVL_META_LABEL,
+                            bgav_sprintf("Title %02d Angle %d", title+1, angle+1));
+  else
+    gavl_metadata_set_nocpy(&new_track->metadata, GAVL_META_LABEL,
+                            bgav_sprintf("Title %02d", title+1));
+    
+  /* Set up chapters */
+  
+  //  track_priv->num_chapters = ttsrpt->title[title].nr_of_ptts;
+  track_priv->chapters = calloc(ttsrpt->title[title].nr_of_ptts,
+                                sizeof(*track_priv->chapters));
+  
+  for(i = 0; i < ttsrpt->title[title].nr_of_ptts; i++)
     {
-    pgc_id = vts_ptt_srpt->title[ttn - 1].ptt[chapter].pgcn;
+    pgc_id = vts_ptt_srpt->title[ttn - 1].ptt[i].pgcn;
     pgc = dvd->vts_ifo->vts_pgcit->pgci_srp[pgc_id - 1].pgc;
     
-    pgn = vts_ptt_srpt->title[ttn - 1].ptt[track_priv->chapter].pgn;
-    track_priv->start_cell = pgc->program_map[pgn - 1] - 1;
+    pgn = vts_ptt_srpt->title[ttn - 1].ptt[i].pgn;
+    track_priv->chapters[track_priv->num_chapters].start_cell =
+      pgc->program_map[pgn - 1] - 1;
     
-    if(ttsrpt->title[title].nr_of_angles > 1)
-      new_track->name = bgav_sprintf("Title %02d Angle %d Chapter %02d",
-                                     title+1, angle+1, chapter+1);
-    else
-      new_track->name = bgav_sprintf("Title %02d Chapter %02d",
-                                     title+1, chapter+1);
-
     if(chapter < ttsrpt->title[title].nr_of_ptts-1)
       {
       /* Next chapter is in the same program chain */
-      if(vts_ptt_srpt->title[ttn - 1].ptt[chapter].pgcn ==
-         vts_ptt_srpt->title[ttn - 1].ptt[chapter+1].pgcn)
+      if(pgc_id == vts_ptt_srpt->title[ttn - 1].ptt[i+1].pgcn)
         {
-        track_priv->end_cell =
-          pgc->program_map[vts_ptt_srpt->title[ttn - 1].ptt[chapter+1].pgn-1]-1;
+        track_priv->chapters[track_priv->num_chapters].end_cell =
+          pgc->program_map[vts_ptt_srpt->title[ttn - 1].ptt[i+1].pgn-1]-1;
         }
       else
-        track_priv->end_cell = pgc->nr_of_cells;
+        track_priv->chapters[track_priv->num_chapters].end_cell =
+          pgc->nr_of_cells;
       }
     else
-      track_priv->end_cell = pgc->nr_of_cells;
-    }
-  /* All chapters in one track */
-  else
-    {
-#endif
-    if(ttsrpt->title[title].nr_of_angles > 1)
-      gavl_metadata_set_nocpy(&new_track->metadata, GAVL_META_LABEL,
-                              bgav_sprintf("Title %02d Angle %d", title+1, angle+1));
-    else
-      gavl_metadata_set_nocpy(&new_track->metadata, GAVL_META_LABEL,
-                              bgav_sprintf("Title %02d", title+1));
-    
-    /* Set up chapters */
-    track_priv->num_chapters = ttsrpt->title[title].nr_of_ptts;
-    track_priv->chapters = calloc(track_priv->num_chapters,
-                                  sizeof(*track_priv->chapters));
-    
-    for(i = 0; i < track_priv->num_chapters; i++)
-      {
-      pgc_id = vts_ptt_srpt->title[ttn - 1].ptt[i].pgcn;
-      pgc = dvd->vts_ifo->vts_pgcit->pgci_srp[pgc_id - 1].pgc;
-      
-      pgn = vts_ptt_srpt->title[ttn - 1].ptt[i].pgn;
-      track_priv->chapters[i].start_cell = pgc->program_map[pgn - 1] - 1;
+      track_priv->chapters[track_priv->num_chapters].end_cell =
+        pgc->nr_of_cells;
 
-      if(chapter < ttsrpt->title[title].nr_of_ptts-1)
-        {
-        /* Next chapter is in the same program chain */
-        if(pgc_id == vts_ptt_srpt->title[ttn - 1].ptt[i+1].pgcn)
-          {
-          track_priv->chapters[i].end_cell =
-            pgc->program_map[vts_ptt_srpt->title[ttn - 1].ptt[i+1].pgn-1]-1;
-          }
-        else
-          track_priv->chapters[i].end_cell = pgc->nr_of_cells;
-        }
-      else
-        track_priv->chapters[i].end_cell = pgc->nr_of_cells;
-      track_priv->chapters[i].duration =
-        get_duration(pgc, track_priv->chapters[i].start_cell,
-                     track_priv->chapters[i].end_cell, angle);
-      }
+    cell_offset = get_cell_offset(pgc,
+                                  track_priv->chapters[track_priv->num_chapters].start_cell,
+                                  track_priv->chapters[track_priv->num_chapters].end_cell, angle);
+
+    track_priv->chapters[track_priv->num_chapters].start_cell += cell_offset;
+    if(track_priv->chapters[track_priv->num_chapters].start_cell >=
+       track_priv->chapters[track_priv->num_chapters].end_cell)
+      continue;
     
-    track_priv->end_cell =
-      track_priv->chapters[track_priv->num_chapters-1].end_cell;
-#if 0
+    track_priv->chapters[track_priv->num_chapters].duration =
+      get_duration(pgc, track_priv->chapters[track_priv->num_chapters].start_cell,
+                   track_priv->chapters[track_priv->num_chapters].end_cell, angle);
+    track_priv->num_chapters++;
     }
-#endif
+
+  track_priv->start_cell =
+    track_priv->chapters[0].start_cell;
+  
+  track_priv->end_cell =
+    track_priv->chapters[track_priv->num_chapters-1].end_cell;
+  
   /* Get duration */
-#if 0  
-
-  if(ctx->opt->dvd_chapters_as_tracks)
-    new_track->duration =
-      get_duration(pgc, track_priv->start_cell, track_priv->end_cell, angle);
-  else
+  new_track->chapter_list =
+    gavl_chapter_list_create(track_priv->num_chapters);
+  new_track->chapter_list->timescale = GAVL_TIME_SCALE;
+  new_track->duration = 0;
+  for(i = 0; i < track_priv->num_chapters; i++)
     {
-#endif
-    new_track->chapter_list =
-      gavl_chapter_list_create(track_priv->num_chapters);
-    new_track->chapter_list->timescale = GAVL_TIME_SCALE;
-    new_track->duration = 0;
-    for(i = 0; i < track_priv->num_chapters; i++)
-      {
-      if(i)
-        new_track->chapter_list->chapters[i].time =
-          new_track->chapter_list->chapters[i-1].time +
-          track_priv->chapters[i-1].duration;
-      new_track->duration += track_priv->chapters[i].duration;
-      }
-#if 0  
+    if(i)
+      new_track->chapter_list->chapters[i].time =
+        new_track->chapter_list->chapters[i-1].time +
+        track_priv->chapters[i-1].duration;
+    new_track->duration += track_priv->chapters[i].duration;
     }
-#endif
   
   /* Setup streams */
 
@@ -422,7 +412,7 @@ static int setup_track(bgav_input_context_t * ctx,
 #if 0
   /* Check if we have a still image. This is a bit lousy for now,
      we just check for a nonzero still time at the start cell of
-     each track (which can be either a title or a chaptzer */
+     each track (which can be either a title or a chapter */
 
   if(pgc->cell_playback[track_priv->start_cell].still_time != 0)
     {
@@ -1005,8 +995,8 @@ static int select_track_dvd(bgav_input_context_t * ctx, int track)
   dvd->pgc = dvd->vts_ifo->vts_pgcit->pgci_srp[pgc_id - 1].pgc;
 
   
-  dvd->next_cell = dvd->pgc->program_map[pgn - 1] - 1;
-
+  dvd->next_cell = dvd->current_track_priv->start_cell;
+  
   /* Enter the right angle */
   if(dvd->pgc->cell_playback[dvd->next_cell].block_type == BLOCK_TYPE_ANGLE_BLOCK ) 
     dvd->next_cell += dvd->current_track_priv->angle;

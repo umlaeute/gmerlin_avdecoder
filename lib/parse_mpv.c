@@ -149,7 +149,7 @@ static int extract_header(bgav_video_parser_t * parser, bgav_packet_t * p,
   }
 
 static int parse_frame_mpeg12(bgav_video_parser_t * parser, bgav_packet_t * p,
-                            int64_t prs_orig)
+                              int64_t pts_orig)
   {
   const uint8_t * sc;
   mpeg12_priv_t * priv = parser->priv;
@@ -198,6 +198,19 @@ static int parse_frame_mpeg12(bgav_video_parser_t * parser, bgav_packet_t * p,
                                                start, end - start);
           if(!len)
             return 0;
+
+          /* Sequence header and sequence end in one packet means
+             still images */
+          if(p->sequence_end_pos)
+            {
+            if(!STREAM_IS_STILL(parser->s))
+              {
+              bgav_log(parser->s->opt, BGAV_LOG_INFO, LOG_DOMAIN,
+                       "Detected still image");
+              STREAM_SET_STILL(parser->s);
+              }
+            }
+          
           priv->have_sh = 1;
           start += len;
           }
@@ -205,17 +218,6 @@ static int parse_frame_mpeg12(bgav_video_parser_t * parser, bgav_packet_t * p,
           start += 4;
         got_sh = 1;
 
-        /* Sequence header and sequence end in one packet means
-           still images */
-        if(p->sequence_end_pos)
-          {
-          if(!STREAM_IS_STILL(parser->s))
-            {
-            bgav_log(parser->s->opt, BGAV_LOG_INFO, LOG_DOMAIN,
-                     "Detected still image");
-            STREAM_SET_STILL(parser->s);
-            }
-          }
         break;
       case MPEG_CODE_SEQUENCE_EXT:
         if(priv->have_sh && !priv->sh.mpeg2)
@@ -242,7 +244,12 @@ static int parse_frame_mpeg12(bgav_video_parser_t * parser, bgav_packet_t * p,
                                             &ph, start, end - start);
         
         if(parser->format->framerate_mode == GAVL_FRAMERATE_STILL)
+          {
+          parser->timestamp = gavl_time_rescale(parser->s->timescale,
+                                                parser->format->timescale,
+                                                pts_orig);
           p->duration = -1;
+          }
         else
           p->duration = parser->format->frame_duration;
           
