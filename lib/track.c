@@ -249,7 +249,8 @@ bgav_stream_t * bgav_track_find_stream(bgav_demuxer_context_t * ctx,
 
   if(ret && (ret->action != BGAV_STREAM_MUTE) &&
      !(ret->flags & STREAM_EOF_D))
-    return NULL;
+    return ret;
+  return NULL;
   }
 
 #define FREE(ptr) if(ptr){free(ptr);ptr=NULL;}
