@@ -208,11 +208,24 @@ bgav_track_find_stream_all(bgav_track_t * t, int stream_id)
   return NULL;
   }
 
+static bgav_stream_t * find_stream_by_id(bgav_stream_t * s,
+                                         int num, int id)
+  {
+  int i;
+  for(i = 0; i < num; i++)
+    {
+    if(s[i].stream_id == id)
+      return &s[i];
+    }
+  return NULL;
+  }
+
 bgav_stream_t * bgav_track_find_stream(bgav_demuxer_context_t * ctx,
                                        int stream_id)
   {
-  int i;
   bgav_track_t * t;
+  bgav_stream_t * ret = NULL;
+  
   if(ctx->demux_mode == DEMUX_MODE_FI)
     {
     if(ctx->request_stream && (stream_id == ctx->request_stream->stream_id))
@@ -221,50 +234,22 @@ bgav_stream_t * bgav_track_find_stream(bgav_demuxer_context_t * ctx,
       return NULL;
     }
   t = ctx->tt->cur;
-  
-  for(i = 0; i < t->num_audio_streams; i++)
-    {
-    if(t->audio_streams[i].stream_id == stream_id)
-      {
-      if(t->audio_streams[i].action != BGAV_STREAM_MUTE)
-        return &t->audio_streams[i];
-      else
-        return NULL;
-      }
-    }
-  for(i = 0; i < t->num_video_streams; i++)
-    {
-    if(t->video_streams[i].stream_id == stream_id)
-      {
-      if(t->video_streams[i].action != BGAV_STREAM_MUTE)
-        return &t->video_streams[i];
-      else
-        return NULL;
-      }
-    }
-  for(i = 0; i < t->num_text_streams; i++)
-    {
-    if((t->text_streams[i].stream_id == stream_id) &&
-       (!t->text_streams[i].data.subtitle.subreader))
-      {
-      if(t->text_streams[i].action != BGAV_STREAM_MUTE)
-        return &t->text_streams[i];
-      else
-        return NULL;
-      }
-    }
-  for(i = 0; i < t->num_overlay_streams; i++)
-    {
-    if((t->overlay_streams[i].stream_id == stream_id) &&
-       (!t->overlay_streams[i].data.subtitle.subreader))
-      {
-      if(t->overlay_streams[i].action != BGAV_STREAM_MUTE)
-        return &t->overlay_streams[i];
-      else
-        return NULL;
-      }
-    }
-  return NULL;
+
+  ret = find_stream_by_id(t->audio_streams,
+                          t->num_audio_streams, stream_id);
+  if(!ret)
+    ret = find_stream_by_id(t->video_streams,
+                            t->num_video_streams, stream_id);
+  if(!ret)
+    ret = find_stream_by_id(t->text_streams,
+                            t->num_text_streams, stream_id);
+  if(!ret)
+    ret = find_stream_by_id(t->overlay_streams,
+                            t->num_overlay_streams, stream_id);
+
+  if(ret && (ret->action != BGAV_STREAM_MUTE) &&
+     !(ret->flags & STREAM_EOF_D))
+    return NULL;
   }
 
 #define FREE(ptr) if(ptr){free(ptr);ptr=NULL;}
