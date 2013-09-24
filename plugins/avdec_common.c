@@ -421,7 +421,7 @@ int bg_avdec_init(avdec_priv * avdec)
     /* Get chapters */
 
     cl = bgav_get_chapter_list(avdec->dec, i);
-    if(cl)
+    if(cl && cl->num_chapters)
       {
       avdec->track_info[i].chapter_list =
         gavl_chapter_list_copy(cl);
