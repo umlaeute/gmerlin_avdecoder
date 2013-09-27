@@ -763,8 +763,14 @@ static int parse_avc_extradata(bgav_video_parser_t * parser)
                       priv->rbsp, priv->rbsp_len);
 
   priv->flags |= (FLAG_HAVE_SPS|FLAG_HAVE_PPS);
-  
-  //  bgav_h264_sps_dump(&priv->sps);
+
+  if(!parser->format->image_width || !parser->format->image_height)
+    {
+    bgav_h264_sps_get_image_size(&priv->sps,
+                                 parser->format);
+    }
+  parser->s->ci.max_ref_frames = priv->sps.num_ref_frames;
+//  bgav_h264_sps_dump(&priv->sps);
   
   return 1;
   }

@@ -278,7 +278,7 @@ static int init_video_stream(bgav_demuxer_context_t * ctx, bgav_stream_t * s,
       priv->need_video_extradata = 1;
       s->flags |= STREAM_HAS_DTS;
       s->ci.flags |= GAVL_COMPRESSION_HAS_B_FRAMES;
-      
+      s->flags |= STREAM_PARSE_FRAME;
       //          s->data.video.wrong_b_timestamps = 1;
       break;
     default: /* Set some nonsense so we can finish initializing */
