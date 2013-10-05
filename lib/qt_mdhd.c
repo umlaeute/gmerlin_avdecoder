@@ -29,6 +29,8 @@
 
 #include <qt.h>
 
+#define LOG_DOMAIN "qt_mdhd"
+
 /*
 typedef struct
   {
@@ -74,10 +76,10 @@ void bgav_qt_mdhd_dump(int indent, qt_mdhd_t * m)
   bgav_diprintf(indent+2, "version:           %d\n", m->version);
   bgav_diprintf(indent+2, "flags:             %06xd\n", m->flags);
   
-  bgav_diprintf(indent+2, "creation_time:     %d\n", m->creation_time);
-  bgav_diprintf(indent+2, "modification_time: %d\n", m->modification_time);
+  bgav_diprintf(indent+2, "creation_time:     %"PRId64"\n", m->creation_time);
+  bgav_diprintf(indent+2, "modification_time: %"PRId64"\n", m->modification_time);
   bgav_diprintf(indent+2, "time_scale:        %d\n", m->time_scale);
-  bgav_diprintf(indent+2, "duration:          %d\n", m->duration);
+  bgav_diprintf(indent+2, "duration:          %"PRId64"\n", m->duration);
   bgav_diprintf(indent+2, "language:          %d (%s, charset: %s)\n",
                 m->language, language, charset);
   bgav_diprintf(indent+2, "quality:           %d\n", m->quality);
@@ -89,10 +91,56 @@ void bgav_qt_mdhd_dump(int indent, qt_mdhd_t * m)
 int bgav_qt_mdhd_read(qt_atom_header_t * h, bgav_input_context_t * input,
                       qt_mdhd_t * ret)
   {
-  int result;
+  //   int result;
   READ_VERSION_AND_FLAGS;
   memcpy(&ret->h, h, sizeof(*h));
 
+  if(ret->version == 0)
+    {
+    uint32_t dummy1, dummy2;
+    if(!bgav_input_read_32_be(input, &dummy1) ||
+       !bgav_input_read_32_be(input, &dummy2))
+      return 0;
+    ret->creation_time     = dummy1;
+    ret->modification_time = dummy2;
+    }
+  else if(ret->version == 1)
+    {
+    if(!bgav_input_read_64_be(input, &ret->creation_time) ||
+       !bgav_input_read_64_be(input, &ret->modification_time))
+      return 0;
+    }
+  else
+    {
+    bgav_log(input->opt, BGAV_LOG_ERROR, LOG_DOMAIN,
+             "Unsupported version %d in mdhd",
+             ret->version);
+    return 0;
+    }
+  
+  if(!bgav_input_read_32_be(input, &ret->time_scale))
+    return 0;
+  
+  if(ret->version == 0)
+    {
+    uint32_t dummy;
+    if(!bgav_input_read_32_be(input, &dummy))
+      return 0;
+    ret->duration = dummy;
+    }
+  else if(ret->version == 1)
+    {
+    if(!bgav_input_read_64_be(input, &ret->duration))
+      return 0;
+    }
+
+  if(!bgav_input_read_16_be(input, &ret->language) ||
+     !bgav_input_read_16_be(input, &ret->quality))
+    return 0;
+
+  return 1;
+  
+#if 0  
   result = bgav_input_read_32_be(input, &ret->creation_time) &&
     bgav_input_read_32_be(input, &ret->modification_time) &&
     bgav_input_read_32_be(input, &ret->time_scale) &&
@@ -102,7 +150,7 @@ int bgav_qt_mdhd_read(qt_atom_header_t * h, bgav_input_context_t * input,
 
   //  bgav_qt_mdhd_dump(ret);
   return result;
-  
+#endif
   }
 
 void bgav_qt_mdhd_free(qt_mdhd_t * c)

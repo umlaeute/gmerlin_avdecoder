@@ -68,8 +68,8 @@ int bgav_qt_mdia_read(qt_atom_header_t * h, bgav_input_context_t * input,
       default:
         bgav_qt_atom_skip_unknown(input, &ch, h->fourcc);
         break;
-
       }
+    bgav_qt_atom_skip(input, &ch);
     }
   return 1;
   }

@@ -840,10 +840,10 @@ typedef struct
 
   int version;
   uint32_t flags;
-  uint32_t creation_time;
-  uint32_t modification_time;
+  uint64_t creation_time;
+  uint64_t modification_time;
   uint32_t time_scale;
-  uint32_t duration;
+  uint64_t duration;
   uint16_t language;
   uint16_t quality;
   } qt_mdhd_t;
