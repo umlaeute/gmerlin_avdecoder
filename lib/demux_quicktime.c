@@ -1891,6 +1891,7 @@ static int open_quicktime(bgav_demuxer_context_t * ctx)
     case BGAV_MK_FOURCC('m','p','4','1'):
     case BGAV_MK_FOURCC('m','p','4','2'):
     case BGAV_MK_FOURCC('i','s','o','m'):
+    case BGAV_MK_FOURCC('M','4','V',' '):
       gavl_metadata_set(&ctx->tt->cur->metadata, 
                         GAVL_META_FORMAT, "MPEG-4 video (mp4)");
       gavl_metadata_set(&ctx->tt->cur->metadata, 
