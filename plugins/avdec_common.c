@@ -311,6 +311,9 @@ int bg_avdec_start(void * priv)
     
     avdec->current_track->video_streams[i].duration =
       bgav_video_duration(avdec->dec, i);
+
+    avdec->current_track->video_streams[i].pts_offset = 
+      bgav_video_start_time(avdec->dec, i);
     
     }
   for(i = 0; i < avdec->current_track->num_audio_streams; i++)
@@ -323,6 +326,9 @@ int bg_avdec_start(void * priv)
     
     avdec->current_track->audio_streams[i].duration =
       bgav_audio_duration(avdec->dec, i);
+
+    avdec->current_track->audio_streams[i].pts_offset = 
+      bgav_audio_start_time(avdec->dec, i);
     }
 
   for(i = 0; i < avdec->current_track->num_text_streams; i++)

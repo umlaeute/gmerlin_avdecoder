@@ -96,6 +96,7 @@ const bg_codec_plugin_t the_plugin =
     },
     .get_compressions     = get_compressions,
     .connect_decode_video = connect_decode_video,
+    .connect_decode_overlay = connect_decode_overlay,
     .reset                = bg_avdec_codec_reset,
     .skip                 = bg_avdec_codec_skip,
     
