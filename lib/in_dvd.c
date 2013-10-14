@@ -101,6 +101,15 @@ typedef struct
   
   } dvd_t;
 
+static void track_priv_destroy(track_priv_t * track_priv)
+  {
+  if(track_priv)
+    {
+    if(track_priv->chapters)
+      free(track_priv->chapters);
+    free(track_priv);
+    }
+  }
 
 static int open_vts(const bgav_options_t * opt,
                     dvd_t * dvd, int vts_index, int open_file)
@@ -258,8 +267,10 @@ static void guess_pixel_aspect(int width, int height, int aspect,
     }
   }
 
+#define MIN_DURATION GAVL_TIME_SCALE*10 // Ignore everything below 10 secs
+
 static int setup_track(bgav_input_context_t * ctx,
-                        int title, int chapter, int angle)
+                        int title, int angle)
   {
   int video_width = 0, video_height;
   const char * audio_codec = NULL;
@@ -267,15 +278,16 @@ static int setup_track(bgav_input_context_t * ctx,
   video_attr_t * video_attr;
   subp_attr_t *  subp_attr;
   int i;
+  int imax;
   int stream_position;
   bgav_stream_t * s;
-  bgav_track_t * new_track;
+  bgav_track_t * new_track = NULL;
   tt_srpt_t *ttsrpt;
   pgc_t * pgc = NULL;
   vts_ptt_srpt_t *vts_ptt_srpt;
   int ttn, pgn;
   int pgc_id;
-  track_priv_t * track_priv;
+  track_priv_t * track_priv = NULL;
   const char * language_3cc;
   char language_2cc[3];
   dvd_t * dvd = ctx->priv;
@@ -284,14 +296,16 @@ static int setup_track(bgav_input_context_t * ctx,
   ttsrpt = dvd->vmg_ifo->tt_srpt;
 
   /* Open VTS */
-  
+
+  fprintf(stderr, "TITLE SET NR: %d\n", ttsrpt->title[title].title_set_nr); 
+ 
   if(!open_vts(ctx->opt, dvd, ttsrpt->title[title].title_set_nr, 0))
     return 0;
-  
+ 
   new_track = bgav_track_table_append_track(ctx->tt);
   track_priv = calloc(1, sizeof(*track_priv));
   track_priv->title = title;
-  track_priv->chapter = chapter;
+  track_priv->chapter = 0;
   track_priv->angle = angle;
   new_track->priv = track_priv;
   
@@ -312,16 +326,32 @@ static int setup_track(bgav_input_context_t * ctx,
   track_priv->chapters = calloc(ttsrpt->title[title].nr_of_ptts,
                                 sizeof(*track_priv->chapters));
   
-  for(i = 0; i < ttsrpt->title[title].nr_of_ptts; i++)
+  imax = ttsrpt->title[title].nr_of_ptts;
+
+  /* HACK for some broken DVDs */
+  if(imax >= vts_ptt_srpt->title[ttn - 1].nr_of_ptts)
+    imax = vts_ptt_srpt->title[ttn - 1].nr_of_ptts;
+
+  for(i = 0; i < imax; i++)
     {
+    if(ttn <= 0)
+      goto fail;
     pgc_id = vts_ptt_srpt->title[ttn - 1].ptt[i].pgcn;
+
+    if(pgc_id <= 0)
+      goto fail;
+
     pgc = dvd->vts_ifo->vts_pgcit->pgci_srp[pgc_id - 1].pgc;
     
     pgn = vts_ptt_srpt->title[ttn - 1].ptt[i].pgn;
+
+    if(pgn <= 0)
+      goto fail;
+
     track_priv->chapters[track_priv->num_chapters].start_cell =
       pgc->program_map[pgn - 1] - 1;
     
-    if(chapter < ttsrpt->title[title].nr_of_ptts-1)
+    if(0 < ttsrpt->title[title].nr_of_ptts-1)
       {
       /* Next chapter is in the same program chain */
       if(pgc_id == vts_ptt_srpt->title[ttn - 1].ptt[i+1].pgcn)
@@ -371,10 +401,13 @@ static int setup_track(bgav_input_context_t * ctx,
         track_priv->chapters[i-1].duration;
     new_track->duration += track_priv->chapters[i].duration;
     }
-  
+
+  if(new_track->duration < MIN_DURATION)
+    goto fail;
+ 
   /* Setup streams */
 
-  pgc_id = vts_ptt_srpt->title[ttn - 1].ptt[chapter].pgcn;
+  pgc_id = vts_ptt_srpt->title[ttn - 1].ptt[0].pgcn;
   pgc = dvd->vts_ifo->vts_pgcit->pgci_srp[pgc_id - 1].pgc;
   
   s = bgav_track_add_video_stream(new_track, ctx->opt);
@@ -636,6 +669,14 @@ static int setup_track(bgav_input_context_t * ctx,
     s->data.subtitle.video_stream = new_track->video_streams;
     }
   return 1;
+
+  fail:
+  if(new_track)
+    {
+    bgav_track_table_remove_track(ctx->tt, ctx->tt->num_tracks - 1);
+    track_priv_destroy(track_priv);
+    }
+  return 0;
   }
 
 #if 0
@@ -725,21 +766,8 @@ static int open_dvd(bgav_input_context_t * ctx, const char * url, char ** r)
     {
     for(j = 0; j < ttsrpt->title[i].nr_of_angles; j++)
       {
-#if 0
-      if(ctx->opt->dvd_chapters_as_tracks)
-        {
-        /* Add individual chapters as tracks */
-        for(k = 0; k < ttsrpt->title[i].nr_of_ptts; k++)
-          setup_track(ctx, i, k, j);
-        }
-      else
-        {
-#endif
-        /* Add entire titles as tracks */
-        setup_track(ctx, i, 0, j);
-#if 0
-        }
-#endif
+      /* Add entire titles as tracks */
+      setup_track(ctx, i, j);
       }
     }
   
@@ -950,15 +978,7 @@ static void    close_dvd(bgav_input_context_t * ctx)
   if(ctx->tt)
     {
     for(i = 0; i < ctx->tt->num_tracks; i++)
-      {
-      track_priv = ctx->tt->tracks[i].priv;
-      if(track_priv)
-        {
-        if(track_priv->chapters)
-          free(track_priv->chapters);
-        }
-      free(track_priv);
-      }
+      track_priv_destroy(ctx->tt->tracks[i].priv);
     }
   
   free(dvd);

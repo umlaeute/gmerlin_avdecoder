@@ -58,6 +58,23 @@ bgav_track_t * bgav_track_table_append_track(bgav_track_table_t * t)
   return &t->tracks[t->num_tracks-1];
   }
 
+void bgav_track_table_remove_track(bgav_track_table_t * t, int idx)
+  {
+  if((idx < 0) || (idx >= t->num_tracks))
+    return;
+  bgav_track_free(&t->tracks[idx]);
+  memset(&t->tracks[idx], 0, sizeof(t->tracks[idx]));
+  if(idx < t->num_tracks - 1)
+    {
+    memmove(t->tracks + idx, t->tracks + idx + 1,
+            (t->num_tracks - 1 - idx) * sizeof(*t->tracks));
+    }
+  memset(&t->tracks[t->num_tracks - 1], 0, 
+         sizeof(t->tracks[t->num_tracks - 1]));
+  t->num_tracks--;
+  
+  }
+
 void bgav_track_table_ref(bgav_track_table_t * t)
   {
   t->refcount++;

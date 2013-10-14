@@ -812,6 +812,7 @@ typedef struct
 
 bgav_track_table_t * bgav_track_table_create(int num_tracks);
 bgav_track_t * bgav_track_table_append_track(bgav_track_table_t * t);
+void bgav_track_table_remove_track(bgav_track_table_t * t, int idx);
 
 void bgav_track_table_unref(bgav_track_table_t*);
 void bgav_track_table_ref(bgav_track_table_t*);
