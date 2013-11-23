@@ -356,7 +356,8 @@ handle_sei_new(bgav_video_parser_t * parser, bgav_packet_t * p)
   }
 
 
-static int parse_frame_avc(bgav_video_parser_t * parser, bgav_packet_t * p, int64_t pts_orig)
+static int parse_frame_avc(bgav_video_parser_t * parser,
+                           bgav_packet_t * p, int64_t pts_orig)
   {
   int nal_len;
   bgav_h264_nal_header_t nh;
@@ -365,8 +366,6 @@ static int parse_frame_avc(bgav_video_parser_t * parser, bgav_packet_t * p, int6
   h264_priv_t * priv = parser->priv;
   const uint8_t * ptr =   p->data;
   const uint8_t * end = p->data + p->data_size;
-
-  //  fprintf(stderr, "Parse frame\n");
 
   while(ptr < end)
     {

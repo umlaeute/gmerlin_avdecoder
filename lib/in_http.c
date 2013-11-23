@@ -243,9 +243,11 @@ static int read_chunk(bgav_input_context_t* ctx)
     bytes_read += result;
     }
 
+  chunk_size -= 2;
+  
   p->chunk_buffer_size = chunk_size;
   p->chunk_size = chunk_size;
-
+  
   return bytes_read;
   }
 
