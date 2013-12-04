@@ -1843,3 +1843,4 @@ static int init_ogg(bgav_stream_t * s)
   }
 
 #endif
+
