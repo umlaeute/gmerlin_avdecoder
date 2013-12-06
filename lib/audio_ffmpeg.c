@@ -120,6 +120,9 @@ typedef struct
 
   AVPacket pkt;
   int sample_size;
+
+  int excess_samples;
+  
   } ffmpeg_audio_priv;
 
 static codec_info_t * lookup_codec(bgav_stream_t * s);
@@ -157,6 +160,9 @@ static int init_format(bgav_stream_t * s)
     gavl_bytes_per_sample(s->data.audio.format.sample_format);
   
   gavl_set_channel_setup(&s->data.audio.format);
+
+  
+
   //  fprintf(stderr, "Got format\n");
   return 1;
   }
@@ -201,6 +207,24 @@ static gavl_source_status_t decode_frame_ffmpeg(bgav_stream_t * s)
   
   priv= s->decoder_priv;
 
+  /* Samples left from last decode() call */
+  if(priv->excess_samples > 0)
+    {
+    int num_skip = priv->frame->valid_samples;
+    priv->frame->valid_samples += priv->excess_samples;
+
+    gavl_audio_frame_skip(&s->data.audio.format, priv->frame,
+                          num_skip);
+    
+    if(priv->frame->valid_samples > s->data.audio.format.samples_per_frame)
+      priv->frame->valid_samples = s->data.audio.format.samples_per_frame;
+    priv->excess_samples -= priv->frame->valid_samples;
+    
+    gavl_audio_frame_copy_ptrs(&s->data.audio.format,
+                               s->data.audio.frame, priv->frame);
+    return GAVL_SOURCE_OK;
+    }
+  
   while(1)
     {
     st = fill_buffer(s);
@@ -277,13 +301,19 @@ static gavl_source_status_t decode_frame_ffmpeg(bgav_stream_t * s)
       }   
     
     if(!s->data.audio.format.samples_per_frame)
-      s->data.audio.format.samples_per_frame = f.nb_samples;
-    else if(s->data.audio.format.samples_per_frame < f.nb_samples)
       {
-      bgav_log(s->opt, BGAV_LOG_WARNING, LOG_DOMAIN, "frame size grew from %d to %d", 
-               s->data.audio.format.samples_per_frame, f.nb_samples);
+      // fprintf(stderr, "num_samples: %d, frame_size: %d\n",
+      //         f.nb_samples, priv->ctx->frame_size);
+      s->data.audio.format.samples_per_frame = f.nb_samples;
       }
+
     priv->frame->valid_samples = f.nb_samples;
+    
+    if(priv->frame->valid_samples > s->data.audio.format.samples_per_frame)
+      {
+      priv->frame->valid_samples = s->data.audio.format.samples_per_frame;
+      priv->excess_samples = f.nb_samples - priv->frame->valid_samples;
+      }
     }
   
   /* No Samples decoded, nothing more to do */
@@ -316,6 +346,9 @@ static int init_ffmpeg_audio(bgav_stream_t * s)
 #else
   priv->ctx = avcodec_alloc_context3(NULL);
 #endif
+
+  /* We never know what weird frame sizes we'll get */
+  s->src_flags |= GAVL_SOURCE_SRC_FRAMESIZE_MAX;
   
   //  priv->ctx->width = s->format.frame_width;
   //  priv->ctx->height = s->format.frame_height;
@@ -406,6 +439,9 @@ static void resync_ffmpeg(bgav_stream_t * s)
   avcodec_flush_buffers(priv->ctx);
   priv->frame->valid_samples = 0;
   bgav_bytebuffer_flush(&priv->buf);
+  if(priv->frame)
+    priv->frame->valid_samples = 0;
+  priv->excess_samples = 0;
   }
 
 static void close_ffmpeg(bgav_stream_t * s)
