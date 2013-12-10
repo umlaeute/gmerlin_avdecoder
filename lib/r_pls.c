@@ -96,7 +96,9 @@ static int parse_pls(bgav_redirector_context_t * r)
       if(pos)
         {
         pos++;
-        r->urls[index-1].name = gavl_strdup(pos);
+
+        gavl_metadata_set(&r->urls[index-1].m,
+                          GAVL_META_LABEL, pos);
         }
       }
     else if(!strncasecmp(buffer, "File", 4))

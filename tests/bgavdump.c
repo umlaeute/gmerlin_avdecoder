@@ -69,7 +69,7 @@ static int read_callback(void * priv, uint8_t * data, int len)
   return fread(data, 1, len, f);
   }
 
-static int64_t seek_callback(void * priv, uint64_t pos, int whence)
+static int64_t seek_callback(void * priv, int64_t pos, int whence)
   {
   FILE * f = (FILE*)priv;
   

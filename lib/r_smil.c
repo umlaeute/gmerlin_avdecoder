@@ -27,6 +27,8 @@
 
 #define LOG_DOMAIN "r_smil"
 
+#if 0
+
 static const struct
   {
   const char * code;
@@ -145,6 +147,12 @@ static const char * get_language(const char * code)
     }
   return NULL;
   }
+#endif
+
+static const char * get_language(const char * code)
+  {
+  return bgav_lang_from_twocc(code);
+  }
 
 static int probe_smil(bgav_input_context_t * input)
   {
@@ -211,7 +219,6 @@ static void get_url(bgav_yml_node_t * n, bgav_url_info_t * ret,
   const char * bitrate;
   const char * language;
 
-  char * tmp_string;
   int i;
   
   location =
@@ -240,32 +247,21 @@ static void get_url(bgav_yml_node_t * n, bgav_url_info_t * ret,
   /* Set name */
 
   if(title)
-    ret->name = bgav_sprintf("%s Stream %d", title, (*index)+1);
+    gavl_metadata_set_nocpy(&ret->m, GAVL_META_LABEL,
+                            bgav_sprintf("%s Stream %d", title, (*index)+1));
   else
-    ret->name = bgav_sprintf("%s Stream %d", location, (*index)+1);
+    gavl_metadata_set_nocpy(&ret->m, GAVL_META_LABEL,
+                            bgav_sprintf("%s Stream %d", location, (*index)+1));
 
-  if(bitrate || language)
+
+  if(bitrate)
     {
-    ret->name = gavl_strcat(ret->name, " (");
-    if(bitrate)
-      {
-      i = atoi(bitrate);
-      tmp_string = bgav_sprintf("%d kbps", i / 1000);
-      ret->name = gavl_strcat(ret->name, tmp_string);
-      free(tmp_string);
-      }
-
-    if(bitrate && language)
-      {
-      ret->name = gavl_strcat(ret->name, ", ");
-      }
-    
-    if(language)
-      {
-      ret->name = gavl_strcat(ret->name, get_language(language));
-      }
-    ret->name = gavl_strcat(ret->name, ")");
+    i = atoi(bitrate);
+    gavl_metadata_set_int(&ret->m, GAVL_META_BITRATE, i);
     }
+
+  if(language)
+    gavl_metadata_set(&ret->m, GAVL_META_LANGUAGE, get_language(language));
   
   (*index)++;
   }

@@ -1499,7 +1499,8 @@ struct bgav_redirector_s
 typedef struct
   {
   char * url;
-  char * name;
+  // char * name;
+  gavl_metadata_t m;
   } bgav_url_info_t;
 
 struct bgav_redirector_context_s

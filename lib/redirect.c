@@ -156,7 +156,7 @@ const char * bgav_redirector_get_name(bgav_t * b, int index)
   r = get_redir(b);
   if(!r)
     return NULL;
-  return r->urls[index].name;
+  return gavl_metadata_get(&r->urls[index].m, GAVL_META_LABEL);
   }
 
 void bgav_redirector_destroy(bgav_redirector_context_t*r)
@@ -168,8 +168,7 @@ void bgav_redirector_destroy(bgav_redirector_context_t*r)
     {
     if(r->urls[i].url)
       free(r->urls[i].url);
-    if(r->urls[i].name)
-      free(r->urls[i].name);
+    gavl_metadata_free(&r->urls[i].m);
     }
   free(r->urls);
   free(r);

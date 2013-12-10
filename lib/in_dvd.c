@@ -955,7 +955,6 @@ static int read_sector_dvd(bgav_input_context_t * ctx, uint8_t * data)
 static void    close_dvd(bgav_input_context_t * ctx)
   {
   int i;
-  track_priv_t * track_priv;
   dvd_t * dvd;
   dvd = ctx->priv;
   

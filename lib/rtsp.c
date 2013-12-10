@@ -46,8 +46,8 @@ struct bgav_rtsp_s
   char * session;
   char * url;
 
-  bgav_http_header_t * answers;
-  bgav_http_header_t * request_fields;
+  bgav_http_header_t * res;
+  bgav_http_header_t * req;
   
   bgav_sdp_t sdp;
 
@@ -77,9 +77,9 @@ static int rtsp_send_request(bgav_rtsp_t * rtsp,
   rtsp->cseq++;
   request = bgav_sprintf("%s %s RTSP/1.0\r\n", command, what);
 
-  for(i = 0; i < rtsp->request_fields->num_lines; i++)
+  for(i = 0; i < rtsp->req->num_lines; i++)
     {
-    request = gavl_strcat(request, rtsp->request_fields->lines[i].line);
+    request = gavl_strcat(request, rtsp->req->lines[i].line);
     request = gavl_strcat(request, "\r\n");
     }
 
@@ -107,20 +107,20 @@ static int rtsp_send_request(bgav_rtsp_t * rtsp,
     }
   free(request);
   
-  bgav_http_header_reset(rtsp->request_fields);
+  bgav_http_header_reset(rtsp->req);
   
   /* Read answers */
-  bgav_http_header_reset(rtsp->answers);
-  if(!bgav_http_header_revc(rtsp->opt, rtsp->answers, rtsp->fd))
+  bgav_http_header_reset(rtsp->res);
+  if(!bgav_http_header_revc(rtsp->opt, rtsp->res, rtsp->fd))
     return 0;
   
   /* Handle redirection */
   
-  if(strstr(rtsp->answers->lines[0].line, "REDIRECT"))
+  if(strstr(rtsp->res->lines[0].line, "REDIRECT"))
     {
     free(rtsp->url);
     rtsp->url =
-      gavl_strdup(bgav_http_header_get_var(rtsp->answers,"Location"));
+      gavl_strdup(bgav_http_header_get_var(rtsp->res,"Location"));
     if(got_redirected)
       *got_redirected = 1;
 #if 1
@@ -135,20 +135,20 @@ static int rtsp_send_request(bgav_rtsp_t * rtsp,
     }
 
   /* Get the server status */
-  status = bgav_http_header_status_code(rtsp->answers);
+  status = bgav_http_header_status_code(rtsp->res);
 
 #ifdef DUMP_REQUESTS
   bgav_dprintf("Got answer %d:\n", status);
-  bgav_http_header_dump(rtsp->answers);
+  bgav_http_header_dump(rtsp->res);
 #endif  
 
   if(status != 200)
     {
     bgav_log(rtsp->opt, BGAV_LOG_ERROR, LOG_DOMAIN,
-             "%s", bgav_http_header_status_line(rtsp->answers));
+             "%s", bgav_http_header_status_line(rtsp->res));
     goto fail;
     }
-  var = bgav_http_header_get_var(rtsp->answers, "Session");
+  var = bgav_http_header_get_var(rtsp->res, "Session");
   if(var && !(rtsp->session)) 
     rtsp->session = gavl_strdup(var);
   return 1;
@@ -159,12 +159,12 @@ static int rtsp_send_request(bgav_rtsp_t * rtsp,
 
 void bgav_rtsp_schedule_field(bgav_rtsp_t * rtsp, const char * field)
   {
-  bgav_http_header_add_line(rtsp->request_fields, field);
+  bgav_http_header_add_line(rtsp->req, field);
   }
 
 const char * bgav_rtsp_get_answer(bgav_rtsp_t * rtsp, const char * name)
   {
-  return bgav_http_header_get_var(rtsp->answers, name);
+  return bgav_http_header_get_var(rtsp->res, name);
   }
 
 int bgav_rtsp_request_describe(bgav_rtsp_t *rtsp, int * got_redirected)
@@ -182,7 +182,7 @@ int bgav_rtsp_request_describe(bgav_rtsp_t *rtsp, int * got_redirected)
     {
     return 1;
     }
-  var = bgav_http_header_get_var(rtsp->answers, "Content-Length");
+  var = bgav_http_header_get_var(rtsp->res, "Content-Length");
   if(!var)
     goto fail;
   
@@ -292,8 +292,8 @@ bgav_rtsp_t * bgav_rtsp_create(const bgav_options_t * opt)
   bgav_rtsp_t * ret = NULL;
   ret = calloc(1, sizeof(*ret));
   ret->opt = opt;
-  ret->answers = bgav_http_header_create();
-  ret->request_fields = bgav_http_header_create();
+  ret->res = bgav_http_header_create();
+  ret->req = bgav_http_header_create();
   ret->fd = -1;
   return ret;
   }
@@ -324,8 +324,8 @@ void bgav_rtsp_close(bgav_rtsp_t * r, int teardown)
   if(teardown && (r->fd >= 0))
     rtsp_send_request(r,"TEARDOWN",r->url, NULL);
   
-  bgav_http_header_destroy(r->answers);
-  bgav_http_header_destroy(r->request_fields);
+  bgav_http_header_destroy(r->res);
+  bgav_http_header_destroy(r->req);
   bgav_sdp_free(&r->sdp);
   if(r->url) free(r->url);
   if(r->session) free(r->session);

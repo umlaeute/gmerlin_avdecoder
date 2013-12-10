@@ -63,10 +63,13 @@ static int parse_ref(bgav_redirector_context_t * r)
         r->num_urls++;
         r->urls = realloc(r->urls, r->num_urls * sizeof(*(r->urls)));
         memset(r->urls + r->num_urls - 1, 0, sizeof(*(r->urls)));
+
+        gavl_metadata_set_nocpy(&r->urls[r->num_urls-1].m,
+                                GAVL_META_LABEL,
+                                bgav_sprintf("Stream %d (%s)",
+                                             r->num_urls,
+                                             pos));
         
-        r->urls[r->num_urls-1].name = bgav_sprintf("Stream %d (%s)",
-                                                   r->num_urls,
-                                                   pos);
         if(!strncasecmp(pos, "http://", 7))
           r->urls[r->num_urls-1].url = bgav_sprintf("mmsh%s", pos+4);
         else

@@ -92,9 +92,14 @@ static void get_url(bgav_yml_node_t * n, bgav_url_info_t * ret,
     if(!sc(n->name, "Title") && n->children)
       {
       if(title)
-        ret->name = bgav_sprintf("%s (%s)", title, n->children->str);
+        gavl_metadata_set_nocpy(&ret->m,
+                                GAVL_META_LABEL,
+                                bgav_sprintf("%s (%s)",
+                                             title, n->children->str));
       else
-        ret->name = bgav_sprintf("%s", n->children->str);
+        gavl_metadata_set(&ret->m,
+                          GAVL_META_LABEL,
+                          n->children->str);
       }
     else if(!sc(n->name, "Ref"))
       {
@@ -105,8 +110,13 @@ static void get_url(bgav_yml_node_t * n, bgav_url_info_t * ret,
     n = n->next;
     }
 
-  if(!ret->name)
-    ret->name = bgav_sprintf("Stream %d (%s)", (*index)+1, ret->url);
+  if(!gavl_metadata_get(&ret->m, GAVL_META_LABEL))
+    {
+    gavl_metadata_set_nocpy(&ret->m,
+                            GAVL_META_LABEL,
+                            bgav_sprintf("Stream %d (%s)",
+                                         (*index)+1, ret->url));
+    }
   (*index)++;
   }
 
