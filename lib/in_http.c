@@ -115,19 +115,18 @@ static int open_http(bgav_input_context_t * ctx, const char * url, char ** r)
     
   if(ctx->opt->http_shoutcast_metadata)
     bgav_http_header_add_line(header, "Icy-MetaData:1");
-  
+
   p->h = bgav_http_open(url, ctx->opt, r, header);
+  bgav_http_header_destroy(header);
   
   if(!p->h)
     {
     free(p);
-    bgav_http_header_destroy(header);
     return 0;
     }
   
   ctx->priv = p;
   
-  bgav_http_header_destroy(header);
   header = bgav_http_get_header(p->h);
   
   //  bgav_http_header_dump(header);
