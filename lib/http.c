@@ -180,23 +180,26 @@ struct bgav_http_s
   const bgav_options_t * opt;
   bgav_http_header_t * header;
   int fd;
+  char * keepalive_host;
+
+  int chunked; // Chunked transfer encoding
+  int chunk_size;
+  int chunk_pos;
+  int chunk_error;
+  int chunk_eof;
+  
+  int64_t content_length;
   };
 
 static bgav_http_t *
-do_connect(const char * host, int port, const bgav_options_t * opt,
+do_connect(bgav_http_t * ret, const char * host, int port, const bgav_options_t * opt,
            bgav_http_header_t * request_header,
            bgav_http_header_t * extra_header)
   {
-  bgav_http_t * ret = NULL;
+  const char * var;
   
-  ret = calloc(1, sizeof(*ret));
-  ret->opt = opt;
-
-  ret->fd = bgav_tcp_connect(ret->opt, host, port);
-
-  if(ret->fd == -1)
-    goto fail;
-
+  //  bgav_http_t * ret = NULL;
+  
   if(opt->dump_headers)
     {
     bgav_dprintf("Sending header\n");
@@ -204,10 +207,49 @@ do_connect(const char * host, int port, const bgav_options_t * opt,
     if(extra_header)
       bgav_http_header_dump(extra_header);
     }
+  
+  if(!ret)
+    {
+    ret = calloc(1, sizeof(*ret));
+    ret->opt = opt;
+    ret->fd = -1;
+    }
 
+  if(ret->header)
+    {
+    bgav_http_header_destroy(ret->header);
+    ret->header = NULL;
+    }
+  
+  if(ret->keepalive_host && strcmp(ret->keepalive_host, host))
+    {
+    close(ret->fd);
+    ret->fd = -1;
+    free(ret->keepalive_host);
+    ret->keepalive_host = NULL;
+    }
+  
+  if(ret->fd < 0)
+    {
+    ret->fd = bgav_tcp_connect(ret->opt, host, port);
+    if(ret->fd == -1)
+      goto fail;
+    }
+  
   if(!bgav_http_header_send(ret->opt, request_header, ret->fd))
-    goto fail;
-
+    {
+    if(ret->keepalive_host) // Keepalive connection got closed by server
+      {
+      close(ret->fd);
+      ret->fd = bgav_tcp_connect(ret->opt, host, port);
+      if((ret->fd == -1) ||
+         (!bgav_http_header_send(ret->opt, request_header, ret->fd)))
+        goto fail;
+      }
+    else
+      goto fail;
+    }
+  
   if(extra_header)
     {
     //    bgav_http_header_dump(extra_header);
@@ -230,6 +272,30 @@ do_connect(const char * host, int port, const bgav_options_t * opt,
     bgav_dprintf("Got response\n");
     bgav_http_header_dump(ret->header);
     }
+
+  if(ret->keepalive_host)
+    {
+    free(ret->keepalive_host);
+    ret->keepalive_host = NULL;
+    }
+  
+  var = bgav_http_header_get_var(ret->header, "Connection");
+  if(var && !strcasecmp(var, "Keep-alive"))
+    ret->keepalive_host = gavl_strdup(host);
+
+  ret->content_length = 0;
+  
+  var = bgav_http_header_get_var(ret->header, "Content-Length");
+  if(var)
+    ret->content_length = strtoll(var, NULL, 10);
+  
+  var = bgav_http_header_get_var(ret->header, "Transfer-Encoding");
+  if(var && !strcasecmp(var, "chunked"))
+    {
+    ret->chunked = 1;
+    ret->content_length = 0;
+    }
+  
   return ret;
   
   fail:
@@ -276,13 +342,13 @@ bgav_http_t * bgav_http_open(const char * url, const bgav_options_t * opt,
   char * user     = NULL;
   char * pass     = NULL;
   char * protocol = NULL;
+  int default_port = 0;
   
   const char * real_host;
   int real_port;
   
   bgav_http_header_t * request_header = NULL;
   bgav_http_t * ret = NULL;
-  int mhttp; /* Different header fields for Windows media server :) */
   
   port = -1;
   if(!bgav_url_split(url,
@@ -301,11 +367,12 @@ bgav_http_t * bgav_http_open(const char * url, const bgav_options_t * opt,
     free(path);
     path = NULL;
     }
-  if(port == -1)
-    port = 80;
 
-  if(protocol && !strcmp(protocol, "mhttp"))
-    mhttp = 1;
+  if(port == -1)
+    {
+    port = 80;
+    default_port = 1;
+    }
   
   /* Check for proxy */
 
@@ -331,10 +398,10 @@ bgav_http_t * bgav_http_open(const char * url, const bgav_options_t * opt,
   
   bgav_http_header_add_line(request_header, line);
   free(line);
-
+  
   /* Proxy authentication */
-
-  if(opt->http_proxy_auth)
+  
+  if(opt->http_use_proxy && opt->http_proxy_auth)
     {
     userpass_enc = encode_user_pass(opt->http_proxy_user, opt->http_proxy_pass);
     line = bgav_sprintf("Proxy-Authorization: Basic %s", userpass_enc);
@@ -342,12 +409,16 @@ bgav_http_t * bgav_http_open(const char * url, const bgav_options_t * opt,
     free(line);
     free(userpass_enc);
     }
+
+  if(default_port)
+    line = bgav_sprintf("Host: %s", host);
+  else
+    line = bgav_sprintf("Host: %s:%d", host, port);
   
-  line = bgav_sprintf("Host: %s", host);
   bgav_http_header_add_line(request_header, line);
   free(line);
   
-  ret = do_connect(real_host, real_port, opt, request_header, extra_header);
+  ret = do_connect(ret, real_host, real_port, opt, request_header, extra_header);
   if(!ret)
     goto fail;
 
@@ -381,7 +452,7 @@ bgav_http_t * bgav_http_open(const char * url, const bgav_options_t * opt,
     free(line);
     free(userpass_enc);
     
-    ret = do_connect(real_host, real_port, opt, request_header, extra_header);
+    ret = do_connect(ret, real_host, real_port, opt, request_header, extra_header);
     if(!ret)
       goto fail;
     /* Check status code */
@@ -471,6 +542,42 @@ bgav_http_t * bgav_http_open(const char * url, const bgav_options_t * opt,
   return NULL;
   }
 
+#if 0
+#define MAX_REDIRECTIONS 5
+
+bgav_http_t * bgav_http_open_full(const char * url, const bgav_options_t * opt,
+                                  bgav_http_header_t * extra_header)
+  {
+  int i;
+  char * redirect_url = NULL;
+  bgav_http_t * ret;
+  
+  for(i = 0; i < MAX_REDIRECTIONS; i++)
+    {
+    ret = bgav_http_open(url, opt,
+                         &redirect_url,
+                         extra_header);
+    if(ret)
+      return ret;
+
+    if(redirect_url)
+      {
+      
+      }
+    
+    }
+  
+  }
+
+int bgav_http_reopen(bgav_http_t * h,
+                     const char * url, const bgav_options_t * opt,
+                     char ** redirect_url,
+                     bgav_http_header_t * extra_header)
+  {
+  
+  }
+#endif
+
 void bgav_http_close(bgav_http_t * h)
   {
   if(h->fd >= 0)
@@ -488,4 +595,223 @@ int bgav_http_get_fd(bgav_http_t * h)
 bgav_http_header_t* bgav_http_get_header(bgav_http_t * h)
   {
   return h->header;
+  }
+
+static int next_chunk(bgav_http_t * h, int block)
+  {
+  uint8_t c;
+  char buf[16];
+  int buf_len = 0;
+
+  //  fprintf(stderr, "Next chunk\n");
+  
+  if(h->chunk_size)
+    {
+    /* Read "\r\n" from previous chunk.
+       This is always done in blocking mode since we
+       don't expect to wait too long */
+
+    if((bgav_read_data_fd(h->opt, h->fd, (uint8_t*)buf, 2, h->opt->read_timeout) < 2) ||
+       (buf[0] != '\r') ||
+       (buf[1] != '\n'))
+      {
+      h->chunk_error = 1;
+      return 0;
+      }
+    h->chunk_size = 0;
+    }
+
+  /* Read first character of the chunk length */
+
+  if(block)
+    {
+    if(bgav_read_data_fd(h->opt, h->fd, &c, 1, h->opt->read_timeout) < 1)
+      {
+      h->chunk_error = 1;
+      return 0;
+      }
+    }
+  else if(bgav_read_data_fd(h->opt, h->fd, &c, 1, 0) < 1)
+    return 0;
+  
+  /* Read chunk len */
+
+  buf[0] = c;
+  buf_len = 1;
+
+  /* Allow max 4 GB chunks */
+  while(buf_len < 8)
+    {
+    if(bgav_read_data_fd(h->opt, h->fd, &c, 1, h->opt->read_timeout) < 1)
+      {
+      h->chunk_error = 1;
+      return 0;
+      }
+    if(c == '\n')
+      break;
+    
+    if(c != '\r')
+      {
+      buf[buf_len] = c;
+      buf_len++;
+      }
+    }
+
+  if(c != '\n')
+    {
+    h->chunk_error = 1;
+    return 0;
+    }
+
+  buf[buf_len] = '\0';
+
+  h->chunk_size = strtoul(buf, NULL, 16);
+  h->chunk_pos = 0;
+
+  if(!h->chunk_size)
+    h->chunk_eof = 1;
+  
+  // fprintf(stderr, "Chunk size: %d\n", h->chunk_size);
+  return 1;
+  }
+
+static int read_chunked(bgav_http_t * h, uint8_t * data, int len, int block)
+  {
+  int bytes_to_read;
+  int bytes_read = 0;
+  int to;
+  int result;
+  
+  if(h->chunk_error || h->chunk_eof)
+    return 0;
+
+  if(block)
+    to = h->opt->read_timeout;
+  else
+    to = 0;
+  
+  while(bytes_read < len)
+    {
+    if(h->chunk_pos >= h->chunk_size)
+      {
+      if(!next_chunk(h, block))
+        return bytes_read;
+      }
+    
+    bytes_to_read = len - bytes_read;
+    
+    if(bytes_to_read > h->chunk_size - h->chunk_pos)
+      bytes_to_read = h->chunk_size - h->chunk_pos;
+    
+    result = bgav_read_data_fd(h->opt, h->fd, data + bytes_read, bytes_to_read, to);
+
+    if(result < 0)
+      {
+      h->chunk_error = 1;
+      return bytes_read;
+      }
+    
+    bytes_read += result;
+    h->chunk_pos += result;
+
+    if(!block)
+      break;
+    
+    }
+  return bytes_read;
+  }
+
+static int read_normal(bgav_http_t * h, uint8_t * data, int len, int block)
+  {
+  int to;
+
+  if(block)
+    to = h->opt->read_timeout;
+  else
+    to = 0;
+  return bgav_read_data_fd(h->opt, h->fd, data, len, to);
+  }
+
+int bgav_http_read(bgav_http_t * h, uint8_t * data, int len, int block)
+  {
+  if(h->chunked)
+    return read_chunked(h, data, len, block);
+  else
+    return read_normal(h, data, len, block);
+  }
+
+static char const * const title_vars[] =
+  {
+    "icy-name",
+    "ice-name",
+    "x-audiocast-name",
+    NULL
+  };
+
+static char const * const genre_vars[] =
+  {
+    "x-audiocast-genre",
+    "icy-genre",
+    "ice-genre",
+    NULL
+  };
+
+static char const * const comment_vars[] =
+  {
+    "ice-description",
+    "x-audiocast-description",
+    NULL
+  };
+
+static char const * const url_vars[] =
+  {
+    "icy-url",
+    NULL
+  };
+
+static void set_metadata_string(bgav_http_header_t * header,
+                                char const * const vars[],
+                                gavl_metadata_t * m, const char * name)
+  {
+  const char * val;
+  int i = 0;
+  while(vars[i])
+    {
+    val = bgav_http_header_get_var(header, vars[i]);
+    if(val)
+      {
+      gavl_metadata_set(m, name, val);
+      return;
+      }
+    else
+      i++;
+    }
+  }
+
+void bgav_http_set_metadata(bgav_http_t * h, gavl_metadata_t * m)
+  {
+  const char * var;
+
+  var = bgav_http_header_get_var(h->header, "Content-Type");
+  if(var)
+    gavl_metadata_set(m, GAVL_META_MIMETYPE, var);
+  else if(bgav_http_header_get_var(h->header, "icy-notice1"))
+    gavl_metadata_set(m, GAVL_META_MIMETYPE, "audio/mpeg");
+  
+
+  /* Get Metadata */
+  
+  set_metadata_string(h->header,
+                      title_vars, m, GAVL_META_STATION);
+  set_metadata_string(h->header,
+                      genre_vars, m, GAVL_META_GENRE);
+  set_metadata_string(h->header,
+                      comment_vars, m, GAVL_META_COMMENT);
+  set_metadata_string(h->header,
+                      url_vars, m, GAVL_META_URL);
+  }
+
+int64_t bgav_http_total_bytes(bgav_http_t * h)
+  {
+  return h->content_length;
   }

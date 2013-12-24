@@ -949,6 +949,9 @@ struct bgav_input_s
   
   /* Some inputs autoscan the available devices */
   bgav_device_info_t (*find_devices)();
+  
+  /* Finalize input (called at the very end of bgav_input_open() */
+  int (*finalize)(bgav_input_context_t*);
   };
 
 struct bgav_input_context_s

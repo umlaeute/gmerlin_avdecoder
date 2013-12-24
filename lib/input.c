@@ -834,6 +834,10 @@ static int input_open(bgav_input_context_t * ctx,
 
   init_buffering(ctx);
   
+  if(ctx->input->finalize && 
+     !ctx->input->finalize(ctx))
+    goto fail;
+     
   ret = 1;
 
   fail:

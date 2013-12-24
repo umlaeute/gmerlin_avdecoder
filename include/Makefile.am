@@ -23,6 +23,7 @@ dvframe.h \
 flac_header.h \
 frametype.h \
 h264_header.h \
+hls.h \
 http.h \
 id3.h \
 language_table.h \

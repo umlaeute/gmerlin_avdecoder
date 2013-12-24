@@ -25,8 +25,11 @@
 #include <unistd.h>
 #include <avdec_private.h>
 #include <http.h>
+#include <hls.h>
 
 #define NUM_REDIRECTIONS 5
+
+#define LOG_DOMAIN "in_http"
 
 /* Generic http input module */
 
@@ -36,68 +39,11 @@ typedef struct
   int icy_bytes;
   bgav_http_t * h;
 
-  /* For Transfer encoding chunked */
-
-  /* Sure, this implementation could be optimized,
-     but this way, the application bugs are less likely */
-
-  int chunked;
-    
-  int chunk_size;
-  int chunk_buffer_size;
-  int chunk_buffer_alloc;
-  char * chunk_buffer;
-
   bgav_charset_converter_t * charset_cnv;
+
+  bgav_hls_t * hls;
   } http_priv;
 
-static char const * const title_vars[] =
-  {
-    "icy-name",
-    "ice-name",
-    "x-audiocast-name",
-    NULL
-  };
-
-static char const * const genre_vars[] =
-  {
-    "x-audiocast-genre",
-    "icy-genre",
-    "ice-genre",
-    NULL
-  };
-
-static char const * const comment_vars[] =
-  {
-    "ice-description",
-    "x-audiocast-description",
-    NULL
-  };
-
-static char const * const url_vars[] =
-  {
-    "icy-url",
-    NULL
-  };
-
-static void set_metadata_string(bgav_http_header_t * header,
-                                char const * const vars[],
-                                gavl_metadata_t * m, const char * name)
-  {
-  const char * val;
-  int i = 0;
-  while(vars[i])
-    {
-    val = bgav_http_header_get_var(header, vars[i]);
-    if(val)
-      {
-      gavl_metadata_set(m, name, val);
-      return;
-      }
-    else
-      i++;
-    }
-  }
 
 static int open_http(bgav_input_context_t * ctx, const char * url, char ** r)
   {
@@ -126,20 +72,13 @@ static int open_http(bgav_input_context_t * ctx, const char * url, char ** r)
     }
   
   ctx->priv = p;
+
+  ctx->total_bytes = bgav_http_total_bytes(p->h);
   
   header = bgav_http_get_header(p->h);
+  bgav_http_set_metadata(p->h, &ctx->metadata);
   
   //  bgav_http_header_dump(header);
-  
-  var = bgav_http_header_get_var(header, "Content-Length");
-  if(var)
-    ctx->total_bytes = atoi(var);
-  
-  var = bgav_http_header_get_var(header, "Content-Type");
-  if(var)
-    gavl_metadata_set(&ctx->metadata, GAVL_META_MIMETYPE, var);
-  else if(bgav_http_header_get_var(header, "icy-notice1"))
-    gavl_metadata_set(&ctx->metadata, GAVL_META_MIMETYPE, "audio/mpeg");
   
   var = bgav_http_header_get_var(header, "icy-metaint");
   if(var)
@@ -152,148 +91,22 @@ static int open_http(bgav_input_context_t * ctx, const char * url, char ** r)
                                                    "ISO-8859-1",
                                                    BGAV_UTF8);
     }
-
-  /* Get Metadata */
   
-  set_metadata_string(header,
-                      title_vars, &ctx->metadata, GAVL_META_STATION);
-  set_metadata_string(header,
-                      genre_vars, &ctx->metadata, GAVL_META_GENRE);
-  set_metadata_string(header,
-                      comment_vars, &ctx->metadata, GAVL_META_COMMENT);
-  set_metadata_string(header,
-                      url_vars, &ctx->metadata, GAVL_META_URL);
-
-  /* If we have chunked encoding, skip the chunk size and assume, that
-     the whole data is in one chunk */
-
-  var = bgav_http_header_get_var(header, "Transfer-Encoding");
-  if(var && !strcasecmp(var, "chunked"))
-    p->chunked = 1;
-  else
-    ctx->do_buffer = 1;
+  ctx->do_buffer = 1;
 
   ctx->url = gavl_strdup(url);
   return 1;
   }
 
-/*
-  int chunk_size;
-  int chunk_buffer_size;
-  int chunk_buffer_alloc;
-  uint8_t * chunk_buffer;
-*/
-
-static int read_chunk(bgav_input_context_t* ctx)
-  {
-  int fd;
-  fd_set rset;
-  struct timeval timeout;
-  unsigned long chunk_size;
-  int bytes_read;
-  int result;
-  http_priv * p = ctx->priv;
-  fd = bgav_http_get_fd(p->h);
-
-  /* We first check if there is data availble, after that, the whole
-     chunk is read at once */
-
-  if(ctx->opt->read_timeout)
-    {
-    FD_ZERO(&rset);
-    FD_SET (fd, &rset);
-    timeout.tv_sec  = ctx->opt->read_timeout / 1000;
-    timeout.tv_usec = (ctx->opt->read_timeout % 1000) * 1000;
-    if(select (fd+1, &rset, NULL, NULL, &timeout) <= 0)
-      return 0;
-    }
-
-  /* Read Chunk size */
-  
-  if(!bgav_read_line_fd(ctx->opt,
-                        fd, &p->chunk_buffer, &p->chunk_buffer_alloc,
-                        ctx->opt->read_timeout))
-    return 0;
-
-  chunk_size = strtoul(p->chunk_buffer, NULL, 16);
-
-  if(!chunk_size)
-    return 0;
-
-  chunk_size += 2;
-  
-  /* Read chunk including trailing CRLF */
-
-  if(chunk_size > p->chunk_buffer_alloc)
-    {
-    p->chunk_buffer_alloc = chunk_size + 512;
-    p->chunk_buffer = realloc(p->chunk_buffer,
-                              p->chunk_buffer_alloc);
-    }
-  
-  bytes_read = 0;
-
-  while(bytes_read < chunk_size)
-    {
-    result = read(fd, p->chunk_buffer + bytes_read,
-                  chunk_size - bytes_read);
-    if(!result)
-      break;
-    bytes_read += result;
-    }
-
-  chunk_size -= 2;
-  
-  p->chunk_buffer_size = chunk_size;
-  p->chunk_size = chunk_size;
-  
-  return bytes_read;
-  }
-
-static int read_data_chunked(bgav_input_context_t* ctx,
-                             uint8_t * buffer, int len)
-  {
-  int bytes_read = 0;
-  int bytes_to_copy;
-    
-  http_priv * p = ctx->priv;
-  while(bytes_read < len)
-    {
-    if(!p->chunk_buffer_size)
-      {
-      if(!read_chunk(ctx))
-        return bytes_read;
-      }
-
-    bytes_to_copy = len - bytes_read;
-    if(bytes_to_copy > p->chunk_buffer_size)
-      bytes_to_copy = p->chunk_buffer_size;
-
-    memcpy(buffer + bytes_read, p->chunk_buffer +
-           (p->chunk_size - p->chunk_buffer_size),
-           bytes_to_copy);
-    bytes_read += bytes_to_copy;
-    p->chunk_buffer_size -= bytes_to_copy;
-    
-    }
-  return bytes_read;
-  }
-
 static int read_data(bgav_input_context_t* ctx,
                      uint8_t * buffer, int len, int block)
   {
-  int fd;
   http_priv * p = ctx->priv;
-
-  if(p->chunked)
-    return read_data_chunked(ctx, buffer, len);
-
-  fd = bgav_http_get_fd(p->h);
   
-  if(block)
-    return bgav_read_data_fd(ctx->opt, fd, buffer, len, ctx->opt->read_timeout);
+  if(p->hls)
+    return bgav_hls_read(p->hls, buffer, len, block);
   else
-    return bgav_read_data_fd(ctx->opt, fd, buffer, len, 0);
+    return bgav_http_read(p->h, buffer, len, block);
   }
 
 static int read_shoutcast_metadata(bgav_input_context_t* ctx, int block)
@@ -429,19 +242,34 @@ static int read_nonblock_http(bgav_input_context_t * ctx,
 static void close_http(bgav_input_context_t * ctx)
   {
   http_priv * p = ctx->priv;
-
-  if(p->chunk_buffer)
-    free(p->chunk_buffer);
   bgav_http_close(p->h);
   if(p->charset_cnv)
     bgav_charset_converter_destroy(p->charset_cnv);
   free(p);
   }
 
+static int finalize_http(bgav_input_context_t * ctx)
+  {
+  http_priv * p = ctx->priv;
+  if(bgav_hls_detect(ctx))
+    {
+    bgav_log(ctx->opt, BGAV_LOG_INFO, LOG_DOMAIN,
+             "Detected http live streaming");
+    p->hls = bgav_hls_create(ctx);
+    
+    if(!p->hls)
+      return 0;
+    return 1;
+    }
+  else
+    return 1;
+  }
+
 const bgav_input_t bgav_input_http =
   {
     .name =          "http",
     .open =          open_http,
+    .finalize =      finalize_http,
     .read =          read_http,
     .read_nonblock = read_nonblock_http,
     .close =         close_http,

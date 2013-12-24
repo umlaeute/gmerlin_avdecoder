@@ -33,52 +33,61 @@ static int probe_m3u(bgav_input_context_t * input)
   char probe_buffer[PROBE_BYTES];
   char * pos;
   const char * mimetype;
+  int result = 0;
+  
   /* Most likely, we get this via http, so we can check the mimetype */
   if((mimetype = gavl_metadata_get(&input->metadata, GAVL_META_MIMETYPE)))
     {
-    if(!strcmp(mimetype, "audio/x-pn-realaudio-plugin") ||
-       !strcmp(mimetype, "video/x-pn-realvideo-plugin") ||
-       !strcmp(mimetype, "audio/x-pn-realaudio") ||
-       !strcmp(mimetype, "video/x-pn-realvideo") ||
-       !strcmp(mimetype, "audio/x-mpegurl") ||
-       !strcmp(mimetype, "audio/mpegurl") ||
-       !strcmp(mimetype, "audio/m3u"))
-      {
-      if(bgav_input_get_data(input, (uint8_t*)probe_buffer,
-                             PROBE_BYTES) < PROBE_BYTES)
-        return 0;
-
-      /* Some streams with the above mimetype are in realtiy
-         different streams, so we check this here */
-            
-      if(!strncmp(probe_buffer, "mms://", 6) ||
-         !strncmp(probe_buffer, "http://", 7) ||
-         !strncmp(probe_buffer, "rtsp://", 7) ||
-         (probe_buffer[0] == '#'))
-        return 1;
-      }
+    if(strcmp(mimetype, "audio/x-pn-realaudio-plugin") &&
+       strcmp(mimetype, "video/x-pn-realvideo-plugin") &&
+       strcmp(mimetype, "audio/x-pn-realaudio") &&
+       strcmp(mimetype, "video/x-pn-realvideo") &&
+       strcmp(mimetype, "audio/x-mpegurl") &&
+       strcmp(mimetype, "audio/mpegurl") &&
+       strcmp(mimetype, "audio/m3u") &&
+       strncasecmp(mimetype, "application/x-mpegurl", 21) && // HLS
+       strncasecmp(mimetype, "application/vnd.apple.mpegurl", 29)) // HLS
+      return 0;
     }
-  /* Take all files which end with .m3u */
-  
-  if(input->filename)
+  else if(input->filename)
     {
     pos = strrchr(input->filename, '.');
     if(!pos)
       return 0;
-    if(!strcmp(pos, ".m3u"))
-      return 1;
+    if(strcasecmp(pos, ".m3u") &&
+       strcasecmp(pos, ".m3u8") &&
+       strcasecmp(pos, ".ram"))
+      return 0;
     }
-
   
   if(bgav_input_get_data(input, (uint8_t*)probe_buffer,
                          PROBE_BYTES) < PROBE_BYTES)
-    return 0;
+    goto end;
+  
+  /* Some streams with the above mimetype are in realtiy
+     different streams, so we check this here */
+  if(strncmp(probe_buffer, "mms://", 6) &&
+     strncmp(probe_buffer, "http://", 7) &&
+     strncmp(probe_buffer, "rtsp://", 7) &&
+     (probe_buffer[0] != '#'))
+    goto end;
 
-  if(!strncmp(probe_buffer, "mms://", 6) ||
-     !strncmp(probe_buffer, "http://", 7) ||
-     !strncmp(probe_buffer, "rtsp://", 7))
-    return 1;
-  return 0;
+  /* Detect m3u8 stream playlist */
+#if 0
+  if(!strncasecmp(probe_buffer, "#EXTM3U", 7) &&
+     !strstr(probe_buffer, "#EXT-X-STREAM-INF") &&
+     !strstr(probe_buffer, "#EXT-X-I-FRAME-STREAM-INF"))
+    {
+    goto end;
+    
+    }
+#endif
+
+  result = 1;
+  
+  end:
+  return result;
+  
   }
 
 static void add_url(bgav_redirector_context_t * r)

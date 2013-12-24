@@ -71,3 +71,11 @@ void bgav_http_close(bgav_http_t *);
 int bgav_http_get_fd(bgav_http_t *);
 
 bgav_http_header_t* bgav_http_get_header(bgav_http_t *);
+
+int bgav_http_is_keep_alive(bgav_http_t *);
+
+int bgav_http_read(bgav_http_t * h, uint8_t * data, int len, int block);
+
+int64_t bgav_http_total_bytes(bgav_http_t * h);
+
+void bgav_http_set_metadata(bgav_http_t * h, gavl_metadata_t * m);
