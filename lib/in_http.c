@@ -53,12 +53,12 @@ static int open_http(bgav_input_context_t * ctx, const char * url, char ** r)
   bgav_http_header_t * header = NULL;
   
   p = calloc(1, sizeof(*p));
-
+  
   header = bgav_http_header_create();
-    
+  
   bgav_http_header_add_line(header, "User-Agent: "PACKAGE"/"VERSION);
   bgav_http_header_add_line(header, "Accept: */*");
-    
+  
   if(ctx->opt->http_shoutcast_metadata)
     bgav_http_header_add_line(header, "Icy-MetaData:1");
 

@@ -50,15 +50,8 @@ extern bgav_demuxer_t bgav_demuxer_asf;
 static int read_data(bgav_input_context_t* ctx,
                      uint8_t * buffer, int len, int block)
   {
-  int fd;
   mmsh_priv * p = ctx->priv;
-  
-  fd = bgav_http_get_fd(p->h);
-  
-  if(block)
-    return bgav_read_data_fd(ctx->opt, fd, buffer, len, ctx->opt->read_timeout);
-  else
-    return bgav_read_data_fd(ctx->opt, fd, buffer, len, 0);
+  return bgav_http_read(p->h, buffer, len, block);
   }
 
 typedef struct

@@ -587,11 +587,6 @@ void bgav_http_close(bgav_http_t * h)
   free(h);
   }
 
-int bgav_http_get_fd(bgav_http_t * h)
-  {
-  return h->fd;
-  }
-
 bgav_http_header_t* bgav_http_get_header(bgav_http_t * h)
   {
   return h->header;

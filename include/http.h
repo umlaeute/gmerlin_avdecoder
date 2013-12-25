@@ -68,8 +68,6 @@ bgav_http_t * bgav_http_open(const char * url,
 
 void bgav_http_close(bgav_http_t *);
 
-int bgav_http_get_fd(bgav_http_t *);
-
 bgav_http_header_t* bgav_http_get_header(bgav_http_t *);
 
 int bgav_http_is_keep_alive(bgav_http_t *);
