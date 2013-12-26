@@ -326,9 +326,10 @@ static char * encode_user_pass(const char * user, const char * pass)
   return ret;
   }
 
-bgav_http_t * bgav_http_open(const char * url, const bgav_options_t * opt,
-                             char ** redirect_url,
-                             bgav_http_header_t * extra_header)
+static bgav_http_t * http_open(bgav_http_t * ret,
+                        const char * url, const bgav_options_t * opt,
+                        char ** redirect_url,
+                        bgav_http_header_t * extra_header)
   {
   int port;
   int status;
@@ -348,7 +349,6 @@ bgav_http_t * bgav_http_open(const char * url, const bgav_options_t * opt,
   int real_port;
   
   bgav_http_header_t * request_header = NULL;
-  bgav_http_t * ret = NULL;
   
   port = -1;
   if(!bgav_url_split(url,
@@ -542,41 +542,51 @@ bgav_http_t * bgav_http_open(const char * url, const bgav_options_t * opt,
   return NULL;
   }
 
-#if 0
 #define MAX_REDIRECTIONS 5
 
-bgav_http_t * bgav_http_open_full(const char * url, const bgav_options_t * opt,
-                                  bgav_http_header_t * extra_header)
+bgav_http_t * bgav_http_reopen(bgav_http_t * ret,
+                               const char * url_orig, const bgav_options_t * opt,
+                               char ** redirect_url,
+                               bgav_http_header_t * extra_header)
   {
   int i;
-  char * redirect_url = NULL;
-  bgav_http_t * ret;
+    
+  char * url = NULL;
+  char * r = NULL;
   
+  if(redirect_url)
+    return http_open(ret, url_orig, opt, redirect_url, extra_header);
+  
+  url = gavl_strdup(url_orig);
+    
   for(i = 0; i < MAX_REDIRECTIONS; i++)
     {
-    ret = bgav_http_open(url, opt,
-                         &redirect_url,
-                         extra_header);
+    ret = http_open(ret, url, opt, &r, extra_header);
     if(ret)
-      return ret;
-
-    if(redirect_url)
+      break;
+    if(r)
       {
-      
+      if(url)
+        free(url);
+      url = r;
+      r = NULL;
       }
-    
     }
-  
+
+  if(url)
+    free(url);
+  if(r)
+    free(r);
+  return ret;
   }
 
-int bgav_http_reopen(bgav_http_t * h,
-                     const char * url, const bgav_options_t * opt,
-                     char ** redirect_url,
-                     bgav_http_header_t * extra_header)
+bgav_http_t * bgav_http_open(const char * url, const bgav_options_t * opt,
+                             char ** redirect_url,
+                             bgav_http_header_t * extra_header)
   {
-  
+  return bgav_http_reopen(NULL, url, opt, redirect_url, extra_header);
   }
-#endif
+
 
 void bgav_http_close(bgav_http_t * h)
   {

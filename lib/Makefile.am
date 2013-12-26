@@ -498,6 +498,7 @@ packetpool.c \
 packettimer.c \
 packet.c \
 parse_a52.c \
+parse_adts.c \
 parse_cavs.c \
 parse_dirac.c \
 parse_dv.c \

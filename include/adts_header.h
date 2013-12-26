@@ -21,6 +21,8 @@
 
 /* The following struct is not exactly the same as in the spec */
 
+#define ADTS_HEADER_LEN 9
+
 typedef struct
   {
   int mpeg_version;
@@ -37,7 +39,6 @@ typedef struct
   int samplerate;
   } bgav_adts_header_t;
 
-int bgav_adts_header_read(const uint8_t * data,
-                          bgav_adts_header_t * adts);
-
+int bgav_adts_header_read(const uint8_t * data, bgav_adts_header_t * adts);
 void bgav_adts_header_dump(const bgav_adts_header_t * adts);
+void bgav_adts_header_get_format(const bgav_adts_header_t * adts, gavl_audio_format_t * format);

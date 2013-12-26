@@ -24,10 +24,12 @@
 #include <hls.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 typedef struct
   {
   char * url;
+  char * title;
   double duration;
   int seq;
   } hls_url_t;
@@ -38,17 +40,21 @@ struct bgav_hls_s
   
   bgav_http_t * stream_socket;
   bgav_http_t * m3u8_socket;
+
+  bgav_http_header_t * stream_header;
   
   hls_url_t * urls;
   int urls_alloc;
   int num_urls;
   
   int seq;
+  int end_of_sequence; // End of sequence detected
   
-  int64_t bc;  // Byte counter
-  int64_t end; // End of segment
+  int64_t segment_pos;  // Byte counter
+  int64_t segment_size; // End of segment
 
   bgav_input_context_t * ctx;
+  
   };
 
 int bgav_hls_detect(bgav_input_context_t * ctx)
@@ -98,7 +104,58 @@ static void free_urls(bgav_hls_t * h)
       free(h->urls[i].url);
       h->urls[i].url = NULL;
       }
+    if(h->urls[i].title)
+      {
+      free(h->urls[i].title);
+      h->urls[i].title = NULL;
+      }
     }
+  h->num_urls = 0;
+  }
+
+static void dump_urls(bgav_hls_t * h)
+  {
+  int i;
+  bgav_dprintf("HLS url list\n");
+  for(i = 0; i < h->num_urls; i++)
+    {
+    bgav_dprintf("  URL %d\n", i+1);
+    bgav_dprintf("    Duration %f\n", h->urls[i].duration);
+    bgav_dprintf("    Title    %s\n", h->urls[i].title);
+    bgav_dprintf("    Sequence %d\n", h->urls[i].seq);
+    bgav_dprintf("    URL      %s\n", h->urls[i].url);
+    }
+  }
+
+static char * extract_url(bgav_hls_t * h, const char * url)
+  {
+  char * ret = NULL;
+  char * base;
+  const char * pos1;
+  const char * pos2;
+  
+  if(!strncmp(url, "http://", 7)) // Complete URL
+    return gavl_strdup(url);
+  else if(*url == '/') // Relative to host
+    {
+    pos1 = h->ctx->url + 7;
+    pos2 = strchr(h->ctx->url, '/');
+    if(!pos2)
+      pos2 = h->ctx->url + strlen(h->ctx->url);
+    
+    base = gavl_strndup(h->ctx->url, pos2);
+    
+    ret = bgav_sprintf("%s/%s", base, url);
+    free(base);
+    }
+  else // Relative m3u8
+    {
+    pos2 = strrchr(h->ctx->url, '/');
+    base = gavl_strndup(h->ctx->url, pos2);
+    ret = bgav_sprintf("%s/%s", base, url);
+    free(base);
+    }
+  return ret;
   }
 
 static void parse_urls(bgav_hls_t * h, const char * m3u8)
@@ -121,10 +178,7 @@ static void parse_urls(bgav_hls_t * h, const char * m3u8)
     i++;
     }
 
-  h->num_urls = 0;
-  
   /* Parse the header */
-
   i = 0;
   while(lines[i])
     {
@@ -146,21 +200,53 @@ static void parse_urls(bgav_hls_t * h, const char * m3u8)
   while(lines[i])
     {
     // URL info
-    if(strncasecmp(lines[i], "#EXTINF", 7))
+    if(!strncasecmp(lines[i], "#EXTINF", 7))
       {
-
-      }
-    else if(!strncasecmp(lines[i], "http://", 7))
-      {
+      if(h->urls_alloc < h->num_urls + 1)
+        {
+        h->urls_alloc += 16;
+        h->urls = realloc(h->urls, h->urls_alloc * sizeof(*h->urls));
+        memset(h->urls + h->num_urls, 0,
+               (h->urls_alloc - h->num_urls) * sizeof(*h->urls));
+        }
       
+      if((pos = strchr(lines[i], ':')))
+        {
+        pos++;
+        /*
+         *  This breaks when the LC_NUMERIC locale is German
+         *  for example
+         */
+        h->urls[h->num_urls].duration = strtod(pos, NULL);
+
+        if((pos = strchr(pos, ',')))
+          {
+          pos++;
+
+          while(isspace(*pos) && *pos != '\0')
+            pos++;
+          
+          if(*pos != '\0')
+            h->urls[h->num_urls].title = gavl_strdup(pos);
+          }
+        }
+      }
+    else if(*(lines[i]) != '#')
+      {
+      h->urls[h->num_urls].url = extract_url(h, lines[i]);
+      h->urls[h->num_urls].seq = seq++;
+      h->num_urls++;
       }
     else if(!strncasecmp(lines[i], "#EXT-X-ENDLIST", 14))
       {
-      
+      h->end_of_sequence = 1;
+      break;
       }
     i++;
     }
-  
+
+  bgav_stringbreak_free(lines);
+  dump_urls(h);
   }
 
 bgav_hls_t * bgav_hls_create(bgav_input_context_t * ctx)
@@ -171,7 +257,7 @@ bgav_hls_t * bgav_hls_create(bgav_input_context_t * ctx)
   ret = calloc(1, sizeof(*ret));
   ret->ctx = ctx;
   
-  fprintf(stderr, "URL: %s\n", ctx->url);
+  // fprintf(stderr, "URL: %s\n", ctx->url);
 
   /* Read the initial m3u8 */
   m3u8 = malloc(ctx->total_bytes + 1);
@@ -182,6 +268,38 @@ bgav_hls_t * bgav_hls_create(bgav_input_context_t * ctx)
   m3u8[ctx->total_bytes] = '\0';
   parse_urls(ret, m3u8);
   free(m3u8);
+
+  if(!ret->num_urls)
+    goto fail;
+  
+  /* Load first URL */
+  //  h->stream_socket = bgav_http_open(
+
+  ret->stream_header = bgav_http_header_create();
+  
+  bgav_http_header_add_line(ret->stream_header, "User-Agent: "PACKAGE"/"VERSION);
+  bgav_http_header_add_line(ret->stream_header, "Accept: */*");
+  bgav_http_header_add_line(ret->stream_header, "Connection: Keep-Alive");
+
+  fprintf(stderr, "Loading %s\n", ret->urls[0].url);
+  
+  ret->stream_socket = bgav_http_reopen(NULL, ret->urls[0].url, ctx->opt,
+                                        NULL,
+                                        ret->stream_header);
+
+  gavl_metadata_free(&ret->ctx->metadata);
+  gavl_metadata_init(&ret->ctx->metadata);
+  
+  if(!ret->stream_socket)
+    goto fail;
+
+  bgav_http_set_metadata(ret->stream_socket, &ctx->metadata);
+
+  ret->ctx->total_bytes = 0;
+  ret->segment_size = bgav_http_total_bytes(ret->stream_socket);
+  
+  if(m3u8)
+    free(m3u8);
   
   return ret;
 
@@ -196,7 +314,33 @@ bgav_hls_t * bgav_hls_create(bgav_input_context_t * ctx)
 
 int bgav_hls_read(bgav_hls_t * h, uint8_t * data, int len, int block)
   {
-  return 0;
+  int bytes_to_read;
+  int result;
+  int bytes_read = 0;
+
+  while(bytes_read < len)
+    {
+    if(h->segment_pos >= h->segment_size)
+      {
+      /* Todo: Open next segment */
+      fprintf(stderr, "End of segment\n");
+      return bytes_read;
+      }
+    
+    bytes_to_read = len;
+    if(bytes_to_read > h->segment_size - h->segment_pos)
+      bytes_to_read = h->segment_size - h->segment_pos;
+    
+    result = bgav_http_read(h->stream_socket, data + bytes_read, bytes_to_read, block);
+    
+    if(result < 0)
+      return bytes_read;
+
+    bytes_read += result;
+    h->segment_pos += result;
+    }
+
+  return bytes_read;
   }
 
 void bgav_hls_close(bgav_hls_t * h)
@@ -205,6 +349,12 @@ void bgav_hls_close(bgav_hls_t * h)
 
   if(h->urls)
     free(h->urls);
+  
+  if(h->stream_header)
+    bgav_http_header_destroy(h->stream_header);
+
+  if(h->stream_socket)
+    bgav_http_close(h->stream_socket);
   
   free(h);
   }

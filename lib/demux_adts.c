@@ -35,7 +35,6 @@
 
 /* Supported header types */
 
-#define ADTS_SIZE 9
 
 #define BYTES_TO_READ (768*GAVL_MAX_CHANNELS)
      
@@ -73,10 +72,10 @@ static int probe_adts(bgav_input_context_t * input)
   if(!bgav_adts_header_read(header, &h1))
     return 0;
   
-  buffer = malloc(ADTS_SIZE + h1.frame_bytes);
+  buffer = malloc(ADTS_HEADER_LEN + h1.frame_bytes);
   
-  if(bgav_input_get_data(input, buffer, ADTS_SIZE + h1.frame_bytes) <
-     ADTS_SIZE + h1.frame_bytes)
+  if(bgav_input_get_data(input, buffer, ADTS_HEADER_LEN + h1.frame_bytes) <
+     ADTS_HEADER_LEN + h1.frame_bytes)
     return 0;
 
   ret = 0;
@@ -169,7 +168,7 @@ static int open_adts(bgav_demuxer_context_t * ctx)
   bgav_stream_t * s;
   bgav_id3v1_tag_t * id3v1 = NULL;
   gavl_metadata_t id3v1_metadata, id3v2_metadata;
-  uint8_t buf[ADTS_SIZE];
+  uint8_t buf[ADTS_HEADER_LEN];
 
   bgav_adts_header_t adts;
   
@@ -247,7 +246,7 @@ static int open_adts(bgav_demuxer_context_t * ctx)
 
   /* Initialize rest */
 
-  if(bgav_input_get_data(ctx->input, buf, ADTS_SIZE) < ADTS_SIZE)
+  if(bgav_input_get_data(ctx->input, buf, ADTS_HEADER_LEN) < ADTS_HEADER_LEN)
     goto fail;
 
   if(!bgav_adts_header_read(buf, &adts))
@@ -304,13 +303,13 @@ static int next_packet_adts(bgav_demuxer_context_t * ctx)
   bgav_stream_t * s;
   bgav_adts_header_t adts;
   aac_priv_t * priv;
-  uint8_t buf[ADTS_SIZE];
+  uint8_t buf[ADTS_HEADER_LEN];
   
   priv = ctx->priv;
 
   s = ctx->tt->cur->audio_streams;
 
-  if(bgav_input_get_data(ctx->input, buf, ADTS_SIZE) < ADTS_SIZE)
+  if(bgav_input_get_data(ctx->input, buf, ADTS_HEADER_LEN) < ADTS_HEADER_LEN)
     return 0;
 
   if(!bgav_adts_header_read(buf, &adts))

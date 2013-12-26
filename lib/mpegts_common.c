@@ -65,7 +65,7 @@ static const stream_type_t stream_types[] =
     {
       .ts_type =     STREAM_TYPE_AUDIO_AAC,
       .bgav_type =   BGAV_STREAM_AUDIO,
-      .fourcc =      BGAV_MK_FOURCC('a', 'a', 'c', ' '),
+      .fourcc =      BGAV_MK_FOURCC('A', 'D', 'T', 'S'),
       .description = "MPEG-4 Audio (AAC)",
     },
     {

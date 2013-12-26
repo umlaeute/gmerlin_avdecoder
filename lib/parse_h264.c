@@ -417,6 +417,11 @@ static int find_frame_boundary_h264(bgav_video_parser_t * parser, int * skip)
 
   while(1)
     {
+    //    fprintf(stderr, "find_frame_boundary_h264\n");
+    //    gavl_hexdump(parser->buf.buffer + parser->pos,
+    //                 parser->buf.size - parser->pos >= 16 ? 16 : parser->buf.size - parser->pos,
+    //                 16);
+
     sc =
       bgav_h264_find_nal_start(parser->buf.buffer + parser->pos,
                                parser->buf.size - parser->pos);
@@ -544,7 +549,7 @@ static int parse_frame_h264(bgav_video_parser_t * parser, bgav_packet_t * p, int
   const uint8_t * nal_start;
   const uint8_t * ptr;
   int header_len;
-  int primary_pic_type;
+  //  int primary_pic_type;
   bgav_h264_slice_header_t sh;
 
   /* For extracting the extradata */
@@ -635,11 +640,11 @@ static int parse_frame_h264(bgav_video_parser_t * parser, bgav_packet_t * p, int
           PACKET_SET_SKIP(p);
           return 1;
           }
-
+#if 0
         if((p->duration > 0) && // PIC timing present
            has_aud)           // Frame type known
           return 1;
-        
+#endif        
         /* Here we can be sure that the frame duration is already set */
         p->duration = parser->format->frame_duration;
         
@@ -686,9 +691,10 @@ static int parse_frame_h264(bgav_video_parser_t * parser, bgav_packet_t * p, int
         return 1;
         break;
       case H264_NAL_ACCESS_UNIT_DEL:
+#if 0 // Too unreliable??
         primary_pic_type = *ptr >> 5;
-        //        fprintf(stderr, "Got access unit delimiter, pic_type: %d\n",
-        //                primary_pic_type);
+        fprintf(stderr, "Got access unit delimiter, pic_type: %d\n",
+                primary_pic_type);
         switch(primary_pic_type)
           {
           case 0:
@@ -701,6 +707,7 @@ static int parse_frame_h264(bgav_video_parser_t * parser, bgav_packet_t * p, int
             p->flags |= BGAV_CODING_TYPE_B;
             break;
           }
+#endif
            has_aud = 1;
            break;
       case H264_NAL_END_OF_SEQUENCE:

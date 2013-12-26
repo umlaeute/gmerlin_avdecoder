@@ -107,3 +107,58 @@ void bgav_adts_header_dump(const bgav_adts_header_t * adts)
   bgav_dprintf( "  Num blocks:            %d\n", adts->num_blocks);
   bgav_dprintf( "  Protection absent:     %d\n", adts->protection_absent);
   }
+
+void bgav_adts_header_get_format(const bgav_adts_header_t * adts,
+                                 gavl_audio_format_t * format)
+  {
+  if(adts->profile == 2) 
+    format->samples_per_frame = 960;
+  else
+    format->samples_per_frame = 1024;
+  
+  format->samplerate = adts->samplerate;
+
+  switch(adts->channel_configuration)
+    {
+    case 1:
+      format->num_channels = 1;
+      format->channel_locations[0] = GAVL_CHID_FRONT_CENTER;
+      break;
+    case 2:
+      format->num_channels = 2;
+      format->channel_locations[0] = GAVL_CHID_FRONT_LEFT;
+      format->channel_locations[1] = GAVL_CHID_FRONT_RIGHT;
+      break;
+    case 3:
+      format->num_channels = 3;
+      format->channel_locations[0] = GAVL_CHID_FRONT_CENTER;
+      format->channel_locations[1] = GAVL_CHID_FRONT_LEFT;
+      format->channel_locations[2] = GAVL_CHID_FRONT_RIGHT;
+      break;
+    case 4:
+      format->num_channels = 4;
+      format->channel_locations[0] = GAVL_CHID_FRONT_CENTER;
+      format->channel_locations[1] = GAVL_CHID_FRONT_LEFT;
+      format->channel_locations[2] = GAVL_CHID_FRONT_RIGHT;
+      format->channel_locations[3] = GAVL_CHID_REAR_CENTER;
+      break;
+    case 5:
+      format->num_channels = 5;
+      format->channel_locations[0] = GAVL_CHID_FRONT_CENTER;
+      format->channel_locations[1] = GAVL_CHID_FRONT_LEFT;
+      format->channel_locations[2] = GAVL_CHID_FRONT_RIGHT;
+      format->channel_locations[3] = GAVL_CHID_REAR_LEFT;
+      format->channel_locations[4] = GAVL_CHID_REAR_RIGHT;
+      break;
+    case 6:
+      format->num_channels = 6;
+      format->channel_locations[0] = GAVL_CHID_FRONT_CENTER;
+      format->channel_locations[1] = GAVL_CHID_FRONT_LEFT;
+      format->channel_locations[2] = GAVL_CHID_FRONT_RIGHT;
+      format->channel_locations[3] = GAVL_CHID_REAR_LEFT;
+      format->channel_locations[4] = GAVL_CHID_REAR_RIGHT;
+      format->channel_locations[5] = GAVL_CHID_LFE;
+      break;
+    }
+  
+  }

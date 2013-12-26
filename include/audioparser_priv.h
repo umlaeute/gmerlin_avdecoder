@@ -113,6 +113,8 @@ void bgav_audio_parser_init_vorbis(bgav_audio_parser_t * parser);
 void bgav_audio_parser_init_opus(bgav_audio_parser_t * parser);
 #endif
 
+void bgav_audio_parser_init_adts(bgav_audio_parser_t * parser);
+
 void bgav_audio_parser_init_flac(bgav_audio_parser_t * parser);
 
 // void bgav_audio_parser_init_adts(bgav_audio_parser_t * parser);
