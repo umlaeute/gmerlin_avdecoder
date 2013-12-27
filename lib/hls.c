@@ -268,7 +268,8 @@ bgav_hls_t * bgav_hls_create(bgav_input_context_t * ctx)
   m3u8[ctx->total_bytes] = '\0';
   parse_urls(ret, m3u8);
   free(m3u8);
-
+  m3u8 = NULL;
+  
   if(!ret->num_urls)
     goto fail;
   
@@ -298,9 +299,6 @@ bgav_hls_t * bgav_hls_create(bgav_input_context_t * ctx)
   ret->ctx->total_bytes = 0;
   ret->segment_size = bgav_http_total_bytes(ret->stream_socket);
   
-  if(m3u8)
-    free(m3u8);
-  
   return ret;
 
   fail:
@@ -317,23 +315,57 @@ int bgav_hls_read(bgav_hls_t * h, uint8_t * data, int len, int block)
   int bytes_to_read;
   int result;
   int bytes_read = 0;
-
+  int idx;
+  int i;
+  
   while(bytes_read < len)
     {
     if(h->segment_pos >= h->segment_size)
       {
-      /* Todo: Open next segment */
       fprintf(stderr, "End of segment\n");
-      return bytes_read;
+
+      /* Check if we should reload the m3u8 */
+      
+      /* Open next segment */
+
+      h->seq++;
+
+      idx = -1;
+
+      for(i = 0; i < h->num_urls; i++)
+        {
+        if(h->urls[i].seq == h->seq)
+          {
+          idx = i;
+          break;
+          }
+        }
+
+      if(idx < 0)
+        return bytes_read;
+
+      fprintf(stderr, "Loading %s\n", h->urls[idx].url);
+      
+      h->stream_socket = bgav_http_reopen(h->stream_socket,
+                                          h->urls[idx].url,
+                                          h->ctx->opt,
+                                          NULL,
+                                          h->stream_header);
+
+      if(!h->stream_socket)
+        return bytes_read;
+
+      h->segment_size = bgav_http_total_bytes(h->stream_socket);
+      h->segment_pos = 0;
       }
     
-    bytes_to_read = len;
+    bytes_to_read = len - bytes_read;
     if(bytes_to_read > h->segment_size - h->segment_pos)
       bytes_to_read = h->segment_size - h->segment_pos;
     
     result = bgav_http_read(h->stream_socket, data + bytes_read, bytes_to_read, block);
     
-    if(result < 0)
+    if(result <= 0)
       return bytes_read;
 
     bytes_read += result;

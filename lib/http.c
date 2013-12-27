@@ -26,6 +26,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdio.h>
+#include <errno.h>
 
 #include <http.h>
 
@@ -263,7 +264,7 @@ do_connect(bgav_http_t * ret, const char * host, int port, const bgav_options_t 
   
   if(!bgav_http_header_revc(ret->opt, ret->header, ret->fd))
     {
-    bgav_log(ret->opt, BGAV_LOG_ERROR, LOG_DOMAIN, "Reading response failed");
+    bgav_log(ret->opt, BGAV_LOG_ERROR, LOG_DOMAIN, "Reading response failed: %s", strerror(errno));
     goto fail;
     }
 
@@ -327,9 +328,9 @@ static char * encode_user_pass(const char * user, const char * pass)
   }
 
 static bgav_http_t * http_open(bgav_http_t * ret,
-                        const char * url, const bgav_options_t * opt,
-                        char ** redirect_url,
-                        bgav_http_header_t * extra_header)
+                               const char * url, const bgav_options_t * opt,
+                               char ** redirect_url,
+                               bgav_http_header_t * extra_header)
   {
   int port;
   int status;
