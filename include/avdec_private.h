@@ -1645,6 +1645,8 @@ int bgav_read_data_fd(const bgav_options_t * opt, int fd,
 
 const char * bgav_coding_type_to_string(int type);
 
+char * bgav_absolute_url(const char * base_url, const char * url);
+
 
 /* tcp.c */
 

@@ -20,11 +20,15 @@
  * *****************************************************************/
 
 #include <avdec_private.h>
+// #include <id3.h>
+
 #include <http.h>
 #include <hls.h>
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+
+#define LOG_DOMAIN "hls"
 
 typedef struct
   {
@@ -34,8 +38,14 @@ typedef struct
   int seq;
   } hls_url_t;
 
+#define PROBE_LEN BGAV_ID3V2_DETECT_LEN
+
 struct bgav_hls_s
   {
+  uint8_t probe_buffer[PROBE_LEN];
+  int probe_len;
+  int probe_pos;
+  
   char * url;
   
   bgav_http_t * stream_socket;
@@ -51,7 +61,7 @@ struct bgav_hls_s
   int end_of_sequence; // End of sequence detected
   
   int64_t segment_pos;  // Byte counter
-  int64_t segment_size; // End of segment
+  int64_t segment_len; // End of segment
 
   bgav_input_context_t * ctx;
   
@@ -127,43 +137,13 @@ static void dump_urls(bgav_hls_t * h)
     }
   }
 
-static char * extract_url(bgav_hls_t * h, const char * url)
-  {
-  char * ret = NULL;
-  char * base;
-  const char * pos1;
-  const char * pos2;
-  
-  if(!strncmp(url, "http://", 7)) // Complete URL
-    return gavl_strdup(url);
-  else if(*url == '/') // Relative to host
-    {
-    pos1 = h->ctx->url + 7;
-    pos2 = strchr(h->ctx->url, '/');
-    if(!pos2)
-      pos2 = h->ctx->url + strlen(h->ctx->url);
-    
-    base = gavl_strndup(h->ctx->url, pos2);
-    
-    ret = bgav_sprintf("%s/%s", base, url);
-    free(base);
-    }
-  else // Relative m3u8
-    {
-    pos2 = strrchr(h->ctx->url, '/');
-    base = gavl_strndup(h->ctx->url, pos2);
-    ret = bgav_sprintf("%s/%s", base, url);
-    free(base);
-    }
-  return ret;
-  }
-
 static void parse_urls(bgav_hls_t * h, const char * m3u8)
   {
   int i;
   char ** lines;
   char * pos;
   int seq = 0;
+  int have_extinf = 0;
   free_urls(h);
 
   /* Split m3u into lines */
@@ -230,12 +210,14 @@ static void parse_urls(bgav_hls_t * h, const char * m3u8)
             h->urls[h->num_urls].title = gavl_strdup(pos);
           }
         }
+      have_extinf = 1;
       }
-    else if(*(lines[i]) != '#')
+    else if((*(lines[i]) != '#') && have_extinf)
       {
-      h->urls[h->num_urls].url = extract_url(h, lines[i]);
+      h->urls[h->num_urls].url = bgav_absolute_url(h->ctx->url, lines[i]);
       h->urls[h->num_urls].seq = seq++;
       h->num_urls++;
+      have_extinf = 0;
       }
     else if(!strncasecmp(lines[i], "#EXT-X-ENDLIST", 14))
       {
@@ -247,6 +229,90 @@ static void parse_urls(bgav_hls_t * h, const char * m3u8)
 
   bgav_stringbreak_free(lines);
   dump_urls(h);
+  }
+
+static void handle_id3(bgav_hls_t * h, gavl_metadata_t * m)
+  {
+  int len;
+  uint8_t * buf;
+  bgav_input_context_t * mem;
+  bgav_id3v2_tag_t * id3;
+  
+  //  char * 
+
+  len = bgav_id3v2_detect(h->probe_buffer);
+    
+  if(!len)
+    return;
+  
+  // fprintf(stderr, "HLS: Detected ID3 tag\n");
+  
+  buf = malloc(len);
+  memcpy(buf, h->probe_buffer, h->probe_len);
+
+  if(bgav_http_read(h->stream_socket, buf + h->probe_len, len - h->probe_len, 1) < len - h->probe_len)
+    {
+    free(buf);
+    return;
+    }
+
+  mem = bgav_input_open_memory(buf, len, h->ctx->opt);
+
+  if((id3 = bgav_id3v2_read(mem)))
+    {
+    // bgav_id3v2_dump(id3);
+    bgav_id3v2_2_metadata(id3, m);
+    bgav_id3v2_destroy(id3);
+    }
+
+  bgav_input_close(mem);
+  h->probe_len = 0;
+  h->segment_pos += len;
+  }
+
+static int load_stream_url(bgav_hls_t * h, int idx)
+  {
+  gavl_metadata_t m;
+  gavl_metadata_init(&m);
+
+  bgav_log(h->ctx->opt, BGAV_LOG_DEBUG, LOG_DOMAIN, "Loading %s", h->urls[idx].url);
+  
+  h->stream_socket = bgav_http_reopen(h->stream_socket, h->urls[idx].url, h->ctx->opt,
+                                      NULL,
+                                      h->stream_header);
+
+  if(!h->stream_socket)
+    return 0;
+  
+  h->segment_len = bgav_http_total_bytes(h->stream_socket);
+  h->segment_pos = 0;
+  
+  /* Get metadata from the stream socket */
+  bgav_http_set_metadata(h->stream_socket, &m);
+
+  /* Get metadata from m3u8 */
+  
+  
+  /* Get metadata from ID3V2 tags */
+
+  h->probe_len = bgav_http_read(h->stream_socket, h->probe_buffer, PROBE_LEN, 1);
+  h->probe_pos = 0;
+
+  handle_id3(h, &m);
+
+
+  if(h->ctx->opt->metadata_change_callback && h->ctx->tt &&
+     !gavl_metadata_equal(&h->ctx->tt->cur->metadata, &m))
+    {
+    gavl_metadata_free(&h->ctx->tt->cur->metadata);
+    gavl_metadata_init(&h->ctx->tt->cur->metadata);
+    memcpy(&h->ctx->tt->cur->metadata, &m, sizeof(m));
+    gavl_metadata_init(&m);
+    h->ctx->opt->metadata_change_callback(h->ctx->opt->metadata_change_callback_data,
+                                       &h->ctx->tt->cur->metadata);
+    }
+  gavl_metadata_free(&m);
+  return 1;
   }
 
 bgav_hls_t * bgav_hls_create(bgav_input_context_t * ctx)
@@ -273,31 +339,19 @@ bgav_hls_t * bgav_hls_create(bgav_input_context_t * ctx)
   if(!ret->num_urls)
     goto fail;
   
-  /* Load first URL */
-  //  h->stream_socket = bgav_http_open(
-
   ret->stream_header = bgav_http_header_create();
   
   bgav_http_header_add_line(ret->stream_header, "User-Agent: "PACKAGE"/"VERSION);
   bgav_http_header_add_line(ret->stream_header, "Accept: */*");
   bgav_http_header_add_line(ret->stream_header, "Connection: Keep-Alive");
-
-  fprintf(stderr, "Loading %s\n", ret->urls[0].url);
   
-  ret->stream_socket = bgav_http_reopen(NULL, ret->urls[0].url, ctx->opt,
-                                        NULL,
-                                        ret->stream_header);
-
+  if(!load_stream_url(ret, 0))
+    goto fail;
+  
   gavl_metadata_free(&ret->ctx->metadata);
   gavl_metadata_init(&ret->ctx->metadata);
   
-  if(!ret->stream_socket)
-    goto fail;
-
-  bgav_http_set_metadata(ret->stream_socket, &ctx->metadata);
-
   ret->ctx->total_bytes = 0;
-  ret->segment_size = bgav_http_total_bytes(ret->stream_socket);
   
   return ret;
 
@@ -320,7 +374,7 @@ int bgav_hls_read(bgav_hls_t * h, uint8_t * data, int len, int block)
   
   while(bytes_read < len)
     {
-    if(h->segment_pos >= h->segment_size)
+    if(h->segment_pos >= h->segment_len)
       {
       fprintf(stderr, "End of segment\n");
 
@@ -343,28 +397,29 @@ int bgav_hls_read(bgav_hls_t * h, uint8_t * data, int len, int block)
 
       if(idx < 0)
         return bytes_read;
-
-      fprintf(stderr, "Loading %s\n", h->urls[idx].url);
       
-      h->stream_socket = bgav_http_reopen(h->stream_socket,
-                                          h->urls[idx].url,
-                                          h->ctx->opt,
-                                          NULL,
-                                          h->stream_header);
-
-      if(!h->stream_socket)
+      if(!load_stream_url(h, idx))
         return bytes_read;
-
-      h->segment_size = bgav_http_total_bytes(h->stream_socket);
-      h->segment_pos = 0;
       }
     
     bytes_to_read = len - bytes_read;
-    if(bytes_to_read > h->segment_size - h->segment_pos)
-      bytes_to_read = h->segment_size - h->segment_pos;
-    
-    result = bgav_http_read(h->stream_socket, data + bytes_read, bytes_to_read, block);
-    
+
+    /* Try probe buffer */
+    if(h->probe_pos < h->probe_len)
+      {
+      if(bytes_to_read > h->probe_len - h->probe_pos)
+        bytes_to_read = h->probe_len - h->probe_pos;
+
+      memcpy(data + bytes_read, &h->probe_buffer[h->probe_pos], bytes_to_read);
+      h->probe_pos += bytes_to_read;
+      result = bytes_to_read;
+      }
+    else
+      {
+      if(bytes_to_read > h->segment_len - h->segment_pos)
+        bytes_to_read =  h->segment_len - h->segment_pos;
+      result = bgav_http_read(h->stream_socket, data + bytes_read, bytes_to_read, block);
+      }
     if(result <= 0)
       return bytes_read;
 

@@ -216,6 +216,7 @@ int main(int argc, char ** argv)
   gavl_video_source_t * vsrc;
   
   setlocale(LC_MESSAGES, "");
+  setlocale(LC_CTYPE, "");
   
   if(argc == 1)
     {

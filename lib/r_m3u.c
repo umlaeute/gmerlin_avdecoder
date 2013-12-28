@@ -132,7 +132,8 @@ static int parse_m3u(bgav_redirector_context_t * r)
     else
       {
       add_url(r);
-      r->urls[r->num_urls-1].url = gavl_strdup(pos);
+      //  r->urls[r->num_urls-1].url = gavl_strdup(pos);
+      r->urls[r->num_urls-1].url = bgav_absolute_url(r->input->url, pos);
       }
     }
 

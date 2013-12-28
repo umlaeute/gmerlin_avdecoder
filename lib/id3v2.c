@@ -210,17 +210,34 @@ static int read_32_syncsave(bgav_input_context_t * input, uint32_t * ret)
   return 1;
   }
 
+/* Return size of the detected id3v2 tag or 0 */
+int bgav_id3v2_detect(const uint8_t * buf)
+  {
+  int ret  = 0;
+  
+  if((buf[0] == 'I') &&
+     (buf[1] == 'D') &&
+     (buf[2] == '3'))
+    {
+    ret = (uint32_t)buf[6] << 24;
+    ret >>= 1;
+    ret |= (uint32_t)buf[7] << 16;
+    ret >>= 1;
+    ret |= (uint32_t)buf[8] << 8;
+    ret >>= 1;
+    ret |= (uint32_t)buf[9];
+    ret += 10;
+    }
+  return ret;
+  }
+
 int bgav_id3v2_probe(bgav_input_context_t * input)
   {
-  uint8_t data[3];
-  if(bgav_input_get_data(input, data, 3) < 3)
+  uint8_t data[BGAV_ID3V2_DETECT_LEN];
+  if(bgav_input_get_data(input, data, BGAV_ID3V2_DETECT_LEN) < BGAV_ID3V2_DETECT_LEN)
     return 0;
 
-  if((data[0] == 'I') &&
-     (data[1] == 'D') &&
-     (data[2] == '3'))
-    return 1;
-  return 0;
+  return !!bgav_id3v2_detect(data);
   }
 
 static int is_null(const char * ptr, int num_bytes)

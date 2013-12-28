@@ -50,6 +50,11 @@ void bgav_id3v2_2_metadata(bgav_id3v2_tag_t*, bgav_metadata_t*m);
 
 int bgav_id3v2_total_bytes(bgav_id3v2_tag_t*);
 
+#define BGAV_ID3V2_DETECT_LEN 10
+
+/* Return size of the detected id3v2 tag or 0 */
+int bgav_id3v2_detect(const uint8_t * buf);
+
 /*
   APE Tags
   http://hydrogenaudio.org/musepack/klemm/www.personal.uni-jena.de/~pfk/mpp/sv8/apetag.html
