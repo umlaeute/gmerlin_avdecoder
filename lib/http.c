@@ -81,22 +81,33 @@ void bgav_http_header_add_line(bgav_http_header_t * h, const char * line)
 int bgav_http_header_send(const bgav_options_t * opt, bgav_http_header_t * h, int fd)
   {
   int i;
-
+  char * buf = NULL;
+  
   /* We don't want a SIGPIPE, because we don't want any
      kind of signal handling for now */
   
   for(i = 0; i < h->num_lines; i++)
     {
-    if(!bgav_tcp_send(opt, fd, (uint8_t*)(h->lines[i].line),
-                      strlen(h->lines[i].line)) ||
-       !bgav_tcp_send(opt, fd, (uint8_t*)"\r\n", 2))
-      {
-      bgav_log(opt, BGAV_LOG_ERROR, LOG_DOMAIN, "Remote end closed connection");
-      return 0;
-      }
+    buf = gavl_strcat(buf, h->lines[i].line);
+    buf = gavl_strcat(buf, "\r\n");
+    
     //    write(fd, h->lines[i].line, strlen(h->lines[i].line));
     //    write(fd, "\r\n", 2);
     }
+
+  if(buf)
+    {
+    if(!bgav_tcp_send(opt, fd, (uint8_t*)buf, strlen(buf)))
+      {
+      bgav_log(opt, BGAV_LOG_ERROR, LOG_DOMAIN, "Remote end closed connection");
+
+      free(buf);
+    
+      return 0;
+      }
+    free(buf);
+    }
+  
   return 1;
   }
 
@@ -595,6 +606,8 @@ void bgav_http_close(bgav_http_t * h)
     closesocket(h->fd);
   if(h->header)
     bgav_http_header_destroy(h->header);
+  if(h->keepalive_host)
+    free(h->keepalive_host);
   free(h);
   }
 

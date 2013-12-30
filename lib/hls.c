@@ -52,6 +52,7 @@ struct bgav_hls_s
   bgav_http_t * m3u8_socket;
 
   bgav_http_header_t * stream_header;
+  bgav_http_header_t * m3u8_header;
   
   hls_url_t * urls;
   int urls_alloc;
@@ -65,6 +66,7 @@ struct bgav_hls_s
 
   bgav_input_context_t * ctx;
   
+  int eof;
   };
 
 int bgav_hls_detect(bgav_input_context_t * ctx)
@@ -344,6 +346,14 @@ bgav_hls_t * bgav_hls_create(bgav_input_context_t * ctx)
   bgav_http_header_add_line(ret->stream_header, "User-Agent: "PACKAGE"/"VERSION);
   bgav_http_header_add_line(ret->stream_header, "Accept: */*");
   bgav_http_header_add_line(ret->stream_header, "Connection: Keep-Alive");
+
+  ret->m3u8_header = bgav_http_header_create();
+  
+  bgav_http_header_add_line(ret->m3u8_header, "User-Agent: "PACKAGE"/"VERSION);
+  bgav_http_header_add_line(ret->m3u8_header, "Accept: */*");
+  bgav_http_header_add_line(ret->m3u8_header, "Connection: Keep-Alive");
+  
+  ret->seq = ret->urls[0].seq;
   
   if(!load_stream_url(ret, 0))
     goto fail;
@@ -364,6 +374,37 @@ bgav_hls_t * bgav_hls_create(bgav_input_context_t * ctx)
   return NULL;
   }
 
+static int reload_m3u8(bgav_hls_t * h)
+  {
+  int len;
+  char * buf;
+  fprintf(stderr, "Reloading m3u8\n");
+
+  if(!(h->m3u8_socket = bgav_http_reopen(h->m3u8_socket, h->ctx->url, h->ctx->opt,
+                                         NULL,
+                                         h->m3u8_header)))
+    return 0;
+
+  len = bgav_http_total_bytes(h->m3u8_socket);
+  if(len <= 0)
+    return 0;
+  
+  buf = malloc(len+1);
+  if(bgav_http_read(h->m3u8_socket, (uint8_t*)buf, len, 1) < len)
+    {
+    free(buf);
+    return 0;
+    }
+  
+  buf[len] = '\0';
+  parse_urls(h, buf);
+  free(buf);
+
+  fprintf(stderr, "Reloaded m3u8\n");
+  
+  return 1;
+  }
+
 int bgav_hls_read(bgav_hls_t * h, uint8_t * data, int len, int block)
   {
   int bytes_to_read;
@@ -371,6 +412,9 @@ int bgav_hls_read(bgav_hls_t * h, uint8_t * data, int len, int block)
   int bytes_read = 0;
   int idx;
   int i;
+
+  if(h->eof)
+    return 0;
   
   while(bytes_read < len)
     {
@@ -380,6 +424,9 @@ int bgav_hls_read(bgav_hls_t * h, uint8_t * data, int len, int block)
 
       /* Check if we should reload the m3u8 */
       
+      if(!h->end_of_sequence && !reload_m3u8(h))
+        return 0;
+      
       /* Open next segment */
 
       h->seq++;
@@ -388,6 +435,8 @@ int bgav_hls_read(bgav_hls_t * h, uint8_t * data, int len, int block)
 
       for(i = 0; i < h->num_urls; i++)
         {
+        fprintf(stderr, "Find next segment %d %d\n", h->urls[i].seq, h->seq);
+
         if(h->urls[i].seq == h->seq)
           {
           idx = i;
@@ -396,8 +445,11 @@ int bgav_hls_read(bgav_hls_t * h, uint8_t * data, int len, int block)
         }
 
       if(idx < 0)
+        {
+        h->eof = 1;
+        bgav_log(h->ctx->opt, BGAV_LOG_INFO, LOG_DOMAIN, "No more segments");
         return bytes_read;
-      
+        }
       if(!load_stream_url(h, idx))
         return bytes_read;
       }
@@ -439,9 +491,13 @@ void bgav_hls_close(bgav_hls_t * h)
   
   if(h->stream_header)
     bgav_http_header_destroy(h->stream_header);
+  if(h->m3u8_header)
+    bgav_http_header_destroy(h->m3u8_header);
 
   if(h->stream_socket)
     bgav_http_close(h->stream_socket);
+  if(h->m3u8_socket)
+    bgav_http_close(h->m3u8_socket);
   
   free(h);
   }

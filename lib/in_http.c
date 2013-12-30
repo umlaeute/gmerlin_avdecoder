@@ -245,6 +245,10 @@ static void close_http(bgav_input_context_t * ctx)
   bgav_http_close(p->h);
   if(p->charset_cnv)
     bgav_charset_converter_destroy(p->charset_cnv);
+
+  if(p->hls)
+    bgav_hls_close(p->hls);
+
   free(p);
   }
 
