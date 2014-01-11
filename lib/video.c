@@ -793,6 +793,19 @@ const uint32_t bgav_dv_fourccs[] =
     0x00,
   };
 
+const uint32_t div3_fourccs[] =
+  {
+    BGAV_MK_FOURCC('D', 'I', 'V', '3'),
+    BGAV_MK_FOURCC('M', 'P', '4', '3'), 
+    BGAV_MK_FOURCC('M', 'P', 'G', '3'), 
+    BGAV_MK_FOURCC('D', 'I', 'V', '5'), 
+    BGAV_MK_FOURCC('D', 'I', 'V', '6'), 
+    BGAV_MK_FOURCC('D', 'I', 'V', '4'), 
+    BGAV_MK_FOURCC('A', 'P', '4', '1'),
+    BGAV_MK_FOURCC('C', 'O', 'L', '1'),
+    BGAV_MK_FOURCC('C', 'O', 'L', '0'),
+    0x00
+  };
 
 int bgav_get_video_compression_info(bgav_t * bgav, int stream,
                                     gavl_compression_info_t * ret)
@@ -840,6 +853,8 @@ int bgav_get_video_compression_info(bgav_t * bgav, int stream,
     id = GAVL_CODEC_ID_DV;
   else if(bgav_check_fourcc(s->fourcc, vp8_fourccs))
     id = GAVL_CODEC_ID_VP8;
+  else if(bgav_check_fourcc(s->fourcc, div3_fourccs))
+    id = GAVL_CODEC_ID_DIV3;
   else if(bgav_check_fourcc(s->fourcc, avc1_fourccs))
     {
     id = GAVL_CODEC_ID_H264;
