@@ -390,7 +390,7 @@ static int open_aiff(bgav_demuxer_context_t * ctx)
         break;
       }
     }
-  if(ctx->input->input->seek_byte)
+  if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
 
   if(priv->is_aifc)

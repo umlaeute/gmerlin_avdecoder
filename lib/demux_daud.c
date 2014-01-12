@@ -59,7 +59,7 @@ static int open_daud(bgav_demuxer_context_t * ctx)
                     GAVL_META_FORMAT, "D-Cinema audio");
   ctx->data_start = 0;
   ctx->flags |= BGAV_DEMUXER_HAS_DATA_START;
-  if(ctx->input->input->seek_byte)
+  if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
   
   return 1;

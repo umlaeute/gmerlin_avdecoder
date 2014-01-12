@@ -224,8 +224,9 @@ static int open_8svx(bgav_demuxer_context_t * ctx)
     ctx->tt->cur->duration =  gavl_samples_to_time(as->data.audio.format.samplerate, total_samples);
     ctx->tt->cur->audio_streams->duration = total_samples;
     }
-  if(ctx->input->input->seek_byte)
-      ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
+  
+  if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
+    ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
 
   gavl_metadata_set(&ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "8SVX");

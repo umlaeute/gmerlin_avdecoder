@@ -150,7 +150,7 @@ static int open_wav(bgav_demuxer_context_t * ctx)
   /* If we don't have an INFO chunk yet, it could come after the data chunk */
 
   if(!priv->info &&
-     ctx->input->input->seek_byte &&
+     (ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE) &&
      (ctx->input->total_bytes - 12 > priv->data_start + priv->data_size))
     {
     bgav_input_seek(ctx->input, priv->data_start + priv->data_size, SEEK_SET);
@@ -179,7 +179,7 @@ static int open_wav(bgav_demuxer_context_t * ctx)
   priv->packet_size = ((1024 + s->data.audio.block_align - 1) / 
                        s->data.audio.block_align) * s->data.audio.block_align;
 
-  if(ctx->input->input->seek_byte)
+  if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
 
   gavl_metadata_set(&ctx->tt->cur->metadata, 

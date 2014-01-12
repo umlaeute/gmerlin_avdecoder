@@ -203,7 +203,7 @@ static int open_flac(bgav_demuxer_context_t * ctx)
 
   ctx->index_mode = INDEX_MODE_SIMPLE;
   
-  if(priv->seektable.num_entries && ctx->input->input->seek_byte)
+  if(priv->seektable.num_entries && (ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE))
     ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
 
   bgav_demuxer_init_cue(ctx);

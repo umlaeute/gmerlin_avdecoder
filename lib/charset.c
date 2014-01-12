@@ -282,7 +282,7 @@ void bgav_input_detect_charset(bgav_input_context_t * ctx)
   uint8_t first_bytes[2];
   
   /* We need byte accurate seeking */
-  if(!ctx->input->seek_byte || !ctx->total_bytes || ctx->charset)
+  if(!(ctx->flags & BGAV_INPUT_CAN_SEEK_BYTE) || !ctx->total_bytes || ctx->charset)
     return;
 
   old_position = ctx->position;

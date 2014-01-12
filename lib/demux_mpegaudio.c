@@ -270,7 +270,7 @@ static gavl_time_t get_duration(bgav_demuxer_context_t * ctx,
 
   //  memset(&priv->xing, 0, sizeof(xing));
 
-  if(!(ctx->input->input->seek_byte))
+  if(!(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE))
     return GAVL_TIME_UNDEFINED;
   
   priv = ctx->priv;
@@ -409,7 +409,7 @@ static bgav_track_table_t * albw_2_track(bgav_demuxer_context_t* ctx,
 
   memset(&track_metadata, 0, sizeof(track_metadata));
     
-  if(!ctx->input->input->seek_byte)
+  if(!(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE))
     {
     return NULL;
     }
@@ -467,7 +467,7 @@ static int open_mpegaudio(bgav_demuxer_context_t * ctx)
     bgav_id3v2_2_metadata(ctx->input->id3v2, &metadata_v2);
     
     /* Check for ALBW, but only on a seekable source! */
-    if(ctx->input->input->seek_byte &&
+    if((ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE) &&
        bgav_albw_probe(ctx->input))
       {
       priv->albw = bgav_albw_read(ctx->input);
@@ -475,7 +475,7 @@ static int open_mpegaudio(bgav_demuxer_context_t * ctx)
       }
     }
   
-  if(ctx->input->input->seek_byte && !priv->albw)
+  if((ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE) && !priv->albw)
     {
     oldpos = ctx->input->position;
     bgav_input_seek(ctx->input, -128, SEEK_END);
@@ -501,7 +501,7 @@ static int open_mpegaudio(bgav_demuxer_context_t * ctx)
     s = bgav_track_add_audio_stream(ctx->tt->tracks, ctx->opt);
     s->fourcc = BGAV_MK_FOURCC('.', 'm', 'p', '3');
     
-    if(ctx->input->input->seek_byte)
+    if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
       {
       priv->data_start = (ctx->input->id3v2) ?
         bgav_id3v2_total_bytes(ctx->input->id3v2) : 0;
@@ -520,7 +520,7 @@ static int open_mpegaudio(bgav_demuxer_context_t * ctx)
   gavl_metadata_free(&metadata_v1);
   gavl_metadata_free(&metadata_v2);
   
-  if(ctx->input->input->seek_byte)
+  if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
 
 
@@ -653,7 +653,7 @@ static int select_track_mpegaudio(bgav_demuxer_context_t * ctx,
   
   if(ctx->input->position != priv->data_start)
     {
-    if(ctx->input->input->seek_byte)
+    if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
       bgav_input_seek(ctx->input, priv->data_start, SEEK_SET);
     else
       return 0;

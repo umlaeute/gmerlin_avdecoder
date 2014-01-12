@@ -803,7 +803,7 @@ int bgav_demux_rm_open_with_header(bgav_demuxer_context_t * ctx,
 
     if(mdpr->is_logical_stream)
       {
-      if(!ctx->input->input->seek_byte)
+      if(!(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE))
         {
         bgav_log(ctx->opt, BGAV_LOG_ERROR, LOG_DOMAIN,
                  "Cannot play multirate real from non seekable source");
@@ -857,7 +857,7 @@ int bgav_demux_rm_open_with_header(bgav_demuxer_context_t * ctx,
     
   priv->need_first_timestamp = 1;
   
-  if(ctx->input->input->seek_byte)
+  if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     {
     ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
     for(i = 0; i < track->num_audio_streams; i++)

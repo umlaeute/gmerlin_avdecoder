@@ -801,7 +801,7 @@ static void handle_metadata(bgav_demuxer_context_t * ctx)
   if(meta_object_find_number(obj, num_obj, "duration", &number) && (number != 0.0))
     ctx->tt->cur->duration = gavl_seconds_to_time(number);
 
-  if(ctx->input->input->seek_byte)
+  if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     {
     obj1 = meta_object_find(obj, num_obj, "keyframes");
     
@@ -927,7 +927,7 @@ static int open_flv(bgav_demuxer_context_t * ctx)
   /* Get packets until we saw each stream at least once */
   priv->init = 1;
 
-  if(!ctx->input->input->seek_byte)
+  if(!(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE))
     {
     input_save = ctx->input;
     ctx->input = bgav_input_open_as_buffer(ctx->input);
@@ -978,7 +978,7 @@ static int open_flv(bgav_demuxer_context_t * ctx)
      the stream is seekable */
   
   if((ctx->tt->cur->duration == GAVL_TIME_UNDEFINED) &&
-     ctx->input->input->seek_byte)
+     (ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE))
     {
     pos = ctx->input->position;
     bgav_input_seek(ctx->input, -4, SEEK_END);

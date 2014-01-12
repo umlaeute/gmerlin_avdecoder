@@ -803,7 +803,7 @@ static int open_matroska(bgav_demuxer_context_t * ctx)
                 &ctx->tt->cur->metadata);
   
   /* Look for file index (cues) */
-  if(p->meta_seek_info.num_entries && ctx->input->input->seek_byte &&
+  if(p->meta_seek_info.num_entries && (ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE) &&
      !p->have_cues)
     {
     for(i = 0; i < p->meta_seek_info.num_entries; i++)
@@ -846,7 +846,7 @@ static int open_matroska(bgav_demuxer_context_t * ctx)
                            p->segment_info.TimecodeScale * 1.0e-9);
 
   /* Set seekable flag */
-  if(p->have_cues && ctx->input->input->seek_byte)
+  if(p->have_cues && (ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE))
     ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
 
   if(!strcmp(p->ebml_header.DocType, "matroska"))

@@ -96,7 +96,7 @@ static int open_roq(bgav_demuxer_context_t * ctx)
   
   
   /* We can play RoQ files only from seekable sources */
-  if(!ctx->input->input->seek_byte)
+  if(!(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE))
     {
     bgav_log(ctx->opt, BGAV_LOG_ERROR, LOG_DOMAIN,
              "Cannot play Roq files from nonseekable source");

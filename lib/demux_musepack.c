@@ -100,7 +100,7 @@ static mpc_int32_t mpc_get_size(void *t)
 static mpc_bool_t mpc_canseek(void *t)
   {
   read_struct * r = t;
-  return r->ctx->input->seek_byte ? TRUE : FALSE;
+  return (r->ctx->flags & BGAV_INPUT_CAN_SEEK_BYTE) ? TRUE : FALSE;
   }
 
 static int open_mpc(bgav_demuxer_context_t * ctx)
@@ -114,7 +114,7 @@ static int open_mpc(bgav_demuxer_context_t * ctx)
   bgav_stream_t * s;
   mpc_priv_t * priv;
 
-  if(!ctx->input->input->seek_byte)
+  if(!(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE))
     {
     bgav_log(ctx->opt, BGAV_LOG_ERROR, LOG_DOMAIN,
              "Cannot decode from nonseekable sources");
@@ -146,7 +146,7 @@ static int open_mpc(bgav_demuxer_context_t * ctx)
 
   priv->rs.start_bytes = ctx->input->position;
 
-  if(ctx->input->input->seek_byte && ctx->input->total_bytes)
+  if((ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE) && ctx->input->total_bytes)
     {
     /* Check for id3v1 */
 
@@ -238,7 +238,7 @@ static int open_mpc(bgav_demuxer_context_t * ctx)
     gavl_samples_to_time(s->data.audio.format.samplerate,
                          mpc_streaminfo_get_length_samples(&priv->si));
 
-  if(ctx->input->input->seek_byte)
+  if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
 
   return 1;

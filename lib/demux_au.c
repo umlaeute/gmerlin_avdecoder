@@ -195,7 +195,7 @@ static int open_au(bgav_demuxer_context_t * ctx)
                            ctx->tt->cur->audio_streams->duration);
     }
   
-  if(ctx->input->input->seek_byte)
+  if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
   
   /* Skip everything until data section */

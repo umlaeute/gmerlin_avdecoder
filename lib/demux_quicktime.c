@@ -865,7 +865,7 @@ static void setup_chapter_track(bgav_demuxer_context_t * ctx, qt_trak_t * trak)
   bgav_charset_converter_t * cnv;
   const char * charset;
   
-  if(!ctx->input->input->seek_byte)
+  if(!(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE))
     {
     bgav_log(ctx->opt, BGAV_LOG_WARNING, LOG_DOMAIN,
              "Chapters detected but stream is not seekable");
@@ -1693,7 +1693,7 @@ static void fix_index(bgav_demuxer_context_t * ctx)
   for(i = 0; i < ctx->tt->cur->num_audio_streams; i++)
     {
     s = &ctx->tt->cur->audio_streams[i];
-    if(ctx->input->input->seek_byte &&
+    if((ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE) &&
        (s->fourcc == BGAV_MK_FOURCC('m','p','4','a')))
       {
       /* Check for HE-AAC and update superindex */
@@ -1790,7 +1790,7 @@ static int open_quicktime(bgav_demuxer_context_t * ctx)
         priv->num_mdats++;
         
         /* Some files have the moov atom at the end */
-        if(ctx->input->input->seek_byte)
+        if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
           {
           bgav_qt_atom_skip(ctx->input, &h);
           }
@@ -1828,7 +1828,7 @@ static int open_quicktime(bgav_demuxer_context_t * ctx)
         bgav_qt_atom_skip_unknown(ctx->input, &h, 0);
       }
 
-    if(ctx->input->input->seek_byte)
+    if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
       {
       if(ctx->input->position >= ctx->input->total_bytes)
         done = 1;
@@ -1872,7 +1872,7 @@ static int open_quicktime(bgav_demuxer_context_t * ctx)
   priv->current_mdat = 0;
   
   if((ctx->input->position != priv->mdats[priv->current_mdat].start) &&
-     (ctx->input->input->seek_byte))
+     (ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE))
     bgav_input_seek(ctx->input, priv->mdats[priv->current_mdat].start, SEEK_SET);
   
   /* Skip until first chunk */
@@ -1911,7 +1911,7 @@ static int open_quicktime(bgav_demuxer_context_t * ctx)
     
     }
   
-  if(ctx->input->input->seek_byte)
+  if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
   
   return 1;

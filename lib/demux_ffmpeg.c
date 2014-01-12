@@ -140,7 +140,7 @@ static int64_t lavf_seek(URLContext *h, int64_t pos, int whence)
   bgav_input_context_t * input;
   input = h->priv_data;
 
-  if(!input->input->seek_byte)
+  if(!(input->flags & BGAV_INPUT_CAN_SEEK_BYTE))
     return -1;
   if(pos > input->total_bytes)
     return -1;
@@ -668,7 +668,7 @@ static int open_ffmpeg(bgav_demuxer_context_t * ctx)
                        ctx->input,
                        lavf_read,
                        NULL,
-                       ctx->input->input->seek_byte ? lavf_seek : NULL);
+                       (ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE) ? lavf_seek : NULL);
 #else
   
   av_register_protocol(&bgav_protocol);

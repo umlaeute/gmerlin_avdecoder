@@ -371,7 +371,7 @@ static int select_track_mpegps(bgav_demuxer_context_t * ctx, int track)
   
   if(ctx->data_start != ctx->input->position)
     {
-    if(ctx->input->input->seek_byte)
+    if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
       bgav_input_seek(ctx->input, ctx->data_start, SEEK_SET);
     else
       return 0;
@@ -970,7 +970,7 @@ static void find_streams(bgav_demuxer_context_t * ctx)
   priv->do_sync = 1;
   priv->have_pts = 0;
   
-  if(!ctx->input->input->seek_byte)
+  if(!(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE))
     {
     input_save = ctx->input;
     ctx->input = bgav_input_open_as_buffer(ctx->input);
@@ -1009,7 +1009,7 @@ static void get_duration(bgav_demuxer_context_t * ctx)
   if(!ctx->input->total_bytes && !ctx->input->total_sectors)
     return; 
  
-  if(ctx->input->input->seek_byte)
+  if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     {
     /* We already have the first pack header */
     scr_start = priv->pack_header.scr;
@@ -1222,7 +1222,7 @@ static int open_mpegps(bgav_demuxer_context_t * ctx)
   else
     gavl_metadata_set(&ctx->tt->cur->metadata, GAVL_META_MIMETYPE, "video/MP2P"); 
  
-  if(((ctx->input->input->seek_byte) && priv->have_pts) ||
+  if(((ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE) && priv->have_pts) ||
      (ctx->input->input->seek_sector) ||
      (ctx->input->input->seek_time))
     ctx->flags |= BGAV_DEMUXER_CAN_SEEK;

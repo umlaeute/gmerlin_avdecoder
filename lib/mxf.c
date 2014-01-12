@@ -2604,7 +2604,7 @@ int bgav_mxf_file_read(bgav_input_context_t * input,
   int64_t pos;
   mxf_klv_t klv;
   
-  if(!input->input->seek_byte)
+  if(!(input->flags & BGAV_INPUT_CAN_SEEK_BYTE))
     {
     bgav_log(input->opt, BGAV_LOG_ERROR, LOG_DOMAIN, "Cannot decode MXF file from non seekable source");
     return 0;

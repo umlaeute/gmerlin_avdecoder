@@ -734,7 +734,7 @@ static int open_asf(bgav_demuxer_context_t * ctx)
   if(buf)
     free(buf);
   
-  if(ctx->input->input->seek_byte && asf->hdr.packets_count)
+  if((ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE) && asf->hdr.packets_count)
     ctx->flags |= (BGAV_DEMUXER_CAN_SEEK | BGAV_DEMUXER_SEEK_ITERATIVE);
   
   gavl_metadata_set(&ctx->tt->cur->metadata, 

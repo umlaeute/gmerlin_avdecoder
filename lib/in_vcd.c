@@ -308,7 +308,7 @@ static int open_vcd(bgav_input_context_t * ctx, const char * url, char ** r)
     bgav_demuxer_start(ctx->demuxer, NULL);
     bgav_demuxer_stop(ctx->demuxer);
     }
-  ctx->can_pause = 1;
+  ctx->flags |= BGAV_INPUT_CAN_PAUSE;
   return 1;
   }
 

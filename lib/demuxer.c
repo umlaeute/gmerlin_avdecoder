@@ -296,7 +296,7 @@ const bgav_demuxer_t * bgav_demuxer_probe(bgav_input_context_t * input,
     }
   
 #ifdef HAVE_LIBAVFORMAT
-  if(!input->opt->prefer_ffmpeg_demuxers && input->input->seek_byte)
+  if(!input->opt->prefer_ffmpeg_demuxers && (input->flags & BGAV_INPUT_CAN_SEEK_BYTE))
     {
     bgav_input_seek(input, 0, SEEK_SET);
     if(bgav_demuxer_ffmpeg.probe(input))
@@ -493,7 +493,7 @@ int bgav_demuxer_start(bgav_demuxer_context_t * ctx,
       check_interleave(ctx);
 
       if((ctx->demux_mode == DEMUX_MODE_SI_NI) &&
-         !ctx->input->input->seek_byte)
+         !(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE))
         {
         bgav_log(ctx->opt, BGAV_LOG_ERROR, LOG_DOMAIN,
                  "Non interleaved file from non seekable source");

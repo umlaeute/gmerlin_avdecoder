@@ -44,24 +44,27 @@ typedef struct
   bgav_hls_t * hls;
   } http_priv;
 
+static bgav_http_header_t * create_header(const bgav_options_t * opt)
+  {
+  bgav_http_header_t * header = bgav_http_header_create();
+  bgav_http_header_add_line(header, "User-Agent: "PACKAGE"/"VERSION);
+  bgav_http_header_add_line(header, "Accept: */*");
+  
+  if(opt->http_shoutcast_metadata)
+    bgav_http_header_add_line(header, "Icy-MetaData:1");
+  return header;
+  }
 
 static int open_http(bgav_input_context_t * ctx, const char * url, char ** r)
   {
   const char * var;
   http_priv * p;
-  
   bgav_http_header_t * header = NULL;
   
   p = calloc(1, sizeof(*p));
   
-  header = bgav_http_header_create();
+  header = create_header(ctx->opt);
   
-  bgav_http_header_add_line(header, "User-Agent: "PACKAGE"/"VERSION);
-  bgav_http_header_add_line(header, "Accept: */*");
-  
-  if(ctx->opt->http_shoutcast_metadata)
-    bgav_http_header_add_line(header, "Icy-MetaData:1");
-
   p->h = bgav_http_open(url, ctx->opt, r, header);
   bgav_http_header_destroy(header);
   
@@ -91,11 +94,35 @@ static int open_http(bgav_input_context_t * ctx, const char * url, char ** r)
                                                    "ISO-8859-1",
                                                    BGAV_UTF8);
     }
+
+  var = bgav_http_header_get_var(header, "Accept-Ranges");
+  if(!var || strcasecmp(var, "bytes"))
+    ctx->flags &= ~BGAV_INPUT_CAN_SEEK_BYTE;
+  else
+    ctx->flags |= BGAV_INPUT_SEEK_SLOW;
   
-  ctx->do_buffer = 1;
+  ctx->flags |= BGAV_INPUT_DO_BUFFER;
 
   ctx->url = gavl_strdup(url);
   return 1;
+  }
+
+static void seek_byte_http(bgav_input_context_t * ctx,
+                           int64_t pos, int whence)
+  {
+  bgav_http_header_t * header = NULL;
+  http_priv * p = ctx->priv;
+  bgav_http_close(p->h);
+
+  header = create_header(ctx->opt);
+
+  bgav_http_header_add_line_nocpy(header,
+                                  bgav_sprintf("Range: bytes=%"PRId64"-", ctx->position));
+  
+  p->h = bgav_http_open(ctx->url, ctx->opt, NULL, header);
+  bgav_http_header_destroy(header);
+  
+  
   }
 
 static int read_data(bgav_input_context_t* ctx,
@@ -227,9 +254,7 @@ static int do_read(bgav_input_context_t* ctx,
 static int read_http(bgav_input_context_t* ctx,
                      uint8_t * buffer, int len)
   {
-  int result;
-  result = do_read(ctx, buffer, len, 1);
-  return result;
+  return do_read(ctx, buffer, len, 1);
   }
 
 static int read_nonblock_http(bgav_input_context_t * ctx,
@@ -237,7 +262,6 @@ static int read_nonblock_http(bgav_input_context_t * ctx,
   {
   return do_read(ctx, buffer, len, 0);
   }
-
 
 static void close_http(bgav_input_context_t * ctx)
   {
@@ -276,6 +300,7 @@ const bgav_input_t bgav_input_http =
     .finalize =      finalize_http,
     .read =          read_http,
     .read_nonblock = read_nonblock_http,
+    .seek_byte     = seek_byte_http,
     .close =         close_http,
   };
 

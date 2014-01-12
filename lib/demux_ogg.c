@@ -573,7 +573,7 @@ static int setup_track(bgav_demuxer_context_t * ctx, bgav_track_t * track,
 
   /* If we can seek, seek to the start point. If we can't seek, we are already
      at the right position */
-  if(ctx->input->input->seek_byte)
+  if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     seek_byte(ctx, start_position);
   
   /* Get the first page of each stream */
@@ -1436,7 +1436,7 @@ static int open_ogg(bgav_demuxer_context_t * ctx)
   
   ctx->data_start = ctx->input->position;
 
-  if(!ctx->input->input->seek_byte)
+  if(!(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE))
     {
     input_save = ctx->input;
     ctx->input = bgav_input_open_as_buffer(ctx->input);
@@ -1457,7 +1457,7 @@ static int open_ogg(bgav_demuxer_context_t * ctx)
     bgav_input_seek(ctx->input, ctx->data_start, SEEK_SET);
     }
   
-  if(ctx->input->input->seek_byte && ctx->input->total_bytes)
+  if((ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE) && ctx->input->total_bytes)
     {
     /* Get the last page of the stream and check for the serialno */
 
@@ -1595,7 +1595,7 @@ static int open_ogg(bgav_demuxer_context_t * ctx)
   
   //  dump_ogg(ctx);
   
-  if(ctx->input->input->seek_byte)
+  if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     ctx->flags |= (BGAV_DEMUXER_CAN_SEEK|BGAV_DEMUXER_SEEK_ITERATIVE);
   ctx->index_mode = INDEX_MODE_MIXED;
   return 1;
@@ -1843,7 +1843,7 @@ static int next_packet_ogg(bgav_demuxer_context_t * ctx)
     
     if(ogg_page_bos(&priv->current_page))
       {
-      if(!ctx->input->input->seek_byte && priv->nonbos_seen)
+      if(!(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE) && priv->nonbos_seen)
         {
         if(!new_streaming_track(ctx))
           return 0;
@@ -2449,7 +2449,7 @@ static int select_track_ogg(bgav_demuxer_context_t * ctx,
   
   track_priv = ctx->tt->cur->priv;
   
-  if(ctx->input->input->seek_byte)
+  if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     {
     seek_byte(ctx, track_priv->start_pos);
     priv->end_pos = track_priv->end_pos;

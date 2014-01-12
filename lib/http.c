@@ -30,163 +30,6 @@
 
 #include <http.h>
 
-/* Creation/destruction of http header */
-
-bgav_http_header_t * bgav_http_header_create()
-  {
-  bgav_http_header_t * ret = calloc(1, sizeof(*ret));
-  return ret;
-  }
-
-void bgav_http_header_reset(bgav_http_header_t*h)
-  {
-  h->num_lines = 0;
-  }
-
-void bgav_http_header_destroy(bgav_http_header_t * h)
-  {
-  int i;
-  for(i = 0; i < h->lines_alloc; i++)
-    {
-    if(h->lines[i].line)
-      free(h->lines[i].line);
-    }
-  if(h->lines)
-    free(h->lines);
-  free(h);
-  }
-
-void bgav_http_header_add_line(bgav_http_header_t * h, const char * line)
-  {
-  int len;
-  if(h->lines_alloc < h->num_lines + 1)
-    {
-    h->lines_alloc += 8;
-    h->lines = realloc(h->lines, h->lines_alloc * sizeof(*(h->lines)));
-    memset(h->lines + h->num_lines, 0,
-           (h->lines_alloc - h->num_lines) * sizeof(*(h->lines)));
-    }
-  len = strlen(line)+1;
-  if(h->lines[h->num_lines].line_alloc < len)
-    {
-    h->lines[h->num_lines].line_alloc = len + 100;
-    h->lines[h->num_lines].line =
-      realloc(h->lines[h->num_lines].line,
-              h->lines[h->num_lines].line_alloc);
-    }
-  strcpy(h->lines[h->num_lines].line, line);
-  h->num_lines++;
-  }
-
-int bgav_http_header_send(const bgav_options_t * opt, bgav_http_header_t * h, int fd)
-  {
-  int i;
-  char * buf = NULL;
-  
-  /* We don't want a SIGPIPE, because we don't want any
-     kind of signal handling for now */
-  
-  for(i = 0; i < h->num_lines; i++)
-    {
-    buf = gavl_strcat(buf, h->lines[i].line);
-    buf = gavl_strcat(buf, "\r\n");
-    
-    //    write(fd, h->lines[i].line, strlen(h->lines[i].line));
-    //    write(fd, "\r\n", 2);
-    }
-
-  if(buf)
-    {
-    if(!bgav_tcp_send(opt, fd, (uint8_t*)buf, strlen(buf)))
-      {
-      bgav_log(opt, BGAV_LOG_ERROR, LOG_DOMAIN, "Remote end closed connection");
-
-      free(buf);
-    
-      return 0;
-      }
-    free(buf);
-    }
-  
-  return 1;
-  }
-
-/* Reading of http header */
-
-int bgav_http_header_revc(const bgav_options_t * opt,
-                          bgav_http_header_t * h, int fd)
-  {
-  int ret = 0;
-  char * answer = NULL;
-  int answer_alloc = 0;
-  
-  while(bgav_read_line_fd(opt, fd, &answer, &answer_alloc, opt->connect_timeout))
-    {
-    if(*answer == '\0')
-      break;
-    bgav_http_header_add_line(h, answer);
-    ret = 1;
-    }
-
-  if(answer)
-    free(answer);
-  return ret;
-  }
-
-int bgav_http_header_status_code(bgav_http_header_t * h)
-  {
-  char * pos;
-  if(!h->num_lines)
-    return 0;
-
-  pos = h->lines[0].line;
-  while(!isspace(*pos) && (*pos != '\0'))
-    pos++;
-
-  while(isspace(*pos) && (*pos != '\0'))
-    pos++;
-
-  if(isdigit(*pos))
-    return atoi(pos);
-  return -1;
-  }
-
-const char * bgav_http_header_status_line(bgav_http_header_t * h)
-  {
-  if(!h->num_lines)
-    return NULL;
-  return h->lines[0].line;
-  }
-
-const char * bgav_http_header_get_var(bgav_http_header_t * h,
-                                      const char * name)
-  {
-  int i;
-  int name_len;
-  const char * ret;
-  name_len = strlen(name);
-  for(i = 1; i < h->num_lines; i++)
-    {
-    
-    if(!strncasecmp(h->lines[i].line, name, name_len) &&
-       h->lines[i].line[name_len] == ':')
-      {
-      ret = &h->lines[i].line[name_len+1];
-      while(isspace(*ret))
-        ret++;
-      return ret;
-      }
-    }
-  return NULL;
-  }
-
-void bgav_http_header_dump(bgav_http_header_t*h)
-  {
-  int i;
-  for(i = 0; i < h->num_lines; i++)
-    bgav_dprintf( "  %s\n", h->lines[i].line);
-  }
-
 struct bgav_http_s
   {
   const bgav_options_t * opt;
@@ -201,6 +44,7 @@ struct bgav_http_s
   int chunk_eof;
   
   int64_t content_length;
+  int can_seek;
   };
 
 static bgav_http_t *
@@ -248,28 +92,19 @@ do_connect(bgav_http_t * ret, const char * host, int port, const bgav_options_t 
       goto fail;
     }
   
-  if(!bgav_http_header_send(ret->opt, request_header, ret->fd))
+  if(!bgav_http_header_send(ret->opt, request_header, extra_header, ret->fd))
     {
     if(ret->keepalive_host) // Keepalive connection got closed by server
       {
       close(ret->fd);
       ret->fd = bgav_tcp_connect(ret->opt, host, port);
       if((ret->fd == -1) ||
-         (!bgav_http_header_send(ret->opt, request_header, ret->fd)))
+         (!bgav_http_header_send(ret->opt, request_header, extra_header, ret->fd)))
         goto fail;
       }
     else
       goto fail;
     }
-  
-  if(extra_header)
-    {
-    //    bgav_http_header_dump(extra_header);
-    if(!bgav_http_header_send(ret->opt, extra_header, ret->fd))
-      goto fail;
-    }
-  if(!bgav_tcp_send(ret->opt, ret->fd, (uint8_t*)"\r\n", 2))
-    goto fail;
   
   ret->header = bgav_http_header_create();
   
@@ -408,8 +243,7 @@ static bgav_http_t * http_open(bgav_http_t * ret,
   else
     line = bgav_sprintf("GET %s HTTP/1.1", ((path) ? path : "/"));
   
-  bgav_http_header_add_line(request_header, line);
-  free(line);
+  bgav_http_header_add_line_nocpy(request_header, line);
   
   /* Proxy authentication */
   
@@ -417,8 +251,7 @@ static bgav_http_t * http_open(bgav_http_t * ret,
     {
     userpass_enc = encode_user_pass(opt->http_proxy_user, opt->http_proxy_pass);
     line = bgav_sprintf("Proxy-Authorization: Basic %s", userpass_enc);
-    bgav_http_header_add_line(request_header, line);
-    free(line);
+    bgav_http_header_add_line_nocpy(request_header, line);
     free(userpass_enc);
     }
 
@@ -427,8 +260,7 @@ static bgav_http_t * http_open(bgav_http_t * ret,
   else
     line = bgav_sprintf("Host: %s:%d", host, port);
   
-  bgav_http_header_add_line(request_header, line);
-  free(line);
+  bgav_http_header_add_line_nocpy(request_header, line);
   
   ret = do_connect(ret, real_host, real_port, opt, request_header, extra_header);
   if(!ret)
@@ -460,8 +292,7 @@ static bgav_http_t * http_open(bgav_http_t * ret,
     
     userpass_enc = encode_user_pass(user, pass);
     line = bgav_sprintf("Authorization: Basic %s", userpass_enc);
-    bgav_http_header_add_line(request_header, line);
-    free(line);
+    bgav_http_header_add_line_nocpy(request_header, line);
     free(userpass_enc);
     
     ret = do_connect(ret, real_host, real_port, opt, request_header, extra_header);
@@ -833,4 +664,9 @@ void bgav_http_set_metadata(bgav_http_t * h, gavl_metadata_t * m)
 int64_t bgav_http_total_bytes(bgav_http_t * h)
   {
   return h->content_length;
+  }
+
+int bgav_http_can_seek(bgav_http_t * h)
+  {
+  return h->can_seek;
   }

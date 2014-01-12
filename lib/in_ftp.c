@@ -342,8 +342,8 @@ static int open_ftp(bgav_input_context_t * ctx, const char * url, char ** r)
     goto fail;
     }
   /* done */
-  
-  ctx->do_buffer = 1;
+
+  ctx->flags |= BGAV_INPUT_DO_BUFFER;
   ctx->url = gavl_strdup(url);
   
   ret = 1;

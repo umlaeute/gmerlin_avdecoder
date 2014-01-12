@@ -161,7 +161,7 @@ static int open_mtv(bgav_demuxer_context_t * ctx)
     ctx->tt->cur->duration =
       gavl_time_unscale(ctx->tt->cur->video_streams[0].data.video.format.timescale,
                         (ctx->input->total_bytes - MTV_HEADER_SIZE) / priv->sync_size);
-    if(ctx->input->input->seek_byte)
+    if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
       ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
     }
   gavl_metadata_set(&ctx->tt->cur->metadata, 

@@ -356,7 +356,7 @@ static inline int next_packet_scan(bgav_demuxer_context_t * ctx)
   int packets_scanned;
 
   mpegts_t * priv = ctx->priv;
-  int can_seek = ctx->input->input->seek_byte ? 1 : 0;
+  int can_seek = (ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE) ? 1 : 0;
   
   if(!next_packet(priv))
     {
@@ -1093,7 +1093,7 @@ static int open_mpegts(bgav_demuxer_context_t * ctx)
 
   priv->packet_size = guess_packet_size(ctx->input);
 
-  if(ctx->input->input->seek_byte)
+  if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     input_can_seek = 1;
   else
     input_can_seek = 0;
@@ -1866,7 +1866,7 @@ static int select_track_mpegts(bgav_demuxer_context_t * ctx,
 
   reset_streams_priv(ctx->tt->cur);
   
-  if(ctx->input->input->seek_byte)
+  if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     {
     bgav_input_seek(ctx->input, priv->first_packet_pos,
                     SEEK_SET);

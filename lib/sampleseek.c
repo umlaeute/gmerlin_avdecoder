@@ -410,7 +410,7 @@ int bgav_set_sample_accurate(bgav_t * b)
       break;
     case INDEX_MODE_PCM:
     case INDEX_MODE_SI_SA:
-      if(!b->input->input->seek_byte)
+      if(!(b->input->flags & BGAV_INPUT_CAN_SEEK_BYTE))
         return 0;
       /* Format is already sample accurate */
       for(i = 0; i < b->tt->num_tracks; i++)
@@ -419,7 +419,7 @@ int bgav_set_sample_accurate(bgav_t * b)
       break;
     case INDEX_MODE_SIMPLE:
     case INDEX_MODE_MIXED:
-      if(!b->input->index_file || !b->input->input->seek_byte)
+      if(!b->input->index_file || !(b->input->flags & BGAV_INPUT_CAN_SEEK_BYTE))
         return 0;
       /* Try to read a file index */
       if(!bgav_read_file_index(b))
@@ -435,7 +435,7 @@ int bgav_set_sample_accurate(bgav_t * b)
       return 1;
       break;
     case INDEX_MODE_SI_PARSE:
-      if(!b->input->index_file || !b->input->input->seek_byte)
+      if(!b->input->index_file || !(b->input->flags & BGAV_INPUT_CAN_SEEK_BYTE))
         return 0;
       /* Try to read a file index */
       if(!bgav_read_file_index(b))

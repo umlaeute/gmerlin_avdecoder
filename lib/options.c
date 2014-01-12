@@ -260,7 +260,7 @@ void bgav_options_set_defaults(bgav_options_t * b)
     BGAV_LOG_WARNING;
   
   // Test
-  //  b->dump_headers = 1;
+   b->dump_headers = 1;
   }
 
 bgav_options_t * bgav_options_create()

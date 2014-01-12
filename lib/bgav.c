@@ -376,7 +376,7 @@ int bgav_select_track(bgav_t * b, int track)
         /* Some demuxers produce packets during initialization */
         // bgav_track_clear(b->tt->cur);
         
-        if(b->input->input->seek_byte)
+        if(b->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
           bgav_input_seek(b->input, b->demuxer->data_start, SEEK_SET);
         else
           {
@@ -401,7 +401,7 @@ int bgav_select_track(bgav_t * b, int track)
       if(b->demuxer->si && was_running)
         {
         b->demuxer->si->current_position = 0;
-        if(b->input->input->seek_byte)
+        if(b->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
           bgav_input_seek(b->input, b->demuxer->si->entries[0].offset,
                           SEEK_SET);
         else
@@ -540,7 +540,7 @@ int bgav_can_pause(bgav_t * bgav)
   {
   //  if(bgav->tt && (bgav->tt->cur->duration != GAVL_TIME_UNDEFINED))
   //    return 1;
-  if(bgav->input && bgav->input->can_pause)
+  if(bgav->input && (bgav->input->flags & BGAV_INPUT_CAN_PAUSE))
     return 1;
   return 0;
   }

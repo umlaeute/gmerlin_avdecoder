@@ -106,7 +106,7 @@ static int open_dv(bgav_demuxer_context_t * ctx)
                           total_frames);
     }
   
-  if(ctx->input->input->seek_byte)
+  if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
   
   gavl_metadata_set(&ctx->tt->cur->metadata, 

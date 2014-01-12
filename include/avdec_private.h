@@ -954,6 +954,12 @@ struct bgav_input_s
   int (*finalize)(bgav_input_context_t*);
   };
 
+#define BGAV_INPUT_DO_BUFFER      (1<<0)
+#define BGAV_INPUT_CAN_PAUSE      (1<<1)
+#define BGAV_INPUT_CAN_SEEK_BYTE  (1<<2)
+#define BGAV_INPUT_CAN_SEEK_TIME  (1<<3)
+#define BGAV_INPUT_SEEK_SLOW      (1<<4)
+
 struct bgav_input_context_s
   {
   /* ID3V2 tags can be prepended to many types of files,
@@ -997,9 +1003,9 @@ struct bgav_input_context_s
 
   /* This is set by the modules to signal that we
      need to prebuffer data */
-    
-  int do_buffer;
-  int can_pause;
+
+  int flags;
+
   /* For sector based access */
 
   int sector_size;

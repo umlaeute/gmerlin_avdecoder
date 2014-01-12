@@ -99,7 +99,7 @@ static int open_mms(bgav_input_context_t * ctx, const char * url, char ** r)
   
   free(stream_ids);
   /* Set the input context of the demuxer */
-  ctx->do_buffer = 1;
+  ctx->flags |= BGAV_INPUT_DO_BUFFER;
   ctx->demuxer->input = ctx;
   ctx->position = header_len;
   bgav_input_destroy(input);

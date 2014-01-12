@@ -896,7 +896,7 @@ static int open_rtsp(bgav_input_context_t * ctx, const char * url, char ** r)
     case SERVER_TYPE_REAL:
       if(!init_real(ctx, sdp, session_id))
         goto fail;
-      ctx->do_buffer = 1;
+      ctx->flags |= BGAV_INPUT_DO_BUFFER;
       break;
     case SERVER_TYPE_GENERIC:
       if(ctx->opt->rtp_try_tcp && init_generic(ctx, sdp, 1))

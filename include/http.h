@@ -25,11 +25,12 @@ typedef struct
   {
   int num_lines;
   int lines_alloc;
-  struct
-    {
-    char * line;    /* 0 terminated */
-    int line_alloc; /* Allocated size */
-    } * lines;
+
+  char * method;
+  char * protocol;
+  char * path;
+  
+  char ** lines;
   } bgav_http_header_t;
 
 typedef struct bgav_http_s bgav_http_t;
@@ -42,8 +43,16 @@ void bgav_http_header_reset(bgav_http_header_t*);
 void bgav_http_header_destroy(bgav_http_header_t*);
 
 void bgav_http_header_add_line(bgav_http_header_t*, const char * line);
-int bgav_http_header_send(const bgav_options_t * opt,
-                          bgav_http_header_t*, int fd);
+void bgav_http_header_add_line_nocpy(bgav_http_header_t * h, char * line);
+
+void bgav_http_header_init(bgav_http_header_t*, const char * method, const char * path,
+                           const char * protocol);
+
+int bgav_http_header_send(const bgav_options_t * opt, const bgav_http_header_t * h1,
+                          const bgav_http_header_t * h2,
+                          int fd);
+
+char * bgav_http_header_to_string(const bgav_http_header_t * h1, const bgav_http_header_t * h2);
 
 int bgav_http_header_status_code(bgav_http_header_t * h);
 const char * bgav_http_header_status_line(bgav_http_header_t * h);
@@ -80,5 +89,6 @@ int bgav_http_is_keep_alive(bgav_http_t *);
 int bgav_http_read(bgav_http_t * h, uint8_t * data, int len, int block);
 
 int64_t bgav_http_total_bytes(bgav_http_t * h);
+int bgav_http_can_seek(bgav_http_t * h);
 
 void bgav_http_set_metadata(bgav_http_t * h, gavl_metadata_t * m);

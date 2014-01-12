@@ -90,7 +90,7 @@ static int open_a52(bgav_demuxer_context_t * ctx)
   
   /* Packet size will be at least 1024 bytes */
   
-  if(ctx->input->input->seek_byte)
+  if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
 
   ctx->tt->cur->duration

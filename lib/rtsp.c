@@ -75,11 +75,14 @@ static int rtsp_send_request(bgav_rtsp_t * rtsp,
   */
   
   rtsp->cseq++;
-  request = bgav_sprintf("%s %s RTSP/1.0\r\n", command, what);
 
+  
+
+  request = bgav_sprintf("%s %s RTSP/1.0\r\n", command, what);
+  
   for(i = 0; i < rtsp->req->num_lines; i++)
     {
-    request = gavl_strcat(request, rtsp->req->lines[i].line);
+    request = gavl_strcat(request, rtsp->req->lines[i]);
     request = gavl_strcat(request, "\r\n");
     }
 
@@ -116,7 +119,7 @@ static int rtsp_send_request(bgav_rtsp_t * rtsp,
   
   /* Handle redirection */
   
-  if(strstr(rtsp->res->lines[0].line, "REDIRECT"))
+  if(strstr(rtsp->res->lines[0], "REDIRECT"))
     {
     free(rtsp->url);
     rtsp->url =

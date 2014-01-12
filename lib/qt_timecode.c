@@ -43,7 +43,7 @@ void bgav_qt_init_timecodes(bgav_input_context_t * input,
   qt_stsc_t * stsc;
   qt_stco_t * stco;
 
-  if(!input->input->seek_byte)
+  if(!(input->flags & BGAV_INPUT_CAN_SEEK_BYTE))
     {
     bgav_log(input->opt, BGAV_LOG_WARNING, LOG_DOMAIN,
              "Timecode tracks in non-seekable sources not supported");

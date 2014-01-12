@@ -561,7 +561,7 @@ bgav_rmff_header_t * bgav_rmff_header_read(bgav_input_context_t * ctx)
           ret->data_size = ret->prop.index_offset - ret->data_start;
         else
           ret->data_size = 0;
-        if(ctx->input->seek_byte && ret->prop.index_offset)
+        if((ctx->flags & BGAV_INPUT_CAN_SEEK_BYTE) && ret->prop.index_offset)
           {
           bgav_input_seek(ctx, ret->prop.index_offset, SEEK_SET);
           

@@ -150,7 +150,7 @@ static int open_gavf(bgav_demuxer_context_t * ctx)
   priv->io =
     gavf_io_create(read_func,
                    NULL,
-                   ctx->input->input->seek_byte ? seek_func : 0,
+                   (ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE) ? seek_func : 0,
                    NULL,
                    NULL,
                    ctx->input);
@@ -168,7 +168,7 @@ static int open_gavf(bgav_demuxer_context_t * ctx)
     {
     bgav_track_calc_duration(ctx->tt->cur);
 
-    if(ctx->input->input->seek_byte)
+    if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
       ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
     }
   cl = gavf_get_chapter_list(priv->dec);

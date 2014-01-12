@@ -326,7 +326,7 @@ static int open_ircam(bgav_demuxer_context_t * ctx)
     total_samples = (ctx->input->total_bytes - HEADER_SIZE) / as->data.audio.block_align;
     as->duration = total_samples;
     ctx->tt->cur->duration =  gavl_samples_to_time(as->data.audio.format.samplerate, total_samples);
-    if(ctx->input->input->seek_byte)
+    if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
       ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
     }
   

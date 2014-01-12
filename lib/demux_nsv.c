@@ -502,7 +502,7 @@ static int open_nsv(bgav_demuxer_context_t * ctx)
                         p->fh.metadata.creator);
     
     /* Decide whether we can seek */
-    if(ctx->input->input->seek_byte)
+    if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
       {
       if(p->fh.toc.offsets)
         ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
@@ -527,7 +527,7 @@ static int open_nsv(bgav_demuxer_context_t * ctx)
 
   if(p->need_pcm_format)
     {
-    if(!ctx->input->input->seek_byte)
+    if(!(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE))
       {
       input_save = ctx->input;
       ctx->input = bgav_input_open_as_buffer(ctx->input);

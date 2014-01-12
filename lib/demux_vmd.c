@@ -108,7 +108,7 @@ static int open_vmd(bgav_demuxer_context_t * ctx)
   int64_t current_video_pts = 0;
   int frame_index = 0;
    
-  if(!ctx->input->input->seek_byte)
+  if(!(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE))
     {
     bgav_log(ctx->opt, BGAV_LOG_ERROR, LOG_DOMAIN,
              "Cannot open VMD file from nonseekable source");

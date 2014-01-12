@@ -234,7 +234,7 @@ static int open_ape(bgav_demuxer_context_t * ctx)
   int i;
   bgav_stream_t * s;
 
-  if(!ctx->input->input->seek_byte)
+  if(!(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE))
     {
     bgav_log(ctx->opt, BGAV_LOG_ERROR, LOG_DOMAIN,
              "Can't decode from non-seekable source");

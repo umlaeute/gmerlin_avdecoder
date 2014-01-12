@@ -460,6 +460,7 @@ frametype.c \
 h264_header.c \
 hls.c \
 http.c \
+httpheader.c \
 id3v1.c \
 id3v2.c \
 in_cb.c \

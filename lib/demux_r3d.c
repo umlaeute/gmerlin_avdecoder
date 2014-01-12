@@ -368,7 +368,7 @@ static int open_r3d(bgav_demuxer_context_t * ctx)
   chunk_t ch;
   r3d_priv_t * priv;
   bgav_stream_t * s;
-  if(!ctx->input->input->seek_byte)
+  if(!(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE))
     {
     bgav_log(ctx->opt, BGAV_LOG_ERROR, LOG_DOMAIN,
              "R3D cannot be read from nonseekable sources");

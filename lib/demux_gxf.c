@@ -503,7 +503,7 @@ static int open_gxf(bgav_demuxer_context_t * ctx)
     else
       priv->num_fields = 1;
     
-    if(ctx->input->input->seek_byte)
+    if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
       {
       last_pos = ctx->input->position;
       if(!get_next_startcode(ctx, &mh))

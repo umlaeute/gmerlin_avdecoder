@@ -835,7 +835,7 @@ static int read_indx(bgav_input_context_t * input, indx_t * ret,
     }
   /* Read subindices */
 
-  if((ret->bIndexType == AVI_INDEX_OF_INDEXES) && (input->input->seek_byte))
+  if((ret->bIndexType == AVI_INDEX_OF_INDEXES) && (input->flags & BGAV_INPUT_CAN_SEEK_BYTE))
     {
     pos = input->position;
 
@@ -1944,7 +1944,7 @@ static int open_avi(bgav_demuxer_context_t * ctx)
       p->movi_size = ctx->input->total_bytes - ctx->data_start;
     }
 
-  if(ctx->input->input->seek_byte)
+  if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     {
     bgav_input_seek(ctx->input, ctx->data_start + p->movi_size, SEEK_SET);
 
@@ -1987,7 +1987,7 @@ static int open_avi(bgav_demuxer_context_t * ctx)
   
   /* Check, which index to build */
 
-  if(ctx->input->input->seek_byte)
+  if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     {
     indx_build_superindex(ctx);
   

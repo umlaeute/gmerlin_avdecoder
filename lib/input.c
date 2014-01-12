@@ -215,7 +215,7 @@ int bgav_input_read_data(bgav_input_context_t * ctx, uint8_t * buffer, int len)
     ret = len;
   ctx->position += ret;
 
-  if(ctx->do_buffer)
+  if(ctx->flags & BGAV_INPUT_DO_BUFFER)
     {
     ctx->buffer_size +=
       ctx->input->read_nonblock(ctx, ctx->buffer + ctx->buffer_size,
@@ -685,8 +685,8 @@ static void init_buffering(bgav_input_context_t * ctx)
   /* Check if we should buffer data */
 
   if(!ctx->opt->network_buffer_size || !ctx->input->read_nonblock)
-    ctx->do_buffer = 0;
-  if(ctx->do_buffer)
+    ctx->flags &= ~BGAV_INPUT_DO_BUFFER;
+  if(ctx->flags & BGAV_INPUT_DO_BUFFER)
     {
     ctx->buffer_alloc = ctx->opt->network_buffer_size;
     ctx->buffer = malloc(ctx->buffer_alloc);
@@ -824,9 +824,16 @@ static int input_open(bgav_input_context_t * ctx,
     
     if(!ctx->input)
       ctx->input = &bgav_input_file;
-    
     }
- 
+
+  /* Set default flags */
+  ctx->flags = 0;
+
+  if(ctx->input->seek_byte)
+    ctx->flags |= BGAV_INPUT_CAN_SEEK_BYTE;
+  if(ctx->input->seek_time)
+    ctx->flags |= BGAV_INPUT_CAN_SEEK_TIME;
+  
   if(!ctx->input->open(ctx, tmp_url, redir))
     {
     goto fail;
@@ -972,7 +979,8 @@ void bgav_input_skip(bgav_input_context_t * ctx, int64_t bytes)
         memmove(ctx->buffer, &ctx->buffer[bytes],
                 ctx->buffer_size);
       ctx->position += bytes;
-      if(ctx->do_buffer)
+
+      if(ctx->flags & BGAV_INPUT_DO_BUFFER)
         {
         ctx->buffer_size +=
           ctx->input->read_nonblock(ctx, ctx->buffer + ctx->buffer_size,
@@ -987,7 +995,7 @@ void bgav_input_skip(bgav_input_context_t * ctx, int64_t bytes)
       ctx->buffer_size = 0;
       }
     }
-  if(ctx->input->seek_byte)
+  if(ctx->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     {
     bgav_input_seek(ctx, bytes_to_skip, SEEK_CUR);
     }
@@ -996,7 +1004,7 @@ void bgav_input_skip(bgav_input_context_t * ctx, int64_t bytes)
     for(i = 0; i < bytes_to_skip; i++)
       bgav_input_read_8(ctx, &buf);
     }
-  if(ctx->do_buffer)
+  if(ctx->flags & BGAV_INPUT_DO_BUFFER)
     ctx->buffer_size +=
       ctx->input->read_nonblock(ctx, ctx->buffer + ctx->buffer_size,
                                 ctx->buffer_alloc - ctx->buffer_size);
@@ -1070,11 +1078,9 @@ void bgav_input_buffer(bgav_input_context_t * ctx)
   int bytes_to_read;
   int result;
   
-  if(!ctx->do_buffer)
-    {
+  if(!(ctx->flags & BGAV_INPUT_DO_BUFFER))
     return;
-    }
-
+  
   while(ctx->buffer_size < ctx->buffer_alloc)
     {
     bytes_to_read = ctx->buffer_alloc / 20;

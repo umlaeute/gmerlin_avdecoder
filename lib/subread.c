@@ -913,7 +913,7 @@ void bgav_subtitle_reader_seek(bgav_stream_t * s,
   if(ctx->reader->seek)
     ctx->reader->seek(s, time, scale);
     
-  else if(ctx->input->input->seek_byte)
+  else if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     {
     bgav_input_seek(ctx->input, ctx->data_start, SEEK_SET);
     

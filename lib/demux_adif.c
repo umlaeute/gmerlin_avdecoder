@@ -85,7 +85,7 @@ static int open_adif(bgav_demuxer_context_t * ctx)
 
   /* Check for id3v1 tag at the end */
 
-  if(ctx->input->input->seek_byte)
+  if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     {
     bgav_input_seek(ctx->input, -128, SEEK_END);
     if(bgav_id3v1_probe(ctx->input))
