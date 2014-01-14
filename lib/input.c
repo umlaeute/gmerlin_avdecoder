@@ -36,6 +36,16 @@
 #define ALLOC_SIZE    128
 #define MAX_REDIRECTIONS 5
 
+static do_buffer(bgav_input_context_t * ctx)
+  {
+  if(ctx->flags & BGAV_INPUT_DO_BUFFER)
+    {
+    ctx->buffer_size +=
+      ctx->input->read_nonblock(ctx, ctx->buffer + ctx->buffer_size,
+                                ctx->buffer_alloc - ctx->buffer_size);
+    }
+  }
+
 static void add_char_16(char ** buffer, uint32_t * buffer_alloc,
                         int pos, uint16_t c)
   {
@@ -215,12 +225,8 @@ int bgav_input_read_data(bgav_input_context_t * ctx, uint8_t * buffer, int len)
     ret = len;
   ctx->position += ret;
 
-  if(ctx->flags & BGAV_INPUT_DO_BUFFER)
-    {
-    ctx->buffer_size +=
-      ctx->input->read_nonblock(ctx, ctx->buffer + ctx->buffer_size,
-                                ctx->buffer_alloc - ctx->buffer_size);
-    }
+  do_buffer(ctx);
+  
   return ret;
   }
 
@@ -685,7 +691,10 @@ static void init_buffering(bgav_input_context_t * ctx)
   /* Check if we should buffer data */
 
   if(!ctx->opt->network_buffer_size || !ctx->input->read_nonblock)
+    {
     ctx->flags &= ~BGAV_INPUT_DO_BUFFER;
+    return;
+    }
   if(ctx->flags & BGAV_INPUT_DO_BUFFER)
     {
     ctx->buffer_alloc = ctx->opt->network_buffer_size;
@@ -980,12 +989,8 @@ void bgav_input_skip(bgav_input_context_t * ctx, int64_t bytes)
                 ctx->buffer_size);
       ctx->position += bytes;
 
-      if(ctx->flags & BGAV_INPUT_DO_BUFFER)
-        {
-        ctx->buffer_size +=
-          ctx->input->read_nonblock(ctx, ctx->buffer + ctx->buffer_size,
-                                    ctx->buffer_alloc - ctx->buffer_size);
-        }
+      do_buffer(ctx);
+      
       return;
       }
     else
@@ -995,19 +1000,15 @@ void bgav_input_skip(bgav_input_context_t * ctx, int64_t bytes)
       ctx->buffer_size = 0;
       }
     }
-  if(ctx->flags & BGAV_INPUT_CAN_SEEK_BYTE)
-    {
+  if(ctx->flags & (BGAV_INPUT_CAN_SEEK_BYTE|BGAV_INPUT_SEEK_SLOW) ==
+     BGAV_INPUT_CAN_SEEK_BYTE)
     bgav_input_seek(ctx, bytes_to_skip, SEEK_CUR);
-    }
   else /* Only small amounts of data should be skipped like this */
     {
     for(i = 0; i < bytes_to_skip; i++)
       bgav_input_read_8(ctx, &buf);
     }
-  if(ctx->flags & BGAV_INPUT_DO_BUFFER)
-    ctx->buffer_size +=
-      ctx->input->read_nonblock(ctx, ctx->buffer + ctx->buffer_size,
-                                ctx->buffer_alloc - ctx->buffer_size);
+  do_buffer(ctx);
   }
 
 void bgav_input_skip_dump(bgav_input_context_t * ctx, int bytes)

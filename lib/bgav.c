@@ -207,6 +207,10 @@ int bgav_open(bgav_t * ret, const char * location)
     goto fail;
 
   ret->location = gavl_strdup(location);
+
+  if((ret->demuxer->flags & BGAV_DEMUXER_SEEK_ITERATIVE) &&
+     (ret->input->flags & BGAV_INPUT_SEEK_SLOW))
+    ret->demuxer->flags &= ~BGAV_DEMUXER_CAN_SEEK;
   
   /* Check for file index */
   if((ret->opt.sample_accurate == 1) ||
