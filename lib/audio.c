@@ -421,6 +421,11 @@ static uint32_t adts_fourccs[] =
     0x00
   };
 
+static uint32_t dts_fourccs[] =
+  {
+    { BGAV_MK_FOURCC('d', 't', 's', ' '),
+      0x00 },
+  };
 
 int bgav_get_audio_compression_info(bgav_t * bgav, int stream,
                                     gavl_compression_info_t * ret)
@@ -454,6 +459,8 @@ int bgav_get_audio_compression_info(bgav_t * bgav, int stream,
     id = GAVL_CODEC_ID_MP2;
   else if(bgav_check_fourcc(s->fourcc, mp3_fourccs))
     id = GAVL_CODEC_ID_MP3;
+  else if(bgav_check_fourcc(s->fourcc, dts_fourccs))
+    id = GAVL_CODEC_ID_DTS;
   else if(bgav_check_fourcc(s->fourcc, aac_fourccs))
     {
     id = GAVL_CODEC_ID_AAC;
