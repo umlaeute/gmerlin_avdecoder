@@ -107,7 +107,7 @@ static int open_http(bgav_input_context_t * ctx, const char * url, char ** r)
   return 1;
   }
 
-static void seek_byte_http(bgav_input_context_t * ctx,
+static int64_t seek_byte_http(bgav_input_context_t * ctx,
                            int64_t pos, int whence)
   {
   bgav_http_header_t * header = NULL;
@@ -121,8 +121,7 @@ static void seek_byte_http(bgav_input_context_t * ctx,
   
   p->h = bgav_http_open(ctx->url, ctx->opt, NULL, header);
   bgav_http_header_destroy(header);
-  
-  
+  return ctx->position;
   }
 
 static int read_data(bgav_input_context_t* ctx,

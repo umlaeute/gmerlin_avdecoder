@@ -86,8 +86,10 @@ static char * find_audio_file(const char * dir, const char * name_root, int stre
   
   }
 
-static int probe_p2xml(bgav_yml_node_t * node)
+static int probe_p2xml(bgav_input_context_t * input)
   {
+  bgav_yml_node_t * node = bgav_input_get_yml(input);
+
   if(bgav_yml_find_by_name(node, "P2Main"))
     return 1;
   return 0;
@@ -111,7 +113,7 @@ static void init_stream(bgav_yml_node_t * node,
   seg->dst_duration = duration * edit_unit_num;
   }
 
-static int open_p2xml(bgav_demuxer_context_t * ctx, bgav_yml_node_t * yml)
+static int open_p2xml(bgav_demuxer_context_t * ctx)
   {
   int ret = 0;
   char * audio_directory = NULL;
@@ -130,10 +132,15 @@ static int open_p2xml(bgav_demuxer_context_t * ctx, bgav_yml_node_t * yml)
   int edit_unit_den = 0;
 
   int have_audio = 1;
+  bgav_yml_node_t * yml;
   
   if(!ctx->input || !ctx->input->filename)
     goto fail;
 
+  yml = bgav_input_get_yml(ctx->input);
+  if(!yml)
+    goto fail;
+  
   directory_parent = gavl_strdup(ctx->input->filename);
   
   yml = bgav_yml_find_by_name(yml, "P2Main");
@@ -242,7 +249,7 @@ static int open_p2xml(bgav_demuxer_context_t * ctx, bgav_yml_node_t * yml)
 
 const bgav_demuxer_t bgav_demuxer_p2xml =
   {
-    .probe_yml =       probe_p2xml,
-    .open_yml  =        open_p2xml,
+    .probe = probe_p2xml,
+    .open  = open_p2xml,
   };
 

@@ -62,20 +62,13 @@ const redir_t redirectors[] =
     { &bgav_redirector_smil, "smil" },
     { &bgav_redirector_m3u, "m3u" },
     { &bgav_redirector_rtsptext, "rtsptext" },
-  };
-
-const redir_t yml_redirectors[] =
-  {
     { &bgav_redirector_qtl, "qtl" },
-    //    { &bgav_redirector_rtsptext, "rtsptext" },
   };
 
 static const int num_redirectors = sizeof(redirectors)/sizeof(redirectors[0]);
 
-static const int num_yml_redirectors = sizeof(yml_redirectors)/sizeof(yml_redirectors[0]);
-
-const bgav_redirector_t * bgav_redirector_probe(bgav_input_context_t * input,
-                                                bgav_yml_node_t ** yml)
+const bgav_redirector_t *
+bgav_redirector_probe(bgav_input_context_t * input)
   {
   int i;
 
@@ -88,88 +81,52 @@ const bgav_redirector_t * bgav_redirector_probe(bgav_input_context_t * input,
       return redirectors[i].r;
       }
     }
-  /* Check if this is an xml like file */
-  if(bgav_yml_probe(input))
-    {
-    *yml = bgav_yml_parse(input);
-    if(!(*yml))
-      return NULL;
-
-#if 1
-    
-    for(i = 0; i < num_yml_redirectors; i++)
-      {
-      if(yml_redirectors[i].r->probe_yml(*yml))
-        {
-        bgav_log(input->opt, BGAV_LOG_INFO, LOG_DOMAIN,
-                 "Detected %s redirector",
-                 yml_redirectors[i].format_name);
-        return yml_redirectors[i].r;
-        }
-      }
-#endif
-    }
   return NULL;
-  }
-
-static bgav_redirector_context_t * get_redir(bgav_t * b)
-  {
-  if(b->redirector)
-    return b->redirector;
-  else if(b->demuxer)
-    return b->demuxer->redirector;
-  else
-    return NULL;
   }
 
 int bgav_is_redirector(bgav_t * b)
   {
-  bgav_redirector_context_t * r;
-  r = get_redir(b);
-
-  if(r)
+  if(b->tt && b->tt->num_tracks &&
+     gavl_metadata_get(&b->tt->tracks[0].metadata, GAVL_META_REFURL))
     return 1;
   return 0;
   }
 
 int bgav_redirector_get_num_urls(bgav_t * b)
   {
-  bgav_redirector_context_t * r;
-  r = get_redir(b);
-  if(!r)
+  if(!bgav_is_redirector(b))
     return 0;
-  return r->num_urls;
+  return b->tt->num_tracks;
   }
 
 const char * bgav_redirector_get_url(bgav_t * b, int index)
   {
-  bgav_redirector_context_t * r;
-  r = get_redir(b);
-  if(!r)
+  if(!bgav_is_redirector(b))
     return NULL;
-  return r->urls[index].url;
+
+  if((index < 0) || (index >= b->tt->num_tracks))
+    return NULL;
+  
+  return gavl_metadata_get(&b->tt->tracks[index].metadata, GAVL_META_REFURL);
   }
 
 const char * bgav_redirector_get_name(bgav_t * b, int index)
   {
-  bgav_redirector_context_t * r;
-  r = get_redir(b);
-  if(!r)
+  if(!bgav_is_redirector(b))
     return NULL;
-  return gavl_metadata_get(&r->urls[index].m, GAVL_META_LABEL);
+
+  if((index < 0) || (index >= b->tt->num_tracks))
+    return NULL;
+  
+  return gavl_metadata_get(&b->tt->tracks[index].metadata, GAVL_META_LABEL);
   }
 
-void bgav_redirector_destroy(bgav_redirector_context_t*r)
+const gavl_metadata_t * bgav_redirector_get_metadata(bgav_t * b, int index)
   {
-  int i;
-  if(!r)
-    return;
-  for(i = 0; i < r->num_urls; i++)
-    {
-    if(r->urls[i].url)
-      free(r->urls[i].url);
-    gavl_metadata_free(&r->urls[i].m);
-    }
-  free(r->urls);
-  free(r);
+  if(!bgav_is_redirector(b))
+    return NULL;
+  if((index < 0) || (index >= b->tt->num_tracks))
+    return NULL;
+  return &b->tt->tracks[index].metadata;
   }
+

@@ -305,7 +305,7 @@ static int open_vcd(bgav_input_context_t * ctx, const char * url, char ** r)
     {
     select_track_vcd(ctx, i);
     bgav_track_table_select_track(ctx->tt, i);
-    bgav_demuxer_start(ctx->demuxer, NULL);
+    bgav_demuxer_start(ctx->demuxer);
     bgav_demuxer_stop(ctx->demuxer);
     }
   ctx->flags |= BGAV_INPUT_CAN_PAUSE;

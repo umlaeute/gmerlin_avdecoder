@@ -51,18 +51,21 @@ static int probe_pls(bgav_input_context_t * input)
  *  We completely ignore all fields except File= and Title=
  */
 
-static int parse_pls(bgav_redirector_context_t * r)
+
+static bgav_track_table_t * parse_pls(bgav_input_context_t * input)
   {
   char * buffer = NULL;
   uint32_t buffer_alloc = 0;
-  int index;
   char * pos;
-  int ret = 0;
+  bgav_track_table_t * tt = 0;
+  bgav_track_t * t;
+  int have_file = 0;
+  int have_title = 0;
   
   /* Get the first nonempty line */
   while(1)
     {
-    if(!bgav_input_read_line(r->input, &buffer, &buffer_alloc, 0, NULL))
+    if(!bgav_input_read_line(input, &buffer, &buffer_alloc, 0, NULL))
       goto fail;
     pos = buffer;
     while(isspace(*pos))
@@ -75,59 +78,61 @@ static int parse_pls(bgav_redirector_context_t * r)
     goto fail;
   
   /* Get number of entries */
+
+  t = NULL;
+
+
+  tt = bgav_track_table_create(0);
   
   while(1)
     {
-    if(!bgav_input_read_line(r->input, &buffer, &buffer_alloc, 0, NULL))
+    if(!bgav_input_read_line(input, &buffer, &buffer_alloc, 0, NULL))
       break;
 
     if(!strncasecmp(buffer, "Title", 5))
       {
-      index = atoi(buffer + 5);
-
-      if(index > r->num_urls)
-        {
-        r->urls = realloc(r->urls, index * sizeof(*(r->urls)));
-        memset(r->urls + r->num_urls, 0,
-               (index - r->num_urls) * sizeof(*(r->urls)));
-        r->num_urls = index;
-        }
+      if(!t)
+        t = bgav_track_table_append_track(tt);
+      
       pos = strchr(buffer, '=');
       if(pos)
         {
         pos++;
-
-        gavl_metadata_set(&r->urls[index-1].m,
-                          GAVL_META_LABEL, pos);
+        gavl_metadata_set(&t->metadata, GAVL_META_LABEL, pos);
+        have_title = 1;
         }
       }
     else if(!strncasecmp(buffer, "File", 4))
       {
-      index = atoi(buffer + 4);
+      if(have_file)
+        t = NULL;
       
-      if(index > r->num_urls)
-        {
-        r->urls = realloc(r->urls, index * sizeof(*(r->urls)));
-        memset(r->urls + r->num_urls, 0,
-               (index - r->num_urls) * sizeof(*(r->urls)));
-        r->num_urls = index;
-        }
-
+      if(!t)
+        t = bgav_track_table_append_track(tt);
+      
       pos = strchr(buffer, '=');
       if(pos)
         {
         pos++;
-        r->urls[index-1].url = gavl_strdup(pos);
+        gavl_metadata_set(&t->metadata, GAVL_META_REFURL, pos);
         }
+      have_file = 1;
       }
-    }
-  ret = 1;
+    if(have_title && have_file)
+      t = NULL;
 
+    if(!t)
+      {
+      have_title = 0;
+      have_file = 0;
+      }
+    
+    }
   fail:
   if(buffer)
     free(buffer);
   
-  return ret;
+  return tt;
   }
 
 const bgav_redirector_t bgav_redirector_pls = 

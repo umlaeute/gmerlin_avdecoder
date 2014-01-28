@@ -172,6 +172,7 @@ static const demuxer_t demuxers[] =
     { &bgav_demuxer_daud, "D-Cinema audio" },
     { &bgav_demuxer_vmd,  "Sierra VMD" },
     { &bgav_demuxer_gavf,  "GAVF" },
+    { &bgav_demuxer_p2xml, "P2 xml" },
   };
 
 static const demuxer_t sync_demuxers[] =
@@ -180,11 +181,6 @@ static const demuxer_t sync_demuxers[] =
     { &bgav_demuxer_mpegaudio, "MPEG Audio" },
     { &bgav_demuxer_adts,      "ADTS" },
     { &bgav_demuxer_mpegps,    "MPEG System" },
-  };
-
-static const demuxer_t yml_demuxers[] =
-  {
-    { &bgav_demuxer_p2xml,    "P2 xml" },
   };
 
 static struct
@@ -199,7 +195,6 @@ mimetypes[] =
 
 static const int num_demuxers = sizeof(demuxers)/sizeof(demuxers[0]);
 static const int num_sync_demuxers = sizeof(sync_demuxers)/sizeof(sync_demuxers[0]);
-static const int num_yml_demuxers = sizeof(yml_demuxers)/sizeof(yml_demuxers[0]);
 
 static const int num_mimetypes = sizeof(mimetypes)/sizeof(mimetypes[0]);
 
@@ -208,67 +203,50 @@ static const int num_mimetypes = sizeof(mimetypes)/sizeof(mimetypes[0]);
 
 #define SYNC_BYTES (32*1024)
 
-const bgav_demuxer_t * bgav_demuxer_probe(bgav_input_context_t * input,
-                                          bgav_yml_node_t * yml)
+const bgav_demuxer_t * bgav_demuxer_probe(bgav_input_context_t * input)
   {
   int i;
   int bytes_skipped;
   uint8_t skip;
   const char * mimetype;
-  if(!yml)
-    {
 #ifdef HAVE_LIBAVFORMAT
-    if(input->opt->prefer_ffmpeg_demuxers)
-      {
-      if(bgav_demuxer_ffmpeg.probe(input))
-        return &bgav_demuxer_ffmpeg;
-      }
+  if(input->opt->prefer_ffmpeg_demuxers)
+    {
+    if(bgav_demuxer_ffmpeg.probe(input))
+      return &bgav_demuxer_ffmpeg;
+    }
 #endif
-    mimetype = gavl_metadata_get(&input->metadata, GAVL_META_MIMETYPE);
-    //  uint8_t header[32];
-    if(mimetype)
+  mimetype = gavl_metadata_get(&input->metadata, GAVL_META_MIMETYPE);
+  //  uint8_t header[32];
+  if(mimetype)
+    {
+    for(i = 0; i < num_mimetypes; i++)
       {
-      for(i = 0; i < num_mimetypes; i++)
+      if(!strcmp(mimetypes[i].mimetype, mimetype))
         {
-        if(!strcmp(mimetypes[i].mimetype, mimetype))
-          {
-          return mimetypes[i].demuxer;
-          }
-        }
-      }
-    
-    for(i = 0; i < num_demuxers; i++)
-      {
-      if(demuxers[i].demuxer->probe(input))
-        {
-        bgav_log(input->opt, BGAV_LOG_DEBUG, LOG_DOMAIN,
-                 "Detected %s format", demuxers[i].format_name);
-        return demuxers[i].demuxer;
-        }
-      }
-  
-    for(i = 0; i < num_sync_demuxers; i++)
-      {
-      if(sync_demuxers[i].demuxer->probe(input))
-        {
-        bgav_log(input->opt, BGAV_LOG_DEBUG, LOG_DOMAIN,
-                 "Detected %s format",
-                 sync_demuxers[i].format_name);
-        return sync_demuxers[i].demuxer;
+        return mimetypes[i].demuxer;
         }
       }
     }
-  else
+    
+  for(i = 0; i < num_demuxers; i++)
     {
-    for(i = 0; i < num_yml_demuxers; i++)
+    if(demuxers[i].demuxer->probe(input))
       {
-      if(yml_demuxers[i].demuxer->probe_yml(yml))
-        {
-        bgav_log(input->opt, BGAV_LOG_DEBUG, LOG_DOMAIN,
-                 "Detected %s format",
-                 yml_demuxers[i].format_name);
-        return yml_demuxers[i].demuxer;
-        }
+      bgav_log(input->opt, BGAV_LOG_DEBUG, LOG_DOMAIN,
+               "Detected %s format", demuxers[i].format_name);
+      return demuxers[i].demuxer;
+      }
+    }
+  
+  for(i = 0; i < num_sync_demuxers; i++)
+    {
+    if(sync_demuxers[i].demuxer->probe(input))
+      {
+      bgav_log(input->opt, BGAV_LOG_DEBUG, LOG_DOMAIN,
+               "Detected %s format",
+               sync_demuxers[i].format_name);
+      return sync_demuxers[i].demuxer;
       }
     }
   
@@ -334,10 +312,6 @@ void bgav_demuxer_destroy(bgav_demuxer_context_t * ctx)
     bgav_superindex_destroy(ctx->si);
   if(ctx->edl)
     gavl_edl_destroy(ctx->edl);
-
-  if(ctx->redirector)
-    bgav_redirector_destroy(ctx->redirector);
-    
   free(ctx);
   }
 
@@ -473,16 +447,9 @@ static void check_interleave(bgav_demuxer_context_t * ctx)
   free(streams);
   }
 
-int bgav_demuxer_start(bgav_demuxer_context_t * ctx,
-                       bgav_yml_node_t * yml)
+int bgav_demuxer_start(bgav_demuxer_context_t * ctx)
   {
-
-  if(yml)
-    {
-    if(!ctx->demuxer->open_yml(ctx, yml))
-      return 0;
-    }
-  else if(!ctx->demuxer->open(ctx))
+  if(!ctx->demuxer->open(ctx))
     return 0;
   
   if(ctx->si)

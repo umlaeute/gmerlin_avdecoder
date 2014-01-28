@@ -73,7 +73,7 @@ static int open_mms(bgav_input_context_t * ctx, const char * url, char ** r)
   ctx->demuxer = bgav_demuxer_create(ctx->opt, &bgav_demuxer_asf,
                                      input);
 
-  if(!bgav_demuxer_start(ctx->demuxer, NULL))
+  if(!bgav_demuxer_start(ctx->demuxer))
     {
     bgav_log(ctx->opt, BGAV_LOG_ERROR, LOG_DOMAIN,
              "Initializing asf demuxer failed");

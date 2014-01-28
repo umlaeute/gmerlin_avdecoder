@@ -1467,61 +1467,22 @@ static void quicktime_init(bgav_demuxer_context_t * ctx)
 
 static int handle_rmra(bgav_demuxer_context_t * ctx)
   {
-  char * basename = NULL, *pos;
-  
-  int i, index;
+  int i;
   qt_priv_t * priv = ctx->priv;
-  int num_urls = 0;
-  for(i = 0; i < priv->moov.rmra.num_rmda; i++)
-    {
-    if(priv->moov.rmra.rmda[i].rdrf.fourcc == BGAV_MK_FOURCC('u','r','l',' '))
-      num_urls++;
-    }
-
-  ctx->redirector           = calloc(1, sizeof(*ctx->redirector));
-  ctx->redirector->num_urls = num_urls;
-  ctx->redirector->opt      = ctx->opt;
-  ctx->redirector->urls     = calloc(num_urls, sizeof(*(ctx->redirector->urls)));
-
-  /* Some urls are relative urls */
-  if(ctx->input->url)
-    basename = gavl_strdup(ctx->input->url);
-  else if(ctx->input->filename)
-    basename = gavl_strdup(ctx->input->filename);
   
-  if(!basename)
-    return 0;
+  bgav_track_t * t;
 
-  pos = strrchr(basename, '/');
-  if(!pos)
-    *basename = '\0';
-  else
-    {
-    pos++;
-    *pos = '\0';
-    }
-  
-  index = 0;
+  ctx->tt = bgav_track_table_create(0);
+
   for(i = 0; i < priv->moov.rmra.num_rmda; i++)
     {
     if(priv->moov.rmra.rmda[i].rdrf.fourcc == BGAV_MK_FOURCC('u','r','l',' '))
       {
-      /* Absolute url */
-      if(strstr((char*)priv->moov.rmra.rmda[i].rdrf.data_ref, "://"))
-        {
-        ctx->redirector->urls[index].url =
-          gavl_strdup((char*)priv->moov.rmra.rmda[i].rdrf.data_ref);
-        
-        }
-      /* Relative url */
-      else
-        {
-        ctx->redirector->urls[index].url = gavl_strdup(basename);
-        ctx->redirector->urls[index].url =
-          gavl_strcat(ctx->redirector->urls[index].url,
-                       (char*)priv->moov.rmra.rmda[i].rdrf.data_ref);
-        }
-      index++;
+      t = bgav_track_table_append_track(ctx->tt);
+      gavl_metadata_set_nocpy(&t->metadata, GAVL_META_REFURL,
+                              bgav_input_absolute_url(ctx->input,
+                                                      (char*)priv->moov.rmra.rmda[i].rdrf.data_ref));
+      
       }
     }
   return 1;
@@ -1762,8 +1723,6 @@ static int open_quicktime(bgav_demuxer_context_t * ctx)
   int have_mdat = 0;
   int done = 0;
   /* Create track */
-
-  ctx->tt = bgav_track_table_create(1);
   
   /* Read moov atom */
 
@@ -1837,7 +1796,7 @@ static int open_quicktime(bgav_demuxer_context_t * ctx)
       done = 1;
     }
 
-  /* Get for redirecting */
+  /* Check for redirecting */
   if(!have_mdat)
     {
     if(priv->moov.has_rmra)
@@ -1850,6 +1809,7 @@ static int open_quicktime(bgav_demuxer_context_t * ctx)
       return 0;
     }
   /* Initialize streams */
+  ctx->tt = bgav_track_table_create(1);
   quicktime_init(ctx);
 
   /* Build index */

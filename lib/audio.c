@@ -423,8 +423,8 @@ static uint32_t adts_fourccs[] =
 
 static uint32_t dts_fourccs[] =
   {
-    { BGAV_MK_FOURCC('d', 't', 's', ' '),
-      0x00 },
+    BGAV_MK_FOURCC('d', 't', 's', ' '),
+    0x00,
   };
 
 int bgav_get_audio_compression_info(bgav_t * bgav, int stream,

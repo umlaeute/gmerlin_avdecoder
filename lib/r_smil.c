@@ -27,133 +27,6 @@
 
 #define LOG_DOMAIN "r_smil"
 
-#if 0
-
-static const struct
-  {
-  const char * code;
-  const char * language;
-  } languages[] =
-  {
-    { "af",    "Afrikaans" },
-    { "sq",    "Albanian" },
-    { "ar-iq", "Arabic ( Iraq)" },
-    { "ar-dz", "Arabic (Algeria)" },
-    { "ar-bh", "Arabic (Bahrain)" },
-    { "ar-eg", "Arabic (Egypt)" },
-    { "ar-jo", "Arabic (Jordan)" },
-    { "ar-kw", "Arabic (Kuwait)" },
-    { "ar-lb", "Arabic (Lebanon)" },
-    { "ar-ly", "Arabic (Libya)" },
-    { "ar-ma", "Arabic (Morocco)" },
-    { "ar-om", "Arabic (Oman)" },
-    { "ar-qa", "Arabic (Qatar)" },
-    { "ar-sa", "Arabic (Saudi Arabia)" },
-    { "ar-sy", "Arabic (Syria)" },
-    { "ar-tn", "Arabic (Tunisia)" },
-    { "ar-ae", "Arabic (U.A.E.)" },
-    { "ar-ye", "Arabic (Yemen)" },
-    { "eu",    "Basque" },
-    { "bg",    "Bulgarian" },
-    { "ca",    "Catalan" },
-    { "zh-hk", "Chinese (Hong Kong)" },
-    { "zh-cn", "Chinese (People's Republic)" },
-    { "zh-sg", "Chinese (Singapore)" },
-    { "zh-tw", "Chinese (Taiwan)" },
-    { "hr",    "Croatian" },
-    { "cs",    "Czech" },
-    { "da",    "Danish" },
-    { "nl",    "Dutch (Standard)" },
-    { "nl-be", "Dutch (Belgian)" },
-    { "en",    "English" },
-    { "en-au", "English (Australian)" },
-    { "en-bz", "English (Belize)" },
-    { "en-gb", "English (British)" },
-    { "en-ca", "English (Canadian)" },
-    { "en",    "English (Caribbean)" },
-    { "en-ie", "English (Ireland)" },
-    { "en-jm", "English (Jamaica)" },
-    { "en-nz", "English (New Zealand)" },
-    { "en-za", "English (South Africa)" },
-    { "en-tt", "English (Trinidad)" },
-    { "en-us", "English (United States)" },
-    { "et",    "Estonian" },
-    { "fo",    "Faeroese" },
-    { "fi",    "Finnish" },
-    { "fr-be", "French (Belgian)" },
-    { "fr-ca", "French (Canadian)" },
-    { "fr-lu", "French (Luxembourg)" },
-    { "fr",    "French (Standard)" },
-    { "fr-ch", "French (Swiss)" },
-    { "de-at", "German (Austrian)" },
-    { "de-li", "German (Liechtenstein)" },
-    { "de-lu", "German (Luxembourg)" },
-    { "de",    "German (Standard)" },
-    { "de-ch", "German (Swiss)" },
-    { "el",    "Greek" },
-    { "he",    "Hebrew" },
-    { "hu",    "Hungarian" },
-    { "is",    "Icelandic" },
-    { "in",    "Indonesian" },
-    { "it",    "Italian (Standard)" },
-    { "it-ch", "Italian (Swiss)" },
-    { "ja",    "Japanese" },
-    { "ko",    "Korean" },
-    { "ko",    "Korean (Johab)" },
-    { "lv",    "Latvian" },
-    { "lt",    "Lithuanian" },
-    { "no",    "Norwegian" },
-    { "pl",    "Polish" },
-    { "pt-br", "Portuguese (Brazilian)" },
-    { "pt",    "Portuguese (Standard)" },
-    { "ro",    "Romanian" },
-    { "sr",    "Serbian" },
-    { "sk",    "Slovak" },
-    { "sl",    "Slovenian" },
-    { "es-ar", "Spanish (Argentina)" },
-    { "es-bo", "Spanish (Bolivia)" },
-    { "es-cl", "Spanish (Chile)" },
-    { "es-co", "Spanish (Colombia)" },
-    { "es-cr", "Spanish (Costa Rica)" },
-    { "es-do", "Spanish (Dominican Republic)" },
-    { "es-ec", "Spanish (Ecuador)" },
-    { "es-sv", "Spanish (El Salvador)" },
-    { "es-gt", "Spanish (Guatemala)" },
-    { "es-hn", "Spanish (Honduras)" },
-    { "es-mx", "Spanish (Mexican)" },
-    { "es-ni", "Spanish (Nicaragua)" },
-    { "es-pa", "Spanish (Panama)" },
-    { "es-py", "Spanish (Paraguay)" },
-    { "es-pe", "Spanish (Peru)" },
-    { "es-pr", "Spanish (Puerto Rico)" },
-    { "es",    "Spanish (Spain)" },
-    { "es-uy", "Spanish (Uruguay)" },
-    { "es-ve", "Spanish (Venezuela)" },
-    { "sv",    "Swedish" },
-    { "sv-fi", "Swedish (Finland)" },
-    { "th",    "Thai" },
-    { "tr",    "Turkish" },
-    { "uk",    "Ukrainian" },
-    { "vi",    "Vietnamese" },
-  };
-
-static const char * get_language(const char * code)
-  {
-  int i;
-  for(i = 0; i < sizeof(languages)/sizeof(languages[0]); i++)
-    {
-    if(!strcmp(languages[i].code, code))
-      return languages[i].language;
-    }
-  return NULL;
-  }
-#endif
-
-static const char * get_language(const char * code)
-  {
-  return bgav_lang_from_twocc(code);
-  }
-
 static int probe_smil(bgav_input_context_t * input)
   {
   char * pos;
@@ -212,7 +85,7 @@ static int count_urls(bgav_yml_node_t * n)
 
 #if 1
 
-static void get_url(bgav_yml_node_t * n, bgav_url_info_t * ret,
+static void get_url(bgav_yml_node_t * n, bgav_track_t * ret,
                     const char * title, const char * url_base, int * index)
   {
   const char * location;
@@ -237,55 +110,61 @@ static void get_url(bgav_yml_node_t * n, bgav_url_info_t * ret,
   if(!strstr(location, "://") && url_base)
     {
     if(url_base[strlen(url_base)-1] == '/')
-      ret->url = bgav_sprintf("%s%s", url_base, location);
+      gavl_metadata_set_nocpy(&ret->metadata, GAVL_META_REFURL,
+                              bgav_sprintf("%s%s", url_base, location));
     else
-      ret->url = bgav_sprintf("%s/%s", url_base, location);
+      gavl_metadata_set_nocpy(&ret->metadata, GAVL_META_REFURL,
+                              bgav_sprintf("%s/%s", url_base, location));
     }
   else
-    ret->url = gavl_strdup(location);
-
+    gavl_metadata_set(&ret->metadata, GAVL_META_REFURL,
+                      location);
   /* Set name */
 
   if(title)
-    gavl_metadata_set_nocpy(&ret->m, GAVL_META_LABEL,
+    gavl_metadata_set_nocpy(&ret->metadata, GAVL_META_LABEL,
                             bgav_sprintf("%s Stream %d", title, (*index)+1));
   else
-    gavl_metadata_set_nocpy(&ret->m, GAVL_META_LABEL,
+    gavl_metadata_set_nocpy(&ret->metadata, GAVL_META_LABEL,
                             bgav_sprintf("%s Stream %d", location, (*index)+1));
 
 
   if(bitrate)
     {
     i = atoi(bitrate);
-    gavl_metadata_set_int(&ret->m, GAVL_META_BITRATE, i);
+    gavl_metadata_set_int(&ret->metadata, GAVL_META_BITRATE, i);
     }
 
   if(language)
-    gavl_metadata_set(&ret->m, GAVL_META_LANGUAGE, get_language(language));
+    gavl_metadata_set(&ret->metadata, GAVL_META_LANGUAGE,
+                      bgav_lang_from_twocc(language));
   
   (*index)++;
   }
 
 static int get_urls(bgav_yml_node_t * n,
-                    bgav_redirector_context_t * r,
+                    bgav_track_table_t * tab,
                     const char * title, const char * url_base, int * index)
   {
   while(n)
     {
     if(!sc(n->name, "audio") || !sc(n->name, "video"))
       {
-      get_url(n, &r->urls[*index], title, url_base, index);
+      get_url(n, &tab->tracks[*index], title, url_base, index);
       }
     else if(n->children)
       {
-      get_urls(n->children, r, title, url_base, index);
+      get_urls(n->children, tab, title, url_base, index);
       }
     n = n->next;
     }
   return 1;
   }
+
 #endif
-static int xml_2_smil(bgav_redirector_context_t * r, bgav_yml_node_t * n)
+
+static bgav_track_table_t * xml_2_smil(bgav_input_context_t * input,
+                                           bgav_yml_node_t * n)
   {
   int index;
   bgav_yml_node_t * node;
@@ -293,12 +172,15 @@ static int xml_2_smil(bgav_redirector_context_t * r, bgav_yml_node_t * n)
   char * url_base = NULL;
   const char * title = NULL;
   char * pos;
-  r->num_urls = 0;
+  int num_urls;
 
+  bgav_track_table_t * ret;
+
+  
   n = bgav_yml_find_by_name(n, "smil");
   
   if(!n)
-    return 0;
+    return NULL;
   
   node = n->children;
 
@@ -351,59 +233,58 @@ static int xml_2_smil(bgav_redirector_context_t * r, bgav_yml_node_t * n)
     node = node->next;
     }
 
-  if(!url_base && r->input->url)
+  if(!url_base && input->url)
     {
-    pos = strrchr(r->input->url, '/');
+    pos = strrchr(input->url, '/');
     if(pos)
       {
       pos++;
-      url_base = gavl_strndup(r->input->url, pos);
+      url_base = gavl_strndup(input->url, pos);
       }
     }
   
   /* Count the entries */
 
-  r->num_urls = count_urls(node->children);
   
-  r->urls = calloc(r->num_urls, sizeof(*(r->urls)));
+  num_urls = count_urls(node->children);
+  ret = bgav_track_table_create(num_urls);
   
   /* Now, loop through all streams and collect the values */
   
   index = 0;
 
-  get_urls(node->children, r, title, url_base, &index);
+  get_urls(node->children, ret, title, url_base, &index);
 
   if(url_base)
     free(url_base);
   
-  return 1;
+  return ret;
   }
 
 
-static int parse_smil(bgav_redirector_context_t * r)
+static bgav_track_table_t * parse_smil(bgav_input_context_t * input)
   {
-  int result;
-
+  bgav_track_table_t * ret;
   bgav_yml_node_t * node;
 
-  node = bgav_yml_parse(r->input);
-
-
+  node = bgav_input_get_yml(input);
+  
   if(!node)
     {
-    bgav_log(r->opt, BGAV_LOG_ERROR, LOG_DOMAIN,
+    bgav_log(input->opt, BGAV_LOG_ERROR, LOG_DOMAIN,
              "Parse smil failed (yml error)");
     return 0;
     }
+
   //  bgav_yml_dump(node);
   
-  result = xml_2_smil(r, node);
+  ret = xml_2_smil(input, node);
 
   bgav_yml_free(node);
-  if(!result)
-    bgav_log(r->opt, BGAV_LOG_ERROR, LOG_DOMAIN,
+  if(!ret)
+    bgav_log(input->opt, BGAV_LOG_ERROR, LOG_DOMAIN,
              "Parse smil failed");
-  return result;
+  return ret;
   }
 
 const bgav_redirector_t bgav_redirector_smil = 

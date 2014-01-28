@@ -71,30 +71,10 @@ static int probe_m3u(bgav_input_context_t * input)
      strncmp(probe_buffer, "rtsp://", 7) &&
      (probe_buffer[0] != '#'))
     goto end;
-
-  /* Detect m3u8 stream playlist */
-#if 0
-  if(!strncasecmp(probe_buffer, "#EXTM3U", 7) &&
-     !strstr(probe_buffer, "#EXT-X-STREAM-INF") &&
-     !strstr(probe_buffer, "#EXT-X-I-FRAME-STREAM-INF"))
-    {
-    goto end;
-    
-    }
-#endif
-
   result = 1;
-  
   end:
   return result;
   
-  }
-
-static void add_url(bgav_redirector_context_t * r)
-  {
-  r->num_urls++;
-  r->urls = realloc(r->urls, r->num_urls * sizeof(*(r->urls)));
-  memset(r->urls + r->num_urls - 1, 0, sizeof(*(r->urls)));
   }
 
 static char * strip_spaces(char * buffer)
@@ -113,33 +93,91 @@ static char * strip_spaces(char * buffer)
   return ret;
   }
 
-static int parse_m3u(bgav_redirector_context_t * r)
+static bgav_track_table_t * parse_m3u(bgav_input_context_t * input)
   {
   char * buffer = NULL;
   uint32_t buffer_alloc = 0;
   char * pos;
-
+  bgav_track_table_t * tt;
+  bgav_track_t * t = NULL;
+  
+  tt = bgav_track_table_create(0);
+  
   while(1)
     {
-    if(!bgav_input_read_line(r->input, &buffer, &buffer_alloc, 0, NULL))
+    if(!bgav_input_read_line(input, &buffer, &buffer_alloc, 0, NULL))
       break;
     pos = strip_spaces(buffer);
-    if((*pos == '#') || (*pos == '\0'))
-      continue;
+
     if(!strcmp(pos, "--stop--"))
       break;
 
+    if(*pos == '\0') // Empty line
+      continue;
+    
+    if(*pos == '#')
+      {
+      // m3u8
+      // http://tools.ietf.org/html/draft-pantos-http-live-streaming-12#section-3.4.10
+      
+      if(!strncasecmp(pos, "#EXT-X-STREAM-INF:", 18)) 
+        {
+        int idx = 0;
+        char ** attrs;
+        if(!t)
+          t = bgav_track_table_append_track(tt);
+
+        attrs = bgav_stringbreak(pos + 18, ',');
+
+        while(attrs[idx])
+          {
+          if(!strncasecmp(attrs[idx], "BANDWIDTH=", 10))
+            gavl_metadata_set(&t->metadata, GAVL_META_BITRATE, attrs[idx] + 10);
+          idx++;
+          }
+        
+        bgav_stringbreak_free(attrs);
+        }
+      // Extended m3u
+      else if(!strncasecmp(pos, "#EXTINF:", 8))
+        {
+        char * comma;
+        gavl_time_t duration;
+
+        comma = strchr(pos, ',');
+
+        if(comma)
+          {
+          *comma = '\0';
+          if(!t)
+            t = bgav_track_table_append_track(tt);
+
+          duration = gavl_seconds_to_time(strtod(pos, NULL));
+          if(duration > 0)
+            gavl_metadata_set_long(&t->metadata, GAVL_META_APPROX_DURATION, duration);
+          comma++;
+
+          while(isspace(*comma) && (*comma != '\0'))
+            comma++;
+
+          if(*comma != '\0')
+            gavl_metadata_set(&t->metadata, GAVL_META_LABEL, comma);
+          }
+        }
+      }
     else
       {
-      add_url(r);
-      //  r->urls[r->num_urls-1].url = gavl_strdup(pos);
-      r->urls[r->num_urls-1].url = bgav_absolute_url(r->input->url, pos);
+      if(!t)
+        t = bgav_track_table_append_track(tt);
+      gavl_metadata_set_nocpy(&t->metadata, GAVL_META_REFURL, 
+                              bgav_input_absolute_url(input, pos));
+      t = NULL;
       }
     }
 
   if(buffer)
     free(buffer);
-  return !!(r->num_urls);
+  return tt;
   }
 
 const bgav_redirector_t bgav_redirector_m3u = 

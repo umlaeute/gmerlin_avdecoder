@@ -84,66 +84,72 @@ static int count_urls(bgav_yml_node_t * n)
   return ret;
   }
 
-static void get_url(bgav_yml_node_t * n, bgav_url_info_t * ret,
+static void get_url(bgav_yml_node_t * n, bgav_track_table_t * tt,
                     const char * title, int * index)
   {
+  bgav_track_t * ret = &tt->tracks[*index];
   while(n)
     {
     if(!sc(n->name, "Title") && n->children)
       {
       if(title)
-        gavl_metadata_set_nocpy(&ret->m,
+        gavl_metadata_set_nocpy(&ret->metadata,
                                 GAVL_META_LABEL,
                                 bgav_sprintf("%s (%s)",
                                              title, n->children->str));
       else
-        gavl_metadata_set(&ret->m,
+        gavl_metadata_set(&ret->metadata,
                           GAVL_META_LABEL,
                           n->children->str);
       }
     else if(!sc(n->name, "Ref"))
       {
-      if(!ret->url)
-        ret->url =
-          gavl_strdup(bgav_yml_get_attribute_i(n, "href"));
+      gavl_metadata_set(&ret->metadata,
+                        GAVL_META_REFURL,
+                        bgav_yml_get_attribute_i(n, "href"));
       }
     n = n->next;
     }
 
-  if(!gavl_metadata_get(&ret->m, GAVL_META_LABEL))
+  if(!gavl_metadata_get(&ret->metadata, GAVL_META_LABEL))
     {
-    gavl_metadata_set_nocpy(&ret->m,
+    gavl_metadata_set_nocpy(&ret->metadata,
                             GAVL_META_LABEL,
                             bgav_sprintf("Stream %d (%s)",
-                                         (*index)+1, ret->url));
+                                         (*index)+1,
+                                         gavl_metadata_get(&ret->metadata,
+                                                           GAVL_META_REFURL)));
     }
   (*index)++;
   }
 
 static int get_urls(bgav_yml_node_t * n,
-                    bgav_redirector_context_t * r, const char * title, int * index)
+                    bgav_track_table_t * ret,
+                    const char * title, int * index)
   {
   while(n)
     {
     if(!sc(n->name, "Entry"))
       {
-      get_url(n->children, &r->urls[*index], title, index);
+      get_url(n->children, ret, title, index);
       }
     else if(!sc(n->name, "Repeat"))
       {
-      get_urls(n->children, r, title, index);
+      get_urls(n->children, ret, title, index);
       }
     n = n->next;
     }
   return 1;
   }
 
-static int xml_2_asx(bgav_redirector_context_t * r, bgav_yml_node_t * n)
+static bgav_track_table_t * xml_2_asx(bgav_yml_node_t * n)
   {
   int index;
   char * title;
   bgav_yml_node_t * node;
-
+  int num_urls;
+  bgav_track_table_t * ret;
+  
   /* Count the entries and get the global title */
 
   n = bgav_yml_find_by_name(n, "ASX");
@@ -152,7 +158,7 @@ static int xml_2_asx(bgav_redirector_context_t * r, bgav_yml_node_t * n)
     return 0;
   
   node = n->children;
-  r->num_urls = 0;
+  num_urls = 0;
   
   title = NULL;
 
@@ -169,42 +175,40 @@ static int xml_2_asx(bgav_redirector_context_t * r, bgav_yml_node_t * n)
 
   /* Count the entries */
 
-  r->num_urls = count_urls(n->children);
-  
-  r->urls = calloc(r->num_urls, sizeof(*(r->urls)));
+  num_urls = count_urls(n->children);
+
+  ret = bgav_track_table_create(num_urls);
   
   /* Now, loop through all streams and collect the values */
   
   index = 0;
 
-  get_urls(n->children, r, title, &index);
+  get_urls(n->children, ret, title, &index);
   
   if(title)
     free(title);
-  return 1;
+  return ret;
   }
 
 
-static int parse_asx(bgav_redirector_context_t * r)
+static bgav_track_table_t * parse_asx(bgav_input_context_t * input)
   {
-  int result;
+  bgav_track_table_t * result;
   bgav_yml_node_t * node;
   
-  
-  node = bgav_yml_parse(r->input);
-
+  node = bgav_input_get_yml(input);
   if(!node)
     {
-    
-    bgav_log(r->opt, BGAV_LOG_ERROR, LOG_DOMAIN, "Parse asx failed (yml error)");
+    bgav_log(input->opt, BGAV_LOG_ERROR, LOG_DOMAIN,
+             "Parse asx failed (yml error)");
     return 0;
     }
-  result = xml_2_asx(r, node);
 
+  result = xml_2_asx(node);
   bgav_yml_free(node);
 
   if(!result)
-    bgav_log(r->opt, BGAV_LOG_ERROR, LOG_DOMAIN, "Parse asx failed");
+    bgav_log(input->opt, BGAV_LOG_ERROR, LOG_DOMAIN, "Parse asx failed");
 
   return result;
   }
@@ -213,5 +217,5 @@ const bgav_redirector_t bgav_redirector_asx =
   {
     .name =  "ASX (Windows Media)",
     .probe = probe_asx,
-    .parse = parse_asx
+    .parse = parse_asx,
   };

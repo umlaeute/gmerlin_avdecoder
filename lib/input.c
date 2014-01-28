@@ -36,7 +36,7 @@
 #define ALLOC_SIZE    128
 #define MAX_REDIRECTIONS 5
 
-static do_buffer(bgav_input_context_t * ctx)
+static void do_buffer(bgav_input_context_t * ctx)
   {
   if(ctx->flags & BGAV_INPUT_DO_BUFFER)
     {
@@ -957,6 +957,10 @@ void bgav_input_close(bgav_input_context_t * ctx)
   opt = ctx->opt;
   memset(ctx, 0, sizeof(*ctx));
   ctx->opt = opt;
+
+  if(ctx->yml)
+    bgav_yml_free(ctx->yml);
+
   return;
   }
 
@@ -1000,7 +1004,7 @@ void bgav_input_skip(bgav_input_context_t * ctx, int64_t bytes)
       ctx->buffer_size = 0;
       }
     }
-  if(ctx->flags & (BGAV_INPUT_CAN_SEEK_BYTE|BGAV_INPUT_SEEK_SLOW) ==
+  if((ctx->flags & (BGAV_INPUT_CAN_SEEK_BYTE|BGAV_INPUT_SEEK_SLOW)) ==
      BGAV_INPUT_CAN_SEEK_BYTE)
     bgav_input_seek(ctx, bytes_to_skip, SEEK_CUR);
   else /* Only small amounts of data should be skipped like this */
@@ -1168,5 +1172,72 @@ int bgav_input_reopen(bgav_input_context_t * ctx)
   fail:
   if(url)
     free(url);
+  return ret;
+  }
+
+bgav_yml_node_t * bgav_input_get_yml(bgav_input_context_t * ctx)
+  {
+  if(ctx->yml)
+    return ctx->yml;
+  else if(bgav_yml_probe(ctx))
+    {
+    ctx->yml = bgav_yml_parse(ctx);
+    return ctx->yml;
+    }
+  return NULL;
+  }
+
+char * bgav_input_absolute_url(bgav_input_context_t * ctx, const char * url)
+  {
+  char * ret = NULL;
+  char * base;
+  const char * pos1;
+  const char * pos2;
+
+  // Return early for complete URL
+  if(strstr(url, "://"))
+    return gavl_strdup(url);
+  
+  /* Filename */
+  if(ctx->filename)
+    {
+    if(*url == '/')            // Absolute path
+      return gavl_strdup(url);
+    else                       // Relative path
+      {
+      pos1 = strrchr(ctx->filename, '/');
+      base = gavl_strndup(ctx->filename, pos1);
+      ret = bgav_sprintf("%s/%s", base, url);
+      free(base);
+      return ret;
+      }
+    }
+  
+  /* URL */
+  else if(*url == '/') // URL relative to host
+    {
+    pos1 = strstr(ctx->url, "://");
+
+    if(!pos1)
+      pos1 = ctx->url;
+    else
+      pos1 += 3;
+
+    pos2 = strchr(pos1, '/');
+    if(!pos2)
+      pos2 = pos1 + strlen(pos1);
+    
+    base = gavl_strndup(pos1, pos2);
+    ret = bgav_sprintf("%s/%s", base, url);
+    free(base);
+    }
+  else // Relative to file
+    {
+    pos1 = strrchr(ctx->url, '/');
+    base = gavl_strndup(ctx->url, pos1);
+    ret = bgav_sprintf("%s/%s", base, url);
+    free(base);
+    return ret;
+    }
   return ret;
   }

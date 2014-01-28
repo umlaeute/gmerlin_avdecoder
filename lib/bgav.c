@@ -83,15 +83,9 @@ int bgav_init(bgav_t * ret)
     /* First, we try the redirector, because we never need to
        skip bytes for them. */
 
-    redirector = bgav_redirector_probe(ret->input, &ret->yml);
-    if(redirector)
+    if((redirector = bgav_redirector_probe(ret->input)))
       {
-      ret->redirector = calloc(1, sizeof(*(ret->redirector)));
-      ret->redirector->input = ret->input;
-      ret->redirector->opt = &ret->opt;
-      ret->redirector->yml = ret->yml;
-      
-      if(!redirector->parse(ret->redirector))
+      if(!(ret->tt = redirector->parse(ret->input)))
         goto fail;
       else
         return 1;
@@ -102,16 +96,15 @@ int bgav_init(bgav_t * ret)
     if(bgav_id3v2_probe(ret->input))
       ret->input->id3v2 = bgav_id3v2_read(ret->input);
     
-    demuxer = bgav_demuxer_probe(ret->input, ret->yml);
+    demuxer = bgav_demuxer_probe(ret->input);
     
     if(demuxer)
       {
       ret->demuxer = create_demuxer(ret, demuxer);
-      if(!bgav_demuxer_start(ret->demuxer, ret->yml))
-        {
+      if(!bgav_demuxer_start(ret->demuxer))
         goto fail;
-        }
-      if(ret->demuxer->redirector)
+
+      if(bgav_is_redirector(ret))
         return 1;
       }
     if(!ret->demuxer)
@@ -167,11 +160,6 @@ int bgav_init(bgav_t * ret)
     {
     bgav_demuxer_destroy(ret->demuxer);
     ret->demuxer = NULL;
-    }
-  if(ret->redirector)
-    {
-    bgav_redirector_destroy(ret->redirector);
-    ret->redirector = NULL;
     }
   return 0;
   }
@@ -231,9 +219,8 @@ int bgav_open(bgav_t * ret, const char * location)
   return 0;
   }
 
-
-
-int bgav_open_fd(bgav_t * ret, int fd, int64_t total_size, const char * mimetype)
+int bgav_open_fd(bgav_t * ret, int fd, int64_t total_size,
+                 const char * mimetype)
   {
   bgav_codecs_init(&ret->opt);
   ret->input = bgav_input_open_fd(fd, total_size, mimetype);
@@ -257,8 +244,6 @@ void bgav_close(bgav_t * b)
   
   if(b->demuxer)
     bgav_demuxer_destroy(b->demuxer);
-  if(b->redirector)
-    bgav_redirector_destroy(b->redirector);
 
   if(b->input)
     {
@@ -268,10 +253,6 @@ void bgav_close(bgav_t * b)
 
   bgav_options_free(&b->opt);
 
-  if(b->yml)
-    bgav_yml_free(b->yml);
-  
-  
   free(b);
   }
 
@@ -365,7 +346,7 @@ int bgav_select_track(bgav_t * b, int track)
 
     if(!b->input->input->select_track(b->input, track))
       return 0;
-    bgav_demuxer_start(b->demuxer, NULL);
+    bgav_demuxer_start(b->demuxer);
 
     set_stream_demuxers(b->tt->cur, b->demuxer);
     
@@ -459,7 +440,7 @@ int bgav_select_track(bgav_t * b, int track)
         }
       else
         {
-        bgav_demuxer_start(b->demuxer, NULL);
+        bgav_demuxer_start(b->demuxer);
         
         if(b->demuxer->tt)
           {

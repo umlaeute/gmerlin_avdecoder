@@ -37,21 +37,25 @@ static int probe_ref(bgav_input_context_t * input)
   return 0;
   }
 
-static int parse_ref(bgav_redirector_context_t * r)
+static bgav_track_table_t * parse_ref(bgav_input_context_t * input)
   {
   char * buffer = NULL;
   uint32_t buffer_alloc = 0;
   char * pos;
-    
-  if(!bgav_input_read_line(r->input, &buffer, &buffer_alloc, 0, NULL))
-    return 0;
+  bgav_track_table_t * ret;
+  bgav_track_t * t;
+  
+  if(!bgav_input_read_line(input, &buffer, &buffer_alloc, 0, NULL))
+    return NULL;
 
   if(strncasecmp(buffer, "[Reference]", 11))
-    return 0;
+    return NULL;
+
+  ret = bgav_track_table_create(0);
   
   while(1)
     {
-    if(!bgav_input_read_line(r->input, &buffer, &buffer_alloc, 0, NULL))
+    if(!bgav_input_read_line(input, &buffer, &buffer_alloc, 0, NULL))
       break;
 
     if(!strncasecmp(buffer, "ref", 3) && isdigit(buffer[3]))
@@ -60,24 +64,27 @@ static int parse_ref(bgav_redirector_context_t * r)
       if(pos)
         {
         pos++;
-        r->num_urls++;
-        r->urls = realloc(r->urls, r->num_urls * sizeof(*(r->urls)));
-        memset(r->urls + r->num_urls - 1, 0, sizeof(*(r->urls)));
 
-        gavl_metadata_set_nocpy(&r->urls[r->num_urls-1].m,
+        t = bgav_track_table_append_track(ret);
+        
+        gavl_metadata_set_nocpy(&t->metadata,
                                 GAVL_META_LABEL,
                                 bgav_sprintf("Stream %d (%s)",
-                                             r->num_urls,
+                                             ret->num_tracks,
                                              pos));
         
         if(!strncasecmp(pos, "http://", 7))
-          r->urls[r->num_urls-1].url = bgav_sprintf("mmsh%s", pos+4);
+          gavl_metadata_set_nocpy(&t->metadata,
+                                  GAVL_META_REFURL,
+                                  bgav_sprintf("mmsh%s", pos+4));
         else
-          r->urls[r->num_urls-1].url = bgav_sprintf("%s", pos);
+          gavl_metadata_set(&t->metadata,
+                            GAVL_META_REFURL,
+                            pos);
         }
       }
     }
-  return 1;
+  return ret;
   }
 
 const bgav_redirector_t bgav_redirector_ref = 

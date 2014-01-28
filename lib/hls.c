@@ -216,7 +216,7 @@ static void parse_urls(bgav_hls_t * h, const char * m3u8)
       }
     else if((*(lines[i]) != '#') && have_extinf)
       {
-      h->urls[h->num_urls].url = bgav_absolute_url(h->ctx->url, lines[i]);
+      h->urls[h->num_urls].url = bgav_input_absolute_url(h->ctx, lines[i]);
       h->urls[h->num_urls].seq = seq++;
       h->num_urls++;
       have_extinf = 0;

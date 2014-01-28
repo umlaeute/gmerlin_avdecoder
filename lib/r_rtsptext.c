@@ -40,20 +40,14 @@ static int probe_rtsptext(bgav_input_context_t * input)
   return 0;
   }
 
-static void add_url(bgav_redirector_context_t * r)
-  {
-  r->num_urls++;
-  r->urls = realloc(r->urls, r->num_urls * sizeof(*(r->urls)));
-  memset(r->urls + r->num_urls - 1, 0, sizeof(*(r->urls)));
-  }
-
-static int parse_rtsptext(bgav_redirector_context_t * r)
+static bgav_track_table_t * parse_rtsptext(bgav_input_context_t * input)
   {
   char * buffer = NULL;
   uint32_t buffer_alloc = 0;
   char * pos;
+  bgav_track_table_t * ret;
   
-  if(!bgav_input_read_line(r->input, &buffer, &buffer_alloc, 0, NULL))
+  if(!bgav_input_read_line(input, &buffer, &buffer_alloc, 0, NULL))
     return 0;
 
   pos = buffer + 8;
@@ -61,23 +55,22 @@ static int parse_rtsptext(bgav_redirector_context_t * r)
   while(isspace(*pos) && (*pos != '\0'))
     pos++;
 
+  ret = bgav_track_table_create(1);
+  
   if(*pos != '\0')
     {
-    add_url(r);
-    r->urls[r->num_urls-1].url = gavl_strdup(pos);
+    gavl_metadata_set(&ret->tracks[0].metadata, GAVL_META_REFURL, pos);
     }
   else
     {
-    if(!bgav_input_read_line(r->input, &buffer, &buffer_alloc, 0, NULL))
+    if(!bgav_input_read_line(input, &buffer, &buffer_alloc, 0, NULL))
       return 0;
-    add_url(r);
-    r->urls[r->num_urls-1].url = gavl_strdup(buffer);
-    
+    gavl_metadata_set(&ret->tracks[0].metadata, GAVL_META_REFURL, buffer);
     }
   
   if(buffer)
     free(buffer);
-  return !!(r->num_urls);
+  return ret;
   }
 
 const bgav_redirector_t bgav_redirector_rtsptext = 

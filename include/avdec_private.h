@@ -41,7 +41,6 @@ typedef struct bgav_demuxer_s         bgav_demuxer_t;
 typedef struct bgav_demuxer_context_s bgav_demuxer_context_t;
 
 typedef struct bgav_redirector_s         bgav_redirector_t;
-typedef struct bgav_redirector_context_s bgav_redirector_context_t;
 
 typedef struct bgav_packet_s          bgav_packet_t;
 typedef struct bgav_file_index_s      bgav_file_index_t;
@@ -1021,7 +1020,8 @@ struct bgav_input_context_s
   
   /* Inputs set this, if indexing is supported */
   char * index_file;
-  
+
+  bgav_yml_node_t * yml;
   };
 
 /* input.c */
@@ -1066,9 +1066,13 @@ int bgav_input_get_float_32_le(bgav_input_context_t * ctx, float * ret);
 int bgav_input_get_double_64_be(bgav_input_context_t * ctx, double * ret);
 int bgav_input_get_double_64_le(bgav_input_context_t * ctx, double * ret);
 
+bgav_yml_node_t * bgav_input_get_yml(bgav_input_context_t * ctx);
 
 #define bgav_input_read_fourcc(a,b) bgav_input_read_32_be(a,b)
 #define bgav_input_get_fourcc(a,b)  bgav_input_get_32_be(a,b)
+
+char * bgav_input_absolute_url(bgav_input_context_t * ctx, const char * rel_url);
+
 
 /*
  *  Read one line from the input. Linebreak characters
@@ -1315,11 +1319,8 @@ int bgav_build_file_index(bgav_t * b, gavl_time_t * time_needed);
 struct bgav_demuxer_s
   {
   int  (*probe)(bgav_input_context_t*);
-  int  (*probe_yml)(bgav_yml_node_t*);
 
   int  (*open)(bgav_demuxer_context_t * ctx);
-  int  (*open_yml)(bgav_demuxer_context_t * ctx,
-                   bgav_yml_node_t * node);
   
   int  (*next_packet)(bgav_demuxer_context_t*);
 
@@ -1432,8 +1433,6 @@ struct bgav_demuxer_context_s
 
   gavl_edl_t * edl;
   
-  bgav_redirector_context_t * redirector;
-  
   };
 
 /* demuxer.c */
@@ -1447,8 +1446,7 @@ bgav_demuxer_create(const bgav_options_t * opt,
                     const bgav_demuxer_t * demuxer,
                     bgav_input_context_t * input);
 
-const bgav_demuxer_t * bgav_demuxer_probe(bgav_input_context_t * input,
-                                          bgav_yml_node_t * yml);
+const bgav_demuxer_t * bgav_demuxer_probe(bgav_input_context_t * input);
 
 void bgav_demuxer_create_buffers(bgav_demuxer_context_t * demuxer);
 void bgav_demuxer_destroy(bgav_demuxer_context_t * demuxer);
@@ -1461,14 +1459,7 @@ bgav_demuxer_peek_packet_read(void * stream, bgav_packet_t **,
                               int force);
 
 /* Generic get/peek functions */
-#if 0
-bgav_packet_t *
-bgav_demuxer_peek_packet_read_generic(bgav_demuxer_context_t * demuxer,
-                                      bgav_stream_t * s, int force);
-bgav_packet_t *
-bgav_demuxer_get_packet_read_generic(bgav_demuxer_context_t * demuxer,
-                                     bgav_stream_t * s);
-#endif
+
 void
 bgav_demuxer_seek(bgav_demuxer_context_t * demuxer,
                   int64_t time, int scale);
@@ -1483,8 +1474,7 @@ bgav_demuxer_next_packet(bgav_demuxer_context_t * demuxer);
  *  redirector context
  */
 
-int bgav_demuxer_start(bgav_demuxer_context_t * ctx,
-                       bgav_yml_node_t * yml);
+int bgav_demuxer_start(bgav_demuxer_context_t * ctx);
 void bgav_demuxer_stop(bgav_demuxer_context_t * ctx);
 
 
@@ -1499,35 +1489,12 @@ struct bgav_redirector_s
   {
   const char * name;
   int (*probe)(bgav_input_context_t*);
-  int (*probe_yml)(bgav_yml_node_t*);
-
-  int (*parse)(bgav_redirector_context_t*);
-  
+  bgav_track_table_t * (*parse)(bgav_input_context_t*);
   };
 
-typedef struct
-  {
-  char * url;
-  // char * name;
-  gavl_metadata_t m;
-  } bgav_url_info_t;
 
-struct bgav_redirector_context_s
-  {
-  bgav_redirector_t * redirector;
-  bgav_input_context_t * input;
-  bgav_yml_node_t * yml;
-  
-  int parsed;
-  int num_urls;
-  bgav_url_info_t * urls;
+const bgav_redirector_t * bgav_redirector_probe(bgav_input_context_t * input);
 
-  const bgav_options_t * opt;
-  };
-
-void bgav_redirector_destroy(bgav_redirector_context_t*r);
-const bgav_redirector_t * bgav_redirector_probe(bgav_input_context_t * input,
-                                                bgav_yml_node_t ** yml);
 
 /* Actual decoder */
 
@@ -1541,8 +1508,6 @@ struct bgav_s
   
   bgav_input_context_t * input;
   bgav_demuxer_context_t * demuxer;
-  bgav_redirector_context_t * redirector;
-
   bgav_track_table_t * tt;
   
   int is_running;
@@ -1552,9 +1517,6 @@ struct bgav_s
   /* Set by the seek function */
 
   int eof;
-  bgav_yml_node_t * yml;
-  // bgav_edl_dec_t * edl_dec;
-  
   };
 
 /* bgav.c */
@@ -1651,7 +1613,6 @@ int bgav_read_data_fd(const bgav_options_t * opt, int fd,
 
 const char * bgav_coding_type_to_string(int type);
 
-char * bgav_absolute_url(const char * base_url, const char * url);
 
 
 /* tcp.c */

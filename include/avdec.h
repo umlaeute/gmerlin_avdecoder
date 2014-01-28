@@ -1143,6 +1143,16 @@ const char * bgav_redirector_get_url(bgav_t * bgav, int index);
 BGAV_PUBLIC
 const char * bgav_redirector_get_name(bgav_t * bgav, int index);
 
+/** \ingroup redirector
+ *  \brief Get the metadata for an URL
+ *  \param bgav A decoder instance
+ *  \param index Index of the url (starting with 0)
+ *  \returns The metadata assiciated with this URL
+ */
+
+BGAV_PUBLIC
+const gavl_metadata_t * bgav_redirector_get_metadata(bgav_t * b, int index);
+  
 /***************************************************
  * Get information about the file
  ***************************************************/

@@ -58,8 +58,11 @@ static int open_common(avdec_priv * avdec)
       else
         name = avdec->track_info[i].url;
 
-      gavl_metadata_set(&avdec->track_info[i].metadata,
-                        GAVL_META_LABEL, name);
+      // gavl_metadata_set(&avdec->track_info[i].metadata,
+      //                   GAVL_META_LABEL, name);
+
+      gavl_metadata_copy(&avdec->track_info[i].metadata,
+                         bgav_redirector_get_metadata(avdec->dec, i));
       }
     return 1;
     }

@@ -138,7 +138,7 @@ static int open_mmsh(bgav_input_context_t * ctx, const char * url, char ** r)
   ctx->url = gavl_strdup(url);
 
   ctx->demuxer = bgav_demuxer_create(ctx->opt, &bgav_demuxer_asf, ctx);
-  if(!bgav_demuxer_start(ctx->demuxer, NULL))
+  if(!bgav_demuxer_start(ctx->demuxer))
     {
     bgav_log(ctx->opt, BGAV_LOG_ERROR, LOG_DOMAIN,
              "Initializing asf demuxer failed");

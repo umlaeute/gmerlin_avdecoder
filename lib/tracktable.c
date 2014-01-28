@@ -72,7 +72,6 @@ void bgav_track_table_remove_track(bgav_track_table_t * t, int idx)
   memset(&t->tracks[t->num_tracks - 1], 0, 
          sizeof(t->tracks[t->num_tracks - 1]));
   t->num_tracks--;
-  
   }
 
 void bgav_track_table_ref(bgav_track_table_t * t)

@@ -24,56 +24,35 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-static int probe_yml_qtl(bgav_yml_node_t * node)
+static int probe_yml_qtl(bgav_input_context_t * input)
   {
-  if(bgav_yml_find_by_pi(node, "quicktime") &&
+  bgav_yml_node_t * node;
+  if((node = bgav_input_get_yml(input)) &&
+     bgav_yml_find_by_pi(node, "quicktime") &&
      bgav_yml_find_by_name(node, "embed"))
     return 1;
   return 0;
   }
 
-static void add_url(bgav_redirector_context_t * r)
+static bgav_track_table_t * parse_qtl(bgav_input_context_t * input)
   {
-  r->num_urls++;
-  r->urls = realloc(r->urls, r->num_urls * sizeof(*(r->urls)));
-  memset(r->urls + r->num_urls - 1, 0, sizeof(*(r->urls)));
-  }
-
-static int parse_qtl(bgav_redirector_context_t * r)
-  {
-  char * filename_base, *pos;
   const char * url;
   bgav_yml_node_t * node;
+  bgav_track_table_t * ret;
   
-  node = bgav_yml_find_by_name(r->yml, "embed");
-  if(!node)
-    return 0;
-  add_url(r);
-
-  url = bgav_yml_get_attribute(node, "src");
-  
-  if(r->input->filename &&
-     !strstr(url, "://") &&
-     (r->input->filename[0] != '/'))
-    {
-    filename_base = gavl_strdup(r->input->filename);
-    pos = strrchr(filename_base, '/');
-    if(pos)
-      {
-      *pos = '\0';
-      r->urls[r->num_urls-1].url = bgav_sprintf("%s/%s", filename_base,
-                                                url);
-      return 1;
-      }
-    }
-  
-  r->urls[r->num_urls-1].url = gavl_strdup(url);
-  return 1;
+  if(!(node = bgav_input_get_yml(input)) ||
+     !(node = bgav_yml_find_by_name(node, "embed")) ||
+     !(url = bgav_yml_get_attribute(node, "src")))
+    return NULL;
+  ret = bgav_track_table_create(1);
+  gavl_metadata_set(&ret->tracks[0].metadata,
+                    GAVL_META_REFURL, url);
+  return ret;
   }
 
 const bgav_redirector_t bgav_redirector_qtl = 
   {
     .name =  "qtl",
-    .probe_yml = probe_yml_qtl,
+    .probe = probe_yml_qtl,
     .parse = parse_qtl,
   };

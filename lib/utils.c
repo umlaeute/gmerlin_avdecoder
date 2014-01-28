@@ -747,34 +747,3 @@ uint32_t bgav_compression_id_2_fourcc(gavl_codec_id_t id)
   return 0;
   }
 
-char * bgav_absolute_url(const char * base_url, const char * url)
-  {
-  char * ret = NULL;
-  char * base;
-  const char * pos1;
-  const char * pos2;
-  
-  if(strstr(url, "://")) // Complete URL
-    return gavl_strdup(url);
-  else if(*url == '/') // Relative to host
-    {
-    pos1 = base_url + 7;
-    pos2 = strchr(base_url, '/');
-    if(!pos2)
-      pos2 = base_url + strlen(base_url);
-    
-    base = gavl_strndup(base_url, pos2);
-    
-    ret = bgav_sprintf("%s/%s", base, url);
-    free(base);
-    }
-  else // Relative m3u8
-    {
-    pos2 = strrchr(base_url, '/');
-    base = gavl_strndup(base_url, pos2);
-    ret = bgav_sprintf("%s/%s", base, url);
-    free(base);
-    }
-  return ret;
-
-  }
