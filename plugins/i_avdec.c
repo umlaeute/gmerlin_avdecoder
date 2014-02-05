@@ -38,17 +38,16 @@
 static int open_common(avdec_priv * avdec)
   {
   int i;
-  const char * str;
+  //  const char * str;
   if(bgav_is_redirector(avdec->dec))
     {
     avdec->num_tracks = bgav_redirector_get_num_urls(avdec->dec);
     avdec->track_info = calloc(avdec->num_tracks, sizeof(*(avdec->track_info)));
     for(i = 0; i < avdec->num_tracks; i++)
       {
+#if 0
       const char * name;
-      
       str = bgav_redirector_get_url(avdec->dec, i);
-
       avdec->track_info[i].url = gavl_strrep(avdec->track_info[i].url, str);
       
       str = bgav_redirector_get_name(avdec->dec, i);
@@ -60,7 +59,7 @@ static int open_common(avdec_priv * avdec)
 
       // gavl_metadata_set(&avdec->track_info[i].metadata,
       //                   GAVL_META_LABEL, name);
-
+#endif
       gavl_metadata_copy(&avdec->track_info[i].metadata,
                          bgav_redirector_get_metadata(avdec->dec, i));
       }
