@@ -174,12 +174,21 @@ static gavl_source_status_t decode_frame_dts(bgav_stream_t * s)
     bgav_stream_done_packet_read(s, priv->packet);
     priv->packet = NULL;
     }
+
+  priv->frame->valid_samples = BLOCK_SAMPLES;
   
+#if 0
+  
+  s->data.audio.frame->samples.f = priv->frame->samples.f;
   for(j = 0; j < s->data.audio.format.num_channels; j++)
     s->data.audio.frame->channels.f[j] = priv->frame->channels.f[j];
-  
-  priv->frame->valid_samples = BLOCK_SAMPLES;
+
   s->data.audio.frame->valid_samples = BLOCK_SAMPLES;
+#else
+  gavl_audio_frame_copy_ptrs(&s->data.audio.format,
+                             s->data.audio.frame, priv->frame);
+#endif
+
 
   s->flags |= STREAM_HAVE_FRAME;
 

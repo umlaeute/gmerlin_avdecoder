@@ -715,6 +715,7 @@ fourccs[] =
     { GAVL_CODEC_ID_FLAC,      BGAV_MK_FOURCC('F','L','A','C') }, 
     { GAVL_CODEC_ID_OPUS,      BGAV_MK_FOURCC('O','P','U','S') }, 
     { GAVL_CODEC_ID_SPEEX,     BGAV_MK_FOURCC('S','P','E','X') }, 
+    { GAVL_CODEC_ID_DTS,       BGAV_MK_FOURCC('d','t','s',' ') }, 
     
     /* Video */
     { GAVL_CODEC_ID_JPEG,      BGAV_MK_FOURCC('j','p','e','g') }, 
@@ -729,6 +730,7 @@ fourccs[] =
     { GAVL_CODEC_ID_DIRAC,     BGAV_MK_FOURCC('d','r','a','c') },
     { GAVL_CODEC_ID_DV,        BGAV_MK_FOURCC('D','V',' ',' ') },
     { GAVL_CODEC_ID_VP8,       BGAV_MK_FOURCC('V','P','8','0') },
+    { GAVL_CODEC_ID_DIV3,      BGAV_MK_FOURCC('D','I','V','3') },
 
     /* Overlay */
     { GAVL_CODEC_ID_DVDSUB,    BGAV_MK_FOURCC('D','V','D','S') },
