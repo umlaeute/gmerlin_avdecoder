@@ -914,40 +914,52 @@ static void set_packet_data(bgav_stream_t * s,
   {
   bgav_mkv_track_t * t = s->priv;
 
-  if((t->num_encodings == 1) &&
-     (t->encodings[0].ContentEncodingType == MKV_CONTENT_ENCODING_COMPRESSION) &&
-     (t->encodings[0].ContentCompression.ContentCompAlgo == MKV_CONTENT_COMP_ALGO_ZLIB))
+  if(t->num_encodings == 1)
     {
-    uLongf out_len;
-    int err;
-    /* zlib decompression (probably the dumbest possible routine,
-       but it seems that this is used just for subtitles) */
-
-    bgav_packet_alloc(p, len * 5); // Optimistically assume 1:5 ratio
-    
-    while(1)
+    if((t->encodings[0].ContentEncodingType == MKV_CONTENT_ENCODING_COMPRESSION) &&
+       (t->encodings[0].ContentCompression.ContentCompAlgo == MKV_CONTENT_COMP_ALGO_ZLIB))
       {
-      out_len = p->data_alloc;
-      err = uncompress(p->data, &out_len, data, len);
+      uLongf out_len;
+      int err;
+      /* zlib decompression (probably the dumbest possible routine,
+         but it seems that this is used just for subtitles) */
 
-      if(err == Z_OK)
+      bgav_packet_alloc(p, len * 5); // Optimistically assume 1:5 ratio
+    
+      while(1)
         {
-        p->data_size = out_len;
-        // fprintf(stderr, "Uncompressed packet %d -> %d\n", len, p->data_size);
-        break;
-        }
-      else if(err == Z_BUF_ERROR)
-        bgav_packet_alloc(p, p->data_alloc * 2); // Double the compression ratio
-      else
-        {
-        bgav_log(s->opt, BGAV_LOG_ERROR, LOG_DOMAIN,
-                 "Decompression of matroska packet failed");
-        p->data_size = 0;
-        break;
+        out_len = p->data_alloc;
+        err = uncompress(p->data, &out_len, data, len);
+
+        if(err == Z_OK)
+          {
+          p->data_size = out_len;
+          // fprintf(stderr, "Uncompressed packet %d -> %d\n", len, p->data_size);
+          break;
+          }
+        else if(err == Z_BUF_ERROR)
+          bgav_packet_alloc(p, p->data_alloc * 2); // Double the compression ratio
+        else
+          {
+          bgav_log(s->opt, BGAV_LOG_ERROR, LOG_DOMAIN,
+                   "Decompression of matroska packet failed");
+          p->data_size = 0;
+          break;
+          }
         }
       }
+    else if((t->encodings[0].ContentEncodingType == MKV_CONTENT_ENCODING_COMPRESSION) &&
+            (t->encodings[0].ContentCompression.ContentCompAlgo == MKV_CONTENT_COMP_ALGO_HEADER_STRIPPING))
+      {
+      bgav_packet_alloc(p, len + t->encodings[0].ContentCompression.ContentCompSettingsLen);
+      memcpy(p->data,
+             t->encodings[0].ContentCompression.ContentCompSettings,
+             t->encodings[0].ContentCompression.ContentCompSettingsLen);
+      memcpy(p->data + t->encodings[0].ContentCompression.ContentCompSettingsLen, data, len);
+      p->data_size = t->encodings[0].ContentCompression.ContentCompSettingsLen + len;
+      }
     }
-  else
+  else if(t->num_encodings == 0)
     {
     /* Plain packet */
     bgav_packet_alloc(p, len);
