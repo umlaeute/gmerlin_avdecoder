@@ -640,6 +640,7 @@ static void set_metadata_string(bgav_http_header_t * header,
 
 void bgav_http_set_metadata(bgav_http_t * h, gavl_metadata_t * m)
   {
+  int bitrate = 0;
   const char * var;
 
   var = bgav_http_header_get_var(h->header, "Content-Type");
@@ -648,7 +649,6 @@ void bgav_http_set_metadata(bgav_http_t * h, gavl_metadata_t * m)
   else if(bgav_http_header_get_var(h->header, "icy-notice1"))
     gavl_metadata_set(m, GAVL_META_MIMETYPE, "audio/mpeg");
   
-
   /* Get Metadata */
   
   set_metadata_string(h->header,
@@ -659,6 +659,17 @@ void bgav_http_set_metadata(bgav_http_t * h, gavl_metadata_t * m)
                       comment_vars, m, GAVL_META_COMMENT);
   set_metadata_string(h->header,
                       url_vars, m, GAVL_META_URL);
+  
+  if((var = bgav_http_header_get_var(h->header, "icy-br")))
+    bitrate = atoi(var);
+  else if((var = bgav_http_header_get_var(h->header, "ice-audio-info")))
+    {
+    var = strstr(var, "bitrate=");
+    if(var)
+      bitrate = atoi(var + 8);
+    }
+  if(bitrate)
+    gavl_metadata_set_int(m, GAVL_META_BITRATE, bitrate * 1000);
   }
 
 int64_t bgav_http_total_bytes(bgav_http_t * h)
