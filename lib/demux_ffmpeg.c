@@ -660,7 +660,7 @@ static int open_ffmpeg(bgav_demuxer_context_t * ctx)
   
 #ifdef NEW_IO_API
   // TODO
-  priv->buffer = malloc(BUFFER_SIZE);
+  priv->buffer = av_malloc(BUFFER_SIZE);
   priv->pb =
     avio_alloc_context(priv->buffer,
                        BUFFER_SIZE,
@@ -811,7 +811,7 @@ static void close_ffmpeg(bgav_demuxer_context_t * ctx)
   
 #ifdef NEW_IO
   if(priv->buffer)
-    free(priv->buffer);
+    av_free(priv->buffer);
 #endif
   if(priv)
     free(priv);
