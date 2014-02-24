@@ -1008,7 +1008,7 @@ void bgav_input_skip(bgav_input_context_t * ctx, int64_t bytes)
      BGAV_INPUT_CAN_SEEK_BYTE)
     bgav_input_seek(ctx, bytes_to_skip, SEEK_CUR);
   else if(((ctx->flags & (BGAV_INPUT_CAN_SEEK_BYTE|BGAV_INPUT_SEEK_SLOW)) ==
-           BGAV_INPUT_CAN_SEEK_BYTE|BGAV_INPUT_SEEK_SLOW) && (bytes_to_skip >= 10 * 1024))
+           (BGAV_INPUT_CAN_SEEK_BYTE|BGAV_INPUT_SEEK_SLOW)) && (bytes_to_skip >= 10 * 1024))
     bgav_input_seek(ctx, bytes_to_skip, SEEK_CUR);
   else /* Only small amounts of data should be skipped like this */
     {

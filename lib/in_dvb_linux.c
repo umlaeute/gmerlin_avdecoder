@@ -749,6 +749,9 @@ static int open_dvb(bgav_input_context_t * ctx, const char * url, char ** redire
   priv = calloc(1, sizeof(*priv));
   ctx->priv = priv;
 
+  if(!strncasecmp(url, "dvb://", 6))
+    url += 6;
+  
   priv->device_directory  = gavl_strdup(url);
   priv->filter_filename   = bgav_sprintf("%s/demux0", url);
   priv->dvr_filename      = bgav_sprintf("%s/dvr0", url);
