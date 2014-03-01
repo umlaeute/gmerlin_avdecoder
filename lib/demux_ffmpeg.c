@@ -209,7 +209,7 @@ static int probe_ffmpeg(bgav_input_context_t * input)
 
 typedef struct
   {
-  enum CodecID id;
+  enum AVCodecID id;
   uint32_t fourcc;
   int bits; /* For audio codecs */
   uint32_t codec_tag;
@@ -349,7 +349,7 @@ static audio_codec_map_t audio_codecs[] =
 
 typedef struct
   {
-  enum CodecID id;
+  enum AVCodecID id;
   uint32_t fourcc;
   } video_codec_map_t;
 

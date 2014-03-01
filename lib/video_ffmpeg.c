@@ -88,7 +88,7 @@ typedef struct
   {
   const char * decoder_name;
   const char * format_name;
-  enum CodecID ffmpeg_id;
+  enum AVCodecID ffmpeg_id;
   const uint32_t * fourccs;
 
   int (*get_format)(bgav_stream_t*, bgav_packet_t * p);
@@ -696,7 +696,7 @@ decode_ffmpeg(bgav_stream_t * s, gavl_video_frame_t * f)
   }
 
 #ifdef HAVE_VDPAU
-static AVCodec * find_decoder(enum CodecID id, bgav_stream_t * s)
+static AVCodec * find_decoder(enum AVCodecID id, bgav_stream_t * s)
   {
   AVCodec * ret = NULL;
 
@@ -742,7 +742,7 @@ static void cleanup_vdpau(bgav_stream_t * s)
     }
   }
 
-static int init_vdpau(bgav_stream_t * s, enum CodecID id)
+static int init_vdpau(bgav_stream_t * s, enum AVCodecID id)
   {
   int i;
   ffmpeg_video_priv * priv = s->decoder_priv;

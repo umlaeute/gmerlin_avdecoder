@@ -100,7 +100,7 @@ typedef struct
   {
   const char * decoder_name;
   const char * format_name;
-  enum CodecID ffmpeg_id;
+  enum AVCodecID ffmpeg_id;
   uint32_t * fourccs;
   int codec_tag;
   int preroll;

@@ -109,7 +109,7 @@ static gavl_source_status_t decode_frame_a52(bgav_stream_t * s)
     bgav_log(s->opt, BGAV_LOG_ERROR, LOG_DOMAIN, "Getting initial AC3 frame failed");
     return GAVL_SOURCE_EOF;
     }
-  if(frame_bytes < p->data_size)
+  if(frame_bytes > p->data_size)
     {
     bgav_log(s->opt, BGAV_LOG_ERROR, LOG_DOMAIN, "Too little data");
     return GAVL_SOURCE_EOF;
@@ -211,7 +211,7 @@ static bgav_audio_decoder_t decoder =
   {
     .fourccs = (uint32_t[]){ BGAV_WAVID_2_FOURCC(0x2000),
                              BGAV_MK_FOURCC('.', 'a', 'c', '3'),
-                           /* Will be swapped to AC3 by the demuxer */
+                             /* Will be swapped to AC3 by the demuxer */
                              BGAV_MK_FOURCC('d', 'n', 'e', 't'), 
                              BGAV_MK_FOURCC('a', 'c', '-', '3'), // mp4, mov
                              0x00 },

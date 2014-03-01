@@ -382,6 +382,7 @@ static uint32_t ac3_fourccs[] =
     BGAV_WAVID_2_FOURCC(0x2000),
     BGAV_MK_FOURCC('.', 'a', 'c', '3'),
     BGAV_MK_FOURCC('d', 'n', 'e', 't'), 
+    BGAV_MK_FOURCC('a', 'c', '-', '3'),
     0x00
   };
 

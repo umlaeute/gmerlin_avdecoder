@@ -1093,9 +1093,7 @@ static void init_audio(bgav_demuxer_context_t * ctx,
 
   if(desc->format.audio.wave.has_enda &&
      desc->format.audio.wave.enda.littleEndian)
-    {
     bg_as->data.audio.endianess = BGAV_ENDIANESS_LITTLE;
-    }
   else
     bg_as->data.audio.endianess = BGAV_ENDIANESS_BIG;
 
@@ -1111,6 +1109,9 @@ static void init_audio(bgav_demuxer_context_t * ctx,
     bg_as->data.audio.format.num_channels = 1;
     bg_as->data.audio.format.samplerate = 16000;
     }
+  /* AC3 in mp4 can have multiple frames per packet */
+  else if(bg_as->fourcc == BGAV_MK_FOURCC('a', 'c', '-', '3'))
+    bg_as->flags |= STREAM_PARSE_FULL;
   }
 
 static void init_video(bgav_demuxer_context_t * ctx,
