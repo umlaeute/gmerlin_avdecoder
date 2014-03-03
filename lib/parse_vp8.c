@@ -31,6 +31,12 @@ static int parse_frame_vp8(bgav_video_parser_t * parser,
   {
   if(!(p->data[0] & 0x10))
     p->flags |= GAVL_PACKET_NOOUTPUT; 
+  else if(PACKET_GET_KEYFRAME(p))
+    PACKET_SET_CODING_TYPE(p, BGAV_CODING_TYPE_I);
+  else
+    PACKET_SET_CODING_TYPE(p, BGAV_CODING_TYPE_P);
+    
+
   return 1;
   }
 

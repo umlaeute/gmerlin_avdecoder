@@ -178,7 +178,8 @@ next_packet_duration_from_dts(bgav_packet_timer_t * pt, int force)
  */
 
 static gavl_source_status_t
-insert_packet_duration_from_pts(bgav_packet_timer_t * pt, bgav_packet_t ** ret, int force)
+insert_packet_duration_from_pts(bgav_packet_timer_t * pt,
+                                bgav_packet_t ** ret, int force)
   {
   bgav_packet_t * p;
   gavl_source_status_t st;

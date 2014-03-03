@@ -223,8 +223,8 @@ void bgav_mkv_element_skip(bgav_input_context_t * ctx,
      (el->id != MKV_ID_CRC32))
     {
     bgav_log(ctx->opt, BGAV_LOG_WARNING, LOG_DOMAIN,
-             "Skipping %"PRId64" bytes of element %x in %s\n",
-             el->size, el->id, parent_name);
+             "Skipping %"PRId64" (%"PRIx64") bytes of element %x in %s\n",
+             el->size, el->size, el->id, parent_name);
     }
   bgav_input_skip(ctx, el->size);
   }
@@ -1576,7 +1576,8 @@ int bgav_mkv_track_read(bgav_input_context_t * ctx,
           return 0;
         break;
       case MKV_ID_CodecPrivate:
-        if(!mkv_read_binary(ctx, &ret->CodecPrivate, &ret->CodecPrivateLen, e.size))
+        if(!mkv_read_binary(ctx, &ret->CodecPrivate,
+                            &ret->CodecPrivateLen, e.size))
           return 0;
         break;
       case MKV_ID_CodecName:

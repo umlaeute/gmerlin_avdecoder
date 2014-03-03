@@ -940,7 +940,7 @@ static int init_ffmpeg(bgav_stream_t * s)
   
   //  gavl_hexdump(s->ext_data, s->ext_size, 16);
   
-  priv->frame = avcodec_alloc_frame();
+  priv->frame = av_frame_alloc();
   priv->gavl_frame = gavl_video_frame_create(NULL);
   
   /* Some codecs need extra stuff */
@@ -1105,7 +1105,7 @@ static void close_ffmpeg(bgav_stream_t * s)
     bgav_ffmpeg_lock();
     avcodec_close(priv->ctx);
     bgav_ffmpeg_unlock();
-    free(priv->ctx);
+    av_free(priv->ctx);
     }
   if(priv->gavl_frame)
     {
@@ -1142,7 +1142,7 @@ static void close_ffmpeg(bgav_stream_t * s)
     sws_freeContext(priv->swsContext);
 #endif
   
-  free(priv->frame);
+  av_frame_free(&priv->frame);
   free(priv);
   }
 
