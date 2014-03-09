@@ -101,8 +101,11 @@ insert_packet(bgav_packet_timer_t * pt, bgav_packet_t ** ret, int force)
     }
   else
     pt->num_ip_frames++;
-  
-  p->duration = -1;
+
+  if(p->flags & GAVL_PACKET_NOOUTPUT)
+    p->duration = 0;
+  else
+    p->duration = -1;
   
   pt->packets[pt->num_packets] = p;
   pt->num_packets++;

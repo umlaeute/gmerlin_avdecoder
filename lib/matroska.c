@@ -1808,6 +1808,10 @@ static int mkv_cue_track_read(bgav_input_context_t * ctx,
         if(!mkv_read_uint(ctx, &ret->CueClusterPosition, e.size))
           return 0;
         break;
+      case MKV_ID_CueRelativePosition:
+        if(!mkv_read_uint(ctx, &ret->CueRelativePosition, e.size))
+          return 0;
+        break;
       case MKV_ID_CueBlockNumber:
         if(!mkv_read_uint(ctx, &ret->CueBlockNumber, e.size))
           return 0;

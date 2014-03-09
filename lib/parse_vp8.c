@@ -27,7 +27,7 @@
 
 static int parse_frame_vp8(bgav_video_parser_t * parser,
                            bgav_packet_t * p,
-                           int64_t prs_orig)
+                           int64_t pts_orig)
   {
   if(!(p->data[0] & 0x10))
     p->flags |= GAVL_PACKET_NOOUTPUT; 
