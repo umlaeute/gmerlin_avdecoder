@@ -1920,11 +1920,13 @@ void bgav_mkv_cues_dump(const bgav_mkv_cues_t * cues)
     for(j = 0; j < cues->points[i].num_tracks; j++)
       {
       bgav_dprintf("    Track: %"PRId64"\n", cues->points[i].tracks[j].CueTrack);
-      bgav_dprintf("      CueClusterPosition: %"PRId64"\n",
+      bgav_dprintf("      CueClusterPosition:  %"PRId64"\n",
                    cues->points[i].tracks[j].CueClusterPosition);
-      bgav_dprintf("      CueBlockNumber:     %"PRId64"\n",
+      bgav_dprintf("      CueRelativePosition: %"PRId64"\n",
+                   cues->points[i].tracks[j].CueRelativePosition);
+      bgav_dprintf("      CueBlockNumber:      %"PRId64"\n",
                    cues->points[i].tracks[j].CueBlockNumber);
-      bgav_dprintf("      CueCodecState:      %"PRId64"\n",
+      bgav_dprintf("      CueCodecState:       %"PRId64"\n",
                    cues->points[i].tracks[j].CueCodecState);
       }
     }
