@@ -322,9 +322,10 @@ static void build_index(bgav_demuxer_context_t * ctx)
       else /* Other packets (uncompressed) will be complete quicktime chunks */
         num_packets += bgav_qt_trak_chunks(trak);
       }
-    else if(!strncmp((char*)trak->mdia.minf.stbl.stsd.entries[0].data, "text", 4) ||
-            !strncmp((char*)trak->mdia.minf.stbl.stsd.entries[0].data, "tx3g", 4) ||
-            !strncmp((char*)trak->mdia.minf.stbl.stsd.entries[0].data, "mp4s", 4))
+    else if(trak->mdia.minf.stbl.stsd.entries &&
+            (!strncmp((char*)trak->mdia.minf.stbl.stsd.entries[0].data, "text", 4) ||
+             !strncmp((char*)trak->mdia.minf.stbl.stsd.entries[0].data, "tx3g", 4) ||
+             !strncmp((char*)trak->mdia.minf.stbl.stsd.entries[0].data, "mp4s", 4)))
       {
       num_packets += bgav_qt_trak_samples(trak);
       }
@@ -1311,13 +1312,11 @@ static void quicktime_init(bgav_demuxer_context_t * ctx)
       init_video(ctx, trak, i);
       }
     /* Quicktime subtitles */
-    else if(stsd->entries[0].desc.fourcc == BGAV_MK_FOURCC('t','e','x','t'))
+    else if(stsd->entries &&
+            (stsd->entries[0].desc.fourcc == BGAV_MK_FOURCC('t','e','x','t')))
       {
       const char * charset;
       
-      if(!stsd->entries)
-        continue;
-
       if(bgav_qt_is_chapter_track(moov, trak))
       //      if(0)
         {
@@ -1354,11 +1353,9 @@ static void quicktime_init(bgav_demuxer_context_t * ctx)
         }
       }
     /* MPEG-4 subtitles (3gpp timed text?) */
-    else if(stsd->entries[0].desc.fourcc == BGAV_MK_FOURCC('t','x','3','g'))
+    else if(stsd->entries &&
+            (stsd->entries[0].desc.fourcc == BGAV_MK_FOURCC('t','x','3','g')))
       {
-      if(!stsd->entries)
-        continue;
-
       if(bgav_qt_is_chapter_track(moov, trak))
         setup_chapter_track(ctx, trak);
       else
@@ -1387,7 +1384,8 @@ static void quicktime_init(bgav_demuxer_context_t * ctx)
         bg_ss->process_packet = process_packet_subtitle_tx3g;
         }
       }
-    else if(stsd->entries[0].desc.fourcc == BGAV_MK_FOURCC('t','m','c','d'))
+    else if(stsd->entries &&
+            (stsd->entries[0].desc.fourcc == BGAV_MK_FOURCC('t','m','c','d')))
       {
       priv->num_timecode_tracks++;
       if(priv->num_timecode_tracks > 1)
@@ -1399,7 +1397,8 @@ static void quicktime_init(bgav_demuxer_context_t * ctx)
       else
         priv->timecode_track = trak;
       }
-    else if(stsd->entries[0].desc.fourcc == BGAV_MK_FOURCC('m','p','4','s'))
+    else if(stsd->entries &&
+            (stsd->entries[0].desc.fourcc == BGAV_MK_FOURCC('m','p','4','s')))
       {
       uint32_t * pal;
       uint8_t * pos;

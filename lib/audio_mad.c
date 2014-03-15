@@ -238,7 +238,7 @@ static gavl_source_status_t decode_frame_mad(bgav_stream_t * s)
   else
     gavl_audio_frame_mute(priv->audio_frame, &s->data.audio.format);
   
-  if(flush && priv->last_duration &&
+  if(flush && (priv->last_duration > 0) &&
      (priv->last_duration < priv->audio_frame->valid_samples))
     priv->audio_frame->valid_samples = priv->last_duration;
   

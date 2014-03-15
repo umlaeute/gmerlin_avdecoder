@@ -297,7 +297,7 @@ static int setup_track(bgav_input_context_t * ctx,
 
   /* Open VTS */
 
-  fprintf(stderr, "TITLE SET NR: %d\n", ttsrpt->title[title].title_set_nr); 
+  //  fprintf(stderr, "TITLE SET NR: %d\n", ttsrpt->title[title].title_set_nr); 
  
   if(!open_vts(ctx->opt, dvd, ttsrpt->title[title].title_set_nr, 0))
     return 0;
