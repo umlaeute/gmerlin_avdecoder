@@ -106,17 +106,6 @@ int bg_avdec_get_overlay_compression_info(void * priv, int stream,
   return bgav_get_overlay_compression_info(avdec->dec, stream, info);
   }
 
-int bg_avdec_read_audio_packet(void * priv, int stream, gavl_packet_t * p)
-  {
-  avdec_priv * avdec = priv;
-  return bgav_read_audio_packet(avdec->dec, stream, p);
-  }
-
-int bg_avdec_read_video_packet(void * priv, int stream, gavl_packet_t * p)
-  {
-  avdec_priv * avdec = priv;
-  return bgav_read_video_packet(avdec->dec, stream, p);
-  }
 
 gavl_video_source_t *
 bg_avdec_get_video_source(void * priv, int stream)

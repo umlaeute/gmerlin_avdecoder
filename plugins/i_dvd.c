@@ -153,9 +153,6 @@ const bg_input_plugin_t the_plugin =
     .get_overlay_source = bg_avdec_get_overlay_source,
     .get_overlay_packet_source = bg_avdec_get_overlay_packet_source,
 
-    .read_audio_packet = bg_avdec_read_audio_packet,
-    .read_video_packet = bg_avdec_read_video_packet,
-    
     /*
      *  Do percentage seeking (can be NULL)
      *  Media streams are supposed to be seekable, if this
