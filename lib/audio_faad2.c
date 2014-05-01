@@ -216,6 +216,8 @@ static int init_faad2(bgav_stream_t * s)
                           &samplerate, &channels);
     }
 
+  faacDecPostSeekReset(priv->dec, 1); // Don't skip the first frame
+    
   /* Some mp4 files have a wrong samplerate in the sample description,
      so we correct it here */
   if(samplerate == 2 * s->data.audio.format.samplerate)
@@ -285,6 +287,8 @@ static void resync_faad2(bgav_stream_t * s)
   priv = s->decoder_priv;
 
   bgav_bytebuffer_flush(&priv->buf);
+
+  faacDecPostSeekReset(priv->dec, 1); // Don't skip the first frame
   }
 
 static bgav_audio_decoder_t decoder =
