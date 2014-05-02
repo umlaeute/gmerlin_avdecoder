@@ -881,10 +881,8 @@ static void setup_chapter_track(bgav_demuxer_context_t * ctx, qt_trak_t * trak)
 
   old_pos = ctx->input->position;
 
-  if(trak->mdia.minf.stbl.stsd.entries[0].desc.fourcc == BGAV_MK_FOURCC('t','x','3','g'))
+  if(!(charset = bgav_qt_get_charset(trak->mdia.mdhd.language)))
     charset = "bgav_unicode";
-  else
-    charset = bgav_qt_get_charset(trak->mdia.mdhd.language);
 
   if(charset)
     cnv = bgav_charset_converter_create(ctx->opt, charset, BGAV_UTF8);
