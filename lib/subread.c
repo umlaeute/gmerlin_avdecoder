@@ -31,9 +31,16 @@
 
 #include <avdec_private.h>
 
+static int glob_errfunc(const char *epath, int eerrno)
+  {
+  fprintf(stderr, "glob error: Cannot access %s: %s\n",
+          epath, strerror(errno));
+  return 0;
+  }
+
 /* SRT format */
 
-static int probe_srt(char * line)
+static int probe_srt(char * line, bgav_input_context_t * ctx)
   {
   int a1,a2,a3,a4,b1,b2,b3,b4,i;
   if(sscanf(line, "%d:%d:%d%[,.:]%d --> %d:%d:%d%[,.:]%d",
@@ -174,7 +181,7 @@ typedef struct
   gavl_time_t last_end_time;
   } mpsub_priv_t;
 
-static int probe_mpsub(char * line)
+static int probe_mpsub(char * line, bgav_input_context_t * ctx)
   {
   float f;
   while(isspace(*line) && (*line != '\0'))
@@ -332,6 +339,228 @@ static void close_mpsub(bgav_stream_t * s)
   free(priv);
   }
 
+/* vobsub */
+
+static char * find_vobsub_file(const char * idx_file)
+  {
+  char * pos;
+  char * ret = NULL;
+  glob_t glob_buf;
+  int i;
+  char * pattern = gavl_strdup(idx_file);
+
+  memset(&glob_buf, 0, sizeof(glob_buf));
+  
+  if(!(pos = strrchr(pattern, '.')))
+    goto end;
+
+  pos++;
+  if(*pos == '\0')
+    goto end;
+
+  *pos = '*';
+  pos++;
+  *pos = '\0';
+
+  /* Look for all files with the same name base */
+
+  pattern = gavl_escape_string(pattern, "[]?");
+  
+  if(glob(pattern, 0, glob_errfunc, &glob_buf))
+    {
+    // fprintf(stderr, "glob returned %d\n", result);
+    goto end;
+    }
+  
+  for(i = 0; i < glob_buf.gl_pathc; i++)
+    {
+    pos = strrchr(glob_buf.gl_pathv[i], '.');
+    if(pos && !strcasecmp(pos, ".sub"))
+      {
+      ret = gavl_strdup(glob_buf.gl_pathv[i]);
+      break;
+      }
+    }
+  end:
+  
+  if(pattern)
+    free(pattern);
+  globfree(&glob_buf);
+  return ret;
+  }
+
+typedef struct
+  {
+  char * sub_file;
+  bgav_input_context_t * sub;
+  } vobsub_priv_t;
+
+static int probe_vobsub(char * line, bgav_input_context_t * ctx)
+  {
+  int ret = 0;
+  char * str;
+  uint32_t str_alloc = 0;
+  uint32_t str_len;
+  if(!strncasecmp(line, "# VobSub index file, v7", 23) &&
+     (str = find_vobsub_file(ctx->filename)))
+    {
+    free(str);
+    str = NULL;
+    /* Need to count the number of streams */
+    while(bgav_input_read_convert_line(ctx, &str, &str_alloc, &str_len))
+      {
+      if(!strncmp(str, "id:", 3) && strstr(str, "index:"))
+        ret++;
+      }
+    }
+  if(ret)
+    fprintf(stderr, "Detected VobSub subtitles, %d streams\n", ret);
+  return ret;
+  }
+
+static int setup_stream_vobsub(bgav_stream_t * s)
+  {
+  bgav_input_context_t * input;
+  bgav_subtitle_reader_context_t * ctx;
+  char *line = NULL;
+  uint32_t line_alloc = 0;
+  uint32_t line_len = 0;
+  int idx = 0;
+  
+  ctx = s->data.subtitle.subreader;
+  
+  /* Open file */
+  input = bgav_input_create(s->opt);
+  if(!bgav_input_open(input, ctx->filename))
+    {
+    bgav_input_destroy(input);
+    return 0;
+    }
+  
+  /* Read lines */
+  while(bgav_input_read_line(input, &line,
+                             &line_alloc, 0, &line_len))
+    {
+    if(*line == '#')
+      continue;
+    else if(!strncmp(line, "size:", 5)) // size: 720x576
+      {
+      sscanf(line + 5, "%dx%d",
+             &s->data.subtitle.video.format.image_width,
+             &s->data.subtitle.video.format.image_height);
+      s->data.subtitle.video.format.frame_width =
+        s->data.subtitle.video.format.image_width;
+      s->data.subtitle.video.format.frame_height =
+        s->data.subtitle.video.format.image_height;
+      }
+    else if(!strncmp(line, "palette:", 8)) // palette: 000000, 828282...
+      {
+      if((s->ext_data = (uint8_t*)bgav_get_vobsub_palette(line + 8)))
+        {
+        s->ext_size = 16 * 4;
+        s->fourcc = BGAV_MK_FOURCC('D', 'V', 'D', 'S');
+        }
+      
+      }
+    else if(!strncmp(line, "id:", 3) && strstr(line, "index:"))
+      {
+      if(idx == ctx->stream)
+        {
+        char * pos;
+        char language_2cc[3];
+        const char * language_3cc;
+        
+        pos = line + 3;
+        while(isspace(*pos) && (*pos != '\0'))
+          pos++;
+
+        if(*pos != '\0')
+          {
+          language_2cc[0] = pos[0];
+          language_2cc[1] = pos[1];
+          language_2cc[2] = '\0';
+          if((language_3cc = bgav_lang_from_twocc(language_2cc)))
+            gavl_metadata_set(&s->m, GAVL_META_LANGUAGE, language_3cc);
+          }
+
+        ctx->data_start = input->position;
+        break;
+        }
+      else
+        idx++;
+      }
+    }
+  bgav_input_destroy(input);
+  return 1;
+  }
+
+static int init_vobsub(bgav_stream_t * s)
+  {
+  bgav_subtitle_reader_context_t * ctx;
+  vobsub_priv_t * priv;
+  char * sub_file = NULL;
+  int ret = 0;
+
+  s->timescale = 1000;
+  
+  priv = calloc(1, sizeof(*priv));
+  
+  ctx = s->data.subtitle.subreader;
+  ctx->priv = priv;
+
+  sub_file = find_vobsub_file(ctx->filename);
+    
+  priv->sub = bgav_input_create(s->opt);
+
+  if(!bgav_input_open(priv->sub, sub_file))
+    goto fail;
+
+  ret = 1;
+  
+  fail:
+
+  if(sub_file)
+    free(sub_file);
+  
+  return ret;
+  }
+
+static gavl_source_status_t
+read_vobsub(bgav_stream_t * s, bgav_packet_t * p)
+  {
+  bgav_subtitle_reader_context_t * ctx;
+  vobsub_priv_t * priv;
+  
+  ctx = s->data.subtitle.subreader;
+  priv = ctx->priv;
+
+  return GAVL_SOURCE_EOF;
+  }
+
+static void close_vobsub(bgav_stream_t * s)
+  {
+  bgav_subtitle_reader_context_t * ctx;
+  vobsub_priv_t * priv;
+  
+  ctx = s->data.subtitle.subreader;
+  priv = ctx->priv;
+
+  if(priv->sub)
+    bgav_input_destroy(priv->sub);
+  free(priv);
+  }
+
+static void seek_vobsub(bgav_stream_t * s, int64_t time1, int scale)
+  {
+  bgav_subtitle_reader_context_t * ctx;
+  vobsub_priv_t * priv;
+  
+  ctx = s->data.subtitle.subreader;
+  priv = ctx->priv;
+  
+  }
+
+
 /* Spumux */
 
 #ifdef HAVE_LIBPNG
@@ -347,7 +576,7 @@ typedef struct
   int need_header;
   } spumux_t;
 
-static int probe_spumux(char * line)
+static int probe_spumux(char * line, bgav_input_context_t * ctx)
   {
   if(!strncasecmp(line, "<subpictures>", 13))
     return 1;
@@ -639,6 +868,17 @@ static const bgav_subtitle_reader_t subtitle_readers[] =
       .read_packet =        read_mpsub,
       .close =              close_mpsub,
     },
+    {
+      .type = BGAV_STREAM_SUBTITLE_OVERLAY,
+      .name = "vobsub",
+      .setup_stream =       setup_stream_vobsub,
+      .init =               init_vobsub,
+      .probe =              probe_vobsub,
+      .read_packet =        read_vobsub,
+      .seek =               seek_vobsub,
+      .close =              close_vobsub,
+    },
+
 #ifdef HAVE_LIBPNG
     {
       .type = BGAV_STREAM_SUBTITLE_OVERLAY,
@@ -671,13 +911,14 @@ static char const * const extensions[] =
     "srt",
     "sub",
     "xml",
+    "idx",
     NULL
   };
 
 static const bgav_subtitle_reader_t *
 find_subtitle_reader(const char * filename,
                      const bgav_options_t * opt,
-                     char ** charset)
+                     char ** charset, int * num_streams)
   {
   int i;
   bgav_input_context_t * input;
@@ -687,6 +928,9 @@ find_subtitle_reader(const char * filename,
   char * line = NULL;
   uint32_t line_alloc = 0;
   uint32_t line_len;
+
+  *num_streams = 0;
+  
   /* 1. Check if we have a supported extension */
   extension = strrchr(filename, '.');
   if(!extension)
@@ -718,7 +962,7 @@ find_subtitle_reader(const char * filename,
     
     while(subtitle_readers[i].name)
       {
-      if(subtitle_readers[i].probe(line))
+      if((*num_streams = subtitle_readers[i].probe(line, input)))
         {
         ret = &subtitle_readers[i];
         break;
@@ -742,14 +986,6 @@ find_subtitle_reader(const char * filename,
 
 extern bgav_input_t bgav_input_file;
 
-static int glob_errfunc(const char *epath, int eerrno)
-  {
-  fprintf(stderr, "glob error: Cannot access %s: %s\n",
-          epath, strerror(errno));
-  return 0;
-  }
-
-
 
 bgav_subtitle_reader_context_t *
 bgav_subtitle_reader_open(bgav_input_context_t * input_ctx)
@@ -761,16 +997,14 @@ bgav_subtitle_reader_open(bgav_input_context_t * input_ctx)
   bgav_subtitle_reader_context_t * end = NULL;
   bgav_subtitle_reader_context_t * new;
   glob_t glob_buf;
-  int i;
+  int i, j, num_streams;
   int base_len;
   int result;
   
   /* Check if input is a regular file */
   if((input_ctx->input != &bgav_input_file) || !input_ctx->filename)
-    {
     return NULL;
-    }
-
+  
   pattern = gavl_strdup(input_ctx->filename);
   pos = strrchr(pattern, '.');
   if(!pos)
@@ -808,42 +1042,49 @@ bgav_subtitle_reader_open(bgav_input_context_t * input_ctx)
       continue;
     //    fprintf(stderr, "Found %s\n", glob_buf.gl_pathv[i]);
 
-    r = find_subtitle_reader(glob_buf.gl_pathv[i], input_ctx->opt, &charset);
+    r = find_subtitle_reader(glob_buf.gl_pathv[i],
+                             input_ctx->opt, &charset, &num_streams);
     if(!r)
       continue;
-    
-    new = calloc(1, sizeof(*new));
-    new->filename = gavl_strdup(glob_buf.gl_pathv[i]);
-    new->input    = bgav_input_create(input_ctx->opt);
-    new->reader   = r;
-    new->charset  = charset;
-    
-    name = glob_buf.gl_pathv[i] + base_len;
-    
-    while(!isalnum(*name) && (*name != '\0'))
-      name++;
 
-    if(*name != '\0')
+    for(j = 0; j < num_streams; j++)
       {
-      pos = strrchr(name, '.');
-      if(pos)
-        new->info = gavl_strndup(name, pos);
+      new = calloc(1, sizeof(*new));
+      new->filename = gavl_strdup(glob_buf.gl_pathv[i]);
+      new->input    = bgav_input_create(input_ctx->opt);
+      new->reader   = r;
+      new->charset  = charset;
+      new->stream   = j;
+      
+      name = glob_buf.gl_pathv[i] + base_len;
+    
+      while(!isalnum(*name) && (*name != '\0'))
+        name++;
+
+      if(*name != '\0')
+        {
+        pos = strrchr(name, '.');
+        if(pos)
+          new->info = gavl_strndup(name, pos);
+        else
+          new->info = gavl_strdup(name);
+        }
+    
+      /* Append to list */
+    
+      if(!ret)
+        {
+        ret = new;
+        end = ret;
+        }
       else
-        new->info = gavl_strdup(name);
+        {
+        end->next = new;
+        end = end->next;
+        }
+
       }
     
-    /* Apped to list */
-    
-    if(!ret)
-      {
-      ret = new;
-      end = ret;
-      }
-    else
-      {
-      end->next = new;
-      end = end->next;
-      }
     }
   globfree(&glob_buf);
   return ret;
@@ -887,15 +1128,7 @@ int bgav_subtitle_reader_start(bgav_stream_t * s)
     return 0;
 
   bgav_input_detect_charset(ctx->input);
-#if 0 // Moved to add_subtitle_stream (track.c)
-  if(ctx->input->charset) /* We'll do charset conversion by the input */
-    {
-    if(s->data.subtitle.charset)
-      free(s->data.subtitle.charset);
-    
-    s->data.subtitle.charset = gavl_strdup(BGAV_UTF8);
-    }
-#endif
+  
   if(ctx->reader->init && !ctx->reader->init(s))
     return 0;
   

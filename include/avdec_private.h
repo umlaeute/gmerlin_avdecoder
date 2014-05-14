@@ -1613,6 +1613,7 @@ int bgav_read_data_fd(const bgav_options_t * opt, int fd,
 
 const char * bgav_coding_type_to_string(int type);
 
+uint32_t * bgav_get_vobsub_palette(const char * str);
 
 
 /* tcp.c */
@@ -1778,6 +1779,8 @@ struct bgav_subtitle_reader_context_s
   bgav_input_context_t * input;
   const bgav_subtitle_reader_t * reader;
   char * charset;
+
+  int stream;
   
   bgav_stream_t * s;
   bgav_packet_t * out_packet;
@@ -1809,8 +1812,11 @@ struct bgav_subtitle_reader_s
   bgav_stream_type_t type;
   char * extensions;
   char * name;
-  
-  int (*probe)(char * line);
+
+  /* Probe for the subtitle format, return the number of streams */
+  int (*probe)(char * line, bgav_input_context_t * ctx);
+
+  int (*setup_stream)(bgav_stream_t*);
   
   int (*init)(bgav_stream_t*);
   void (*close)(bgav_stream_t*);

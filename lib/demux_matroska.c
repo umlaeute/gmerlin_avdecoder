@@ -30,6 +30,7 @@
 
 #define LOG_DOMAIN "demux_matroska"
 
+
 typedef struct
   {
   bgav_mkv_ebml_header_t ebml_header;
@@ -487,48 +488,8 @@ static int init_subtitle(bgav_demuxer_context_t * ctx,
       {
       //      fprintf(stderr, "Got line: %s\n", line);
       if(!strncmp(line, "palette:", 8))
-        {
-        int index;
-        
-        float r, g, b;
-        int y, u, v;
-        
-        char ** colors = bgav_stringbreak(line + 8, ',');
-
-        index = 0;
-        while(colors[index])
-          index++;
-        if(index == 16)
-          {
-          index = 0;
-          pal = malloc(16 * sizeof(*pal));
-
-          for(index = 0; index < 16; index++)
-            {
-            pal[index] = strtol(colors[index], NULL, 16);
-
-            /* Now it gets insane: The vobsub program
-               converts the YCbCr palette from the IFO file to RGB,
-               so we need to convert it back
-
-               http://guliverkli.svn.sourceforge.net/viewvc/guliverkli/
-                      trunk/guliverkli/src/subtitles/
-                      VobSubFile.cpp?revision=605&view=markup
-               (line 821)
-             */
-            
-            r = (pal[index] >> 16) & 0xff;
-            g = (pal[index] >>  8) & 0xff;
-            b = pal[index] & 0xff;
-
-            y =  (int)((0.257 * r) + (0.504 * g) + (0.098 * b) + 16);
-            u =  (int)(-(0.148 * r) - (0.291 * g) + (0.439 * b) + 128);
-            v =  (int)((0.439 * r) - (0.368 * g) - (0.071 * b) + 128);
-            pal[index] = y << 16 | u << 8 | v;
-            }
-          }
-        bgav_stringbreak_free(colors);
-        }
+        pal = bgav_get_vobsub_palette(line + 8);
+      
       if(pal)
         break;
       }
@@ -1351,3 +1312,4 @@ const const bgav_demuxer_t bgav_demuxer_matroska =
     .resync  =     resync_matroska,
     .close =       close_matroska
   };
+

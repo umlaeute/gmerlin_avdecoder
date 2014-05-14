@@ -623,79 +623,6 @@ const char * bgav_coding_type_to_string(int type)
   return coding_type_strings[type & GAVL_PACKET_TYPE_MASK];
   }
 
-#if 0
-char * bgav_escape_string(char * old_string, const char * escape_chars)
-  {
-  char escape_seq[3];
-  char * new_string = NULL;
-  int i, done;
-
-  const char * start;
-  const char * end;
-  const char * pos;
-  
-  int escape_len = strlen(escape_chars);
-  
-  /* 1st round: Check if the string can be passed unchanged */
-
-  done = 1;
-  for(i = 0; i < escape_len; i++)
-    {
-    if(index(old_string, escape_chars[i]))
-      {
-      done = 0;
-      break;
-      }
-    }
-  if(done)
-    return old_string;
-
-  /* 2nd round: Escape characters */
-
-  escape_seq[0] = '\\';
-  escape_seq[2] = '\0';
-  
-  start = old_string;
-  end = start;
-
-  done = 0;
-
-  while(1)
-    {
-    /* Copy unescaped stuff */
-    while(!index(escape_chars, *end) && (*end != '\0'))
-      end++;
-
-    if(end - start)
-      {
-      new_string = gavl_strncat(new_string, start, end);
-      start = end;
-      }
-
-    if(*end == '\0')
-      {
-      free(old_string);
-      return new_string;
-      }
-    /* Escape stuff */
-
-    while((pos = index(escape_chars, *start)))
-      {
-      escape_seq[1] = *pos;
-      new_string = gavl_strcat(new_string, escape_seq);
-      start++;
-      }
-    end = start;
-    if(*end == '\0')
-      {
-      free(old_string);
-      return new_string;
-      }
-    }
-  return NULL; // Never get here
-  }
-#endif
-
 static const struct
   {
   gavl_codec_id_t id;
@@ -749,3 +676,47 @@ uint32_t bgav_compression_id_2_fourcc(gavl_codec_id_t id)
   return 0;
   }
 
+uint32_t * bgav_get_vobsub_palette(const char * str)
+  {
+  int index;
+  uint32_t * pal = NULL;
+  float r, g, b;
+  int y, u, v;
+        
+  char ** colors = bgav_stringbreak(str, ',');
+
+  index = 0;
+  while(colors[index])
+    index++;
+  if(index == 16)
+    {
+    index = 0;
+    pal = malloc(16 * sizeof(*pal));
+
+    for(index = 0; index < 16; index++)
+      {
+      pal[index] = strtol(colors[index], NULL, 16);
+
+      /* Now it gets insane: The vobsub program
+         converts the YCbCr palette from the IFO file to RGB,
+         so we need to convert it back
+
+         http://guliverkli.svn.sourceforge.net/viewvc/guliverkli/
+         trunk/guliverkli/src/subtitles/
+         VobSubFile.cpp?revision=605&view=markup
+         (line 821)
+      */
+            
+      r = (pal[index] >> 16) & 0xff;
+      g = (pal[index] >>  8) & 0xff;
+      b = pal[index] & 0xff;
+
+      y =  (int)((0.257 * r) + (0.504 * g) + (0.098 * b) + 16);
+      u =  (int)(-(0.148 * r) - (0.291 * g) + (0.439 * b) + 128);
+      v =  (int)((0.439 * r) - (0.368 * g) - (0.071 * b) + 128);
+      pal[index] = y << 16 | u << 8 | v;
+      }
+    }
+  bgav_stringbreak_free(colors);
+  return pal;  
+  }

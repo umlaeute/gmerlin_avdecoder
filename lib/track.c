@@ -169,10 +169,12 @@ bgav_track_attach_subtitle_reader(bgav_track_t * t,
   bgav_stream_t * ret;
 
   if(r->reader->type == BGAV_STREAM_SUBTITLE_TEXT)
-    ret = add_text_stream(t, opt,
-                          NULL, r);
+    ret = add_text_stream(t, opt, NULL, r);
   else
     ret = add_overlay_stream(t, opt, r);
+
+  if(r->reader->setup_stream)
+    r->reader->setup_stream(ret);
   
   if(r->info)
     gavl_metadata_set(&ret->m, GAVL_META_LABEL, r->info);
