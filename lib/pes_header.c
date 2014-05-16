@@ -244,3 +244,94 @@ void bgav_pes_header_dump(bgav_pes_header_t * p)
                p->stream_id, p->payload_size);
   }
 
+/* Pack header */
+
+void bgav_pack_header_dump(bgav_pack_header_t * h)
+  {
+  bgav_dprintf(
+          "Pack header: MPEG-%d, SCR: %" PRId64 " (%f secs), Mux rate: %d bits/s\n",
+          h->version, h->scr, (float)(h->scr)/90000.0,
+          h->mux_rate * 400);
+  }
+
+int bgav_pack_header_read(bgav_input_context_t * input,
+                          bgav_pack_header_t * ret)
+  {
+  uint8_t c;
+  uint16_t tmp_16;
+  uint32_t tmp_32;
+
+  int stuffing;
+  
+  bgav_input_skip(input, 4);
+    
+  if(!bgav_input_read_8(input, &c))
+    return 0;
+
+  if((c & 0xf0) == 0x20) /* MPEG-1 */
+    {
+    //    bgav_input_read_8(input, &c);
+    
+    ret->scr = ((c >> 1) & 7) << 30;
+    bgav_input_read_16_be(input, &tmp_16);
+    ret->scr |= ((tmp_16 >> 1) << 15);
+    bgav_input_read_16_be(input, &tmp_16);
+    ret->scr |= (tmp_16 >> 1);
+    
+    bgav_input_read_8(input, &c);
+    ret->mux_rate = (c & 0x7F) << 15;
+                                                                              
+    bgav_input_read_8(input, &c);
+    ret->mux_rate |= ((c & 0x7F) << 7);
+                                                                              
+    bgav_input_read_8(input, &c);
+    ret->mux_rate |= (((c & 0xFE)) >> 1);
+    ret->version = 1;
+    }
+  else if(c & 0x40) /* MPEG-2 */
+    {
+    /* SCR */
+    if(!bgav_input_read_32_be(input, &tmp_32))
+      return 0;
+    
+    ret->scr = c & 0x03;
+
+    ret->scr <<= 13;
+    ret->scr |= ((tmp_32 & 0xfff80000) >> 19);
+    
+    ret->scr <<= 15;
+    ret->scr |= ((tmp_32 & 0x0003fff8) >> 3);
+
+    /* Skip SCR extension (would give 27 MHz resolution) */
+
+    bgav_input_skip(input, 1);
+        
+    /* Mux rate (22 bits) */
+    
+    if(!bgav_input_read_8(input, &c))
+      return 0;
+    ret->mux_rate = c;
+
+    ret->mux_rate <<= 8;
+    if(!bgav_input_read_8(input, &c))
+      return 0;
+    ret->mux_rate |= c;
+
+    ret->mux_rate <<= 6;
+    if(!bgav_input_read_8(input, &c))
+      return 0;
+    ret->mux_rate |= (c>>2);
+
+    ret->version = 2;
+    
+    /* Now, some stuffing bytes might come.
+       They are set to 0xff and will be skipped by the
+       next_start_code function */
+    bgav_input_read_8(input, &c);
+    stuffing = c & 0x03;
+    bgav_input_skip(input, stuffing);
+
+    }
+  
+  return 1;
+  }

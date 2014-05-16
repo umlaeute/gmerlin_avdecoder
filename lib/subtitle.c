@@ -262,8 +262,8 @@ int bgav_overlay_start(bgav_stream_t * s)
     {
     if(!bgav_subtitle_reader_start(s))
       return 0;
-    else
-      return 1;
+    //    else
+    //      return 1;
     }
 
   if(bgav_check_fourcc(s->fourcc, bgav_dvdsub_fourccs))

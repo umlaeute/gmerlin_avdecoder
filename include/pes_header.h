@@ -19,6 +19,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * *****************************************************************/
 
+#define START_CODE_SYSTEM_HEADER 0x000001bb
+#define START_CODE_PACK_HEADER   0x000001ba
+#define START_CODE_PROGRAM_END   0x000001b9
+
 /* MPEG-1/2 PES packet */
 
 typedef struct
@@ -33,4 +37,18 @@ int bgav_pes_header_read(bgav_input_context_t * input,
                          bgav_pes_header_t * ret);
 
 void bgav_pes_header_dump(bgav_pes_header_t * p);
+
+/* Pack header (doesn't belog here but well....) */
+
+typedef struct
+  {
+  int64_t scr;
+  int mux_rate;
+  int version;
+  } bgav_pack_header_t;
+
+void bgav_pack_header_dump(bgav_pack_header_t * h);
+
+int bgav_pack_header_read(bgav_input_context_t * input,
+                          bgav_pack_header_t * ret);
 

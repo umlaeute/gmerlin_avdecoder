@@ -30,6 +30,7 @@
 #include <errno.h>
 
 #include <avdec_private.h>
+#include <pes_header.h>
 
 static int glob_errfunc(const char *epath, int eerrno)
   {
@@ -341,6 +342,34 @@ static void close_mpsub(bgav_stream_t * s)
 
 /* vobsub */
 
+static int64_t vobsub_parse_pts(const char * str)
+  {
+  int h, m, s, ms;
+  int sign = 0;
+  int64_t ret;
+  
+  if(sscanf(str, "%d:%d:%d:%d", &h, &m, &s, &ms) < 4)
+    return GAVL_TIME_UNDEFINED;
+  
+  if(h < 0)
+    {
+    h = -h;
+    sign = 1;
+    }
+
+  ret = h;
+  ret *= 60;
+  ret += m;
+  ret *= 60;
+  ret += s;
+  ret *= 1000;
+  ret += ms;
+
+  if(sign)
+    ret = -ret;
+  return ret;
+  }
+
 static char * find_vobsub_file(const char * idx_file)
   {
   char * pos;
@@ -391,7 +420,6 @@ static char * find_vobsub_file(const char * idx_file)
 
 typedef struct
   {
-  char * sub_file;
   bgav_input_context_t * sub;
   } vobsub_priv_t;
 
@@ -502,19 +530,21 @@ static int init_vobsub(bgav_stream_t * s)
   int ret = 0;
 
   s->timescale = 1000;
-  
+  s->flags |= STREAM_PARSE_FRAME;
   priv = calloc(1, sizeof(*priv));
   
   ctx = s->data.subtitle.subreader;
   ctx->priv = priv;
 
   sub_file = find_vobsub_file(ctx->filename);
-    
+  
   priv->sub = bgav_input_create(s->opt);
 
   if(!bgav_input_open(priv->sub, sub_file))
     goto fail;
 
+  bgav_input_seek(ctx->input, ctx->data_start, SEEK_SET);
+  
   ret = 1;
   
   fail:
@@ -530,11 +560,97 @@ read_vobsub(bgav_stream_t * s, bgav_packet_t * p)
   {
   bgav_subtitle_reader_context_t * ctx;
   vobsub_priv_t * priv;
+  uint32_t line_len;
+  const char * pos;
+  int64_t pts, position;
+  bgav_pes_header_t pes_header;
+  bgav_pack_header_t pack_header;
+  uint32_t header;
+  int packet_size = 0;
+  int substream_id = -1;
+  uint8_t byte;
   
   ctx = s->data.subtitle.subreader;
   priv = ctx->priv;
 
-  return GAVL_SOURCE_EOF;
+  while(1)
+    {
+    if(!bgav_input_read_line(ctx->input, &ctx->line,
+                             &ctx->line_alloc, 0, &line_len))
+      return GAVL_SOURCE_EOF; // EOF
+
+    if(!strncmp(ctx->line, "id:", 3))
+      return GAVL_SOURCE_EOF; // Next stream
+
+    if(!strncmp(ctx->line, "timestamp:", 10) &&
+       (pos = strstr(ctx->line, "filepos:")))
+      break;
+    
+    }
+  
+  if((pts = vobsub_parse_pts(ctx->line + 10)) == GAVL_TIME_UNDEFINED)
+    return GAVL_SOURCE_EOF;
+
+  position = strtoll(pos + 8, NULL, 16);
+
+  fprintf(stderr, "Pos: %"PRId64", PTS: %"PRId64"\n", position, pts);
+
+  bgav_input_seek(priv->sub, position, SEEK_SET);
+  
+  while(1)
+    {
+    if(!bgav_input_get_32_be(priv->sub, &header))
+      return GAVL_SOURCE_EOF;
+    switch(header)
+      {
+      case START_CODE_PACK_HEADER:
+        if(!bgav_pack_header_read(priv->sub, &pack_header))
+          return GAVL_SOURCE_EOF;
+        //        bgav_pack_header_dump(&pack_header);
+        break;
+      case 0x000001bd: // Private stream 1
+        if(!bgav_pes_header_read(priv->sub, &pes_header))
+          return GAVL_SOURCE_EOF;
+        //        bgav_pes_header_dump(&pes_header);
+
+        if(!bgav_input_read_8(priv->sub, &byte))
+          return GAVL_SOURCE_EOF;
+
+        pes_header.payload_size--;
+        
+        if(substream_id < 0)
+          substream_id = byte;
+        else if(substream_id != byte)
+          {
+          bgav_input_skip(priv->sub, pes_header.payload_size);
+          continue;
+          }
+
+        bgav_packet_alloc(p, p->data_size + pes_header.payload_size);
+        if(bgav_input_read_data(priv->sub,
+                                p->data + p->data_size,
+                                pes_header.payload_size) <
+           pes_header.payload_size)
+          return GAVL_SOURCE_EOF;
+        
+        if(!packet_size)
+          {
+          packet_size = GAVL_PTR_2_16BE(p->data);
+          //          fprintf(stderr, "packet_size: %d\n", packet_size);
+          }
+        p->data_size += pes_header.payload_size;
+        break;
+      default:
+        fprintf(stderr, "Unknown startcode %08x\n", header);
+        return GAVL_SOURCE_EOF;
+      }
+    
+    if((packet_size > 0) && (p->data_size >= packet_size))
+      break;
+    }
+  p->pts = pts;
+  
+  return GAVL_SOURCE_OK;
   }
 
 static void close_vobsub(bgav_stream_t * s)
@@ -679,7 +795,8 @@ static gavl_source_status_t read_spumux(bgav_stream_t * s, bgav_packet_t * p)
       }
     if(!bgav_slurp_file(filename, p, s->opt))
       {
-      bgav_log(s->opt, BGAV_LOG_ERROR, LOG_DOMAIN, "Reading file %s failed", filename);
+      bgav_log(s->opt, BGAV_LOG_ERROR, LOG_DOMAIN,
+               "Reading file %s failed", filename);
       return 0;
       }
     }
@@ -1145,7 +1262,7 @@ void bgav_subtitle_reader_seek(bgav_stream_t * s,
 
   if(ctx->reader->seek)
     ctx->reader->seek(s, time, scale);
-    
+  
   else if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     {
     bgav_input_seek(ctx->input, ctx->data_start, SEEK_SET);
