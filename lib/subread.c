@@ -342,6 +342,8 @@ static void close_mpsub(bgav_stream_t * s)
 
 /* vobsub */
 
+#define LOG_DOMAIN "vobsub"
+
 static int64_t vobsub_parse_pts(const char * str)
   {
   int h, m, s, ms;
@@ -426,7 +428,7 @@ typedef struct
 static int probe_vobsub(char * line, bgav_input_context_t * ctx)
   {
   int ret = 0;
-  char * str;
+  char * str = NULL;
   uint32_t str_alloc = 0;
   uint32_t str_len;
   if(!strncasecmp(line, "# VobSub index file, v7", 23) &&
@@ -437,33 +439,36 @@ static int probe_vobsub(char * line, bgav_input_context_t * ctx)
     /* Need to count the number of streams */
     while(bgav_input_read_convert_line(ctx, &str, &str_alloc, &str_len))
       {
-      if(!strncmp(str, "id:", 3) && strstr(str, "index:"))
+      if(!strncmp(str, "id:", 3) &&
+         !strstr(str, "--") && strstr(str, "index:"))
         ret++;
       }
+    if(str)
+      free(str);
     }
   if(ret)
-    fprintf(stderr, "Detected VobSub subtitles, %d streams\n", ret);
+    bgav_log(ctx->opt, BGAV_LOG_INFO, LOG_DOMAIN,
+             "Detected VobSub subtitles, %d streams", ret);
+ 
   return ret;
   }
 
 static int setup_stream_vobsub(bgav_stream_t * s)
   {
-  bgav_input_context_t * input;
+  bgav_input_context_t * input = NULL;
   bgav_subtitle_reader_context_t * ctx;
   char *line = NULL;
   uint32_t line_alloc = 0;
   uint32_t line_len = 0;
   int idx = 0;
+  int ret = 0;
   
   ctx = s->data.subtitle.subreader;
   
   /* Open file */
   input = bgav_input_create(s->opt);
   if(!bgav_input_open(input, ctx->filename))
-    {
-    bgav_input_destroy(input);
-    return 0;
-    }
+    goto fail;
   
   /* Read lines */
   while(bgav_input_read_line(input, &line,
@@ -488,9 +493,9 @@ static int setup_stream_vobsub(bgav_stream_t * s)
         s->ext_size = 16 * 4;
         s->fourcc = BGAV_MK_FOURCC('D', 'V', 'D', 'S');
         }
-      
       }
-    else if(!strncmp(line, "id:", 3) && strstr(line, "index:"))
+    else if(!strncmp(line, "id:", 3) &&
+            !strstr(line, "--") && strstr(line, "index:"))
       {
       if(idx == ctx->stream)
         {
@@ -518,8 +523,15 @@ static int setup_stream_vobsub(bgav_stream_t * s)
         idx++;
       }
     }
-  bgav_input_destroy(input);
-  return 1;
+
+  ret = 1;
+  fail:
+  
+  if(line)
+    free(line);
+  if(input)
+    bgav_input_destroy(input);
+  return ret;
   }
 
 static int init_vobsub(bgav_stream_t * s)
@@ -579,10 +591,10 @@ read_vobsub(bgav_stream_t * s, bgav_packet_t * p)
                              &ctx->line_alloc, 0, &line_len))
       return GAVL_SOURCE_EOF; // EOF
 
-    if(!strncmp(ctx->line, "id:", 3))
+    if(gavl_string_starts_with(ctx->line, "id:"))
       return GAVL_SOURCE_EOF; // Next stream
 
-    if(!strncmp(ctx->line, "timestamp:", 10) &&
+    if(gavl_string_starts_with(ctx->line, "timestamp:") &&
        (pos = strstr(ctx->line, "filepos:")))
       break;
     
@@ -593,7 +605,7 @@ read_vobsub(bgav_stream_t * s, bgav_packet_t * p)
 
   position = strtoll(pos + 8, NULL, 16);
 
-  fprintf(stderr, "Pos: %"PRId64", PTS: %"PRId64"\n", position, pts);
+  //  fprintf(stderr, "Pos: %"PRId64", PTS: %"PRId64"\n", position, pts);
 
   bgav_input_seek(priv->sub, position, SEEK_SET);
   
@@ -676,10 +688,15 @@ static void seek_vobsub(bgav_stream_t * s, int64_t time1, int scale)
   
   }
 
+#undef LOG_DOMAIN
 
 /* Spumux */
 
+
+
 #ifdef HAVE_LIBPNG
+
+#define LOG_DOMAIN "spumux"
 
 #include <pngreader.h>
 
@@ -758,7 +775,6 @@ static gavl_time_t parse_time_spumux(const char * str,
   return ret;
   }
 
-#define LOG_DOMAIN "spumux"
 
 static gavl_source_status_t read_spumux(bgav_stream_t * s, bgav_packet_t * p)
   {

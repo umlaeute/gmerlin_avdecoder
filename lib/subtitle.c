@@ -108,9 +108,9 @@ int bgav_read_subtitle_text(bgav_t * b, char ** ret, int *ret_alloc,
                             int64_t * start_time, int64_t * duration,
                             int stream)
   {
-  bgav_stream_t * s = bgav_track_get_subtitle_stream(b->tt->cur, stream);
   gavl_packet_t p;
   gavl_packet_t * pp;
+  bgav_stream_t * s = bgav_track_get_subtitle_stream(b->tt->cur, stream);
   
   if(bgav_has_subtitle(b, stream))
     {
