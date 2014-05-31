@@ -57,7 +57,7 @@
 
 #define PARAM_VIDEO_GENERIC \
   PARAM_PP_LEVEL,           \
-  PARAM_THREADS,            \
+  PARAM_THREADS,          \
   {                         \
     .name      =  "shrink",                \
     .long_name =  TRS("Shrink factor"),    \

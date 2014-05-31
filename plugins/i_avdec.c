@@ -284,7 +284,7 @@ static const bg_parameter_info_t parameters[] =
       .name =        "seek_subtitles",
       .long_name =   TRS("Seek external subtitles"),
       .type =        BG_PARAMETER_STRINGLIST,
-      .val_default =  { .val_str = "never" },
+      .val_default =  { .val_str = "video" },
       .multi_names =  (char const *[]){ "never", "video", "always", NULL },
       .multi_labels = (char const *[]){ TRS("Never"),
                                TRS("For video files only"),
@@ -340,12 +340,6 @@ supported encodings."),
       .type =        BG_PARAMETER_INT,
       .val_default = { .val_i = 20 },
       .help_string = TRS("Set the maximum total size of the cache directory."),
-    },
-    PARAM_THREADS, 
-    {
-      .name =        "dv_datetime",
-      .long_name =   TRS("Export date and time as timecodes for DV"),
-      .type =        BG_PARAMETER_CHECKBUTTON,
     },
     { /* End of parameters */ }
   };

@@ -97,12 +97,6 @@ bg_avdec_option_set_parameter(bgav_options_t * opt, const char * name,
     {
     bgav_options_set_default_subtitle_encoding(opt, val->val_str);
     }
-#if 0
-  else if(!strcmp(name, "dvd_chapters_as_tracks"))
-    {
-    bgav_options_set_dvd_chapters_as_tracks(opt, val->val_i);
-    }
-#endif
   else if(!strcmp(name, "audio_dynrange"))
     {
     bgav_options_set_audio_dynrange(opt, val->val_i);
