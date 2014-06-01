@@ -235,10 +235,14 @@ static int aac_sri(double r)
 static void init_aac(bgav_stream_t * s)
   {
   bgav_mkv_track_t * p = s->priv;
+
+  if(strstr(p->CodecID, "SBR"))
+    p->frame_samples = 2048;
+  else
+    p->frame_samples = 1024;
+  
   if(p->CodecPrivate)
-    {
     bgav_stream_set_extradata(s, p->CodecPrivate, p->CodecPrivateLen);
-    }
   else
     {
     int profile, sri;
@@ -254,13 +258,9 @@ static void init_aac(bgav_stream_t * s)
       s->ext_data[3] = 0xE5;
       s->ext_data[4] = 0x80 | (sri<<3);
       s->ext_size = 5;
-      p->frame_samples = 2048;
       }
     else
-      {
-      p->frame_samples = 1024;
       s->ext_size = 2;
-      }
     }
   s->fourcc = BGAV_MK_FOURCC('m','p','4','a');
   }
@@ -953,6 +953,7 @@ static void setup_packet(mkv_t * m, bgav_stream_t * s,
       p->pts = t->pts;
       t->pts += t->frame_samples;
       }
+    p->duration = t->frame_samples;
     }
   else if(!index)
     {
