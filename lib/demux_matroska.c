@@ -953,7 +953,9 @@ static void setup_packet(mkv_t * m, bgav_stream_t * s,
       p->pts = t->pts;
       t->pts += t->frame_samples;
       }
-    p->duration = t->frame_samples;
+    /* Set the duration but only if there is no parser */
+    if(!(s->flags & STREAM_PARSE_FRAME))
+      p->duration = t->frame_samples;
     }
   else if(!index)
     {

@@ -93,9 +93,6 @@ insert_packet(bgav_packet_timer_t * pt, bgav_packet_t ** ret, int force)
       break;
     bgav_packet_pool_put(pt->s->pp, p);
     }
-
-  if(p->data_size == 12618)
-    fprintf(stderr, "Blupp\n");
   
   if(PACKET_GET_CODING_TYPE(p) == BGAV_CODING_TYPE_B)
     {
