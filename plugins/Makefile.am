@@ -2,7 +2,7 @@
 
 gmerlin_plugindir = @gmerlin_plugindir@
 
-INCLUDES = -I$(top_srcdir)/include
+AM_CPPFLAGS = -I$(top_srcdir)/include
 
 
 if HAVE_CDIO
