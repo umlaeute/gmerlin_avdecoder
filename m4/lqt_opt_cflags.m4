@@ -17,10 +17,9 @@ AC_DEFUN([LQT_TRY_CFLAGS],
         ifelse([$3],[],[:],[$3])
     fi])
 
-dnl LQT_OPT_CFLAGS(CPU_TYPE [, ADDITIONAL_OPT_FLAGS])
+dnl LQT_OPT_CFLAGS([ADDITIONAL_OPT_FLAGS])
 dnl Get proper optimization flags. 
 dnl
-dnl CPU_TYPE: host_cpu variable as obtained from AC_CANONICAL_HOST
 dnl ADDITIONAL_OPT_FLAGS:  Additional optimization flags (e.g. -O3 --fast-math)
 dnl On output, the Variable LQT_OPT_CFLAGS will be set to the compiler flags
 dnl Furthermore, is debuggind was requested, the variable LQT_DEBUG will be
@@ -31,7 +30,6 @@ AC_DEFUN([LQT_OPT_CFLAGS],[
 dnl
 dnl Debugging Support
 dnl
-
 
 LQT_DEBUG=false
 
@@ -56,37 +54,17 @@ if test x$lqt_cpuflags = xnone; then
 lqt_cpuflags=""
 fi
 
-dnl
-dnl Autodetect CPU specific flags
-dnl
+dnl Let gcc detect the architecture
 
-if test x$lqt_cpuflags = xauto; then
-
-lqt_cpu_family=""
-case [$1] in
-  i[[3-7]]86)
-    lqt_cpu_family=x86;;
-  x86_64*)
-    lqt_cpu_family=x86;;
-  powerpc | powerpc64)
-    lqt_cpu_family=ppc;;
-  *)
-    lqt_cpu_family="";;
-esac
-
-if test x$lqt_cpu_family = x; then
-  lqt_cpuflags=""
-else
-  lqt_cpuflags=`$srcdir/cpuinfo.sh $lqt_cpu_family`
-fi
-
+if test "x$lqt_cpuflags" = "xauto"; then
+  lqt_cpuflags="-march=native -mtune=native"
 fi
 
 dnl
 dnl Build the final flags
 dnl
 
-lqt_additional_opt_flags=ifelse([$2],[],[],[$2])
+lqt_additional_opt_flags=ifelse([$1],[],[],[$1])
 
 lqt_test_flags=$lqt_cpuflags
 
