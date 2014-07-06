@@ -531,7 +531,7 @@ dnl
 dnl Build optimization flags
 dnl
 
-LQT_OPT_CFLAGS($host_cpu, ["-O3 -funroll-all-loops -ffast-math"])
+LQT_OPT_CFLAGS($host_cpu, ["-O3 -ffast-math"])
 AC_SUBST(OPT_CFLAGS)
 
 dnl
