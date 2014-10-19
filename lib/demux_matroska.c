@@ -979,13 +979,11 @@ static int process_block(bgav_demuxer_context_t * ctx,
   bgav_packet_t * p;
   mkv_t * m = ctx->priv;
   int64_t pts = b->timecode + m->cluster.Timecode - m->pts_offset;
-  bgav_mkv_track_t * t;
   
   s = bgav_track_find_stream(ctx, b->track);
   if(!s)
     return 1;
   
-  t = s->priv;
   if(bg)
     {
     if(!bg->num_reference_blocks)

@@ -30,6 +30,7 @@ typedef struct
   {
   gavl_video_frame_t * frame;
   bgav_packet_t * p;
+  gavl_dsp_context_t * dsp;
   } gavf_video_t;
 
 static gavl_source_status_t
@@ -56,7 +57,7 @@ decode_frame_gavf_video(bgav_stream_t * s, gavl_video_frame_t * frame)
   
   if(s->type == BGAV_STREAM_VIDEO)
     {
-    gavf_packet_to_video_frame(&gp, priv->frame, &s->data.video.format);
+    gavf_packet_to_video_frame(&gp, priv->frame, &s->data.video.format, &s->m, &priv->dsp);
     bgav_set_video_frame_from_packet(priv->p, priv->frame);
     }
   else

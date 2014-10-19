@@ -472,6 +472,7 @@ typedef struct
   uint64_t CueRelativePosition;
   uint64_t CueBlockNumber;
   uint64_t CueCodecState;
+  uint64_t CueDuration;
   
   int num_references;
   int references_alloc;
@@ -728,6 +729,7 @@ void bgav_mkv_block_group_free(bgav_mkv_block_group_t * g);
 #define MKV_ID_CueTrack            0xf7
 #define MKV_ID_CueClusterPosition  0xf1
 #define MKV_ID_CueRelativePosition 0xf0
+#define MKV_ID_CueDuration         0xb2
 #define MKV_ID_CueBlockNumber      0x5378
 #define MKV_ID_CueCodecState       0xea
 #define MKV_ID_CueReference        0xdb

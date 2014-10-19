@@ -838,7 +838,6 @@ static DWORD oggFormatToIndex(const bgav_stream_t *pwfx)
 
 static char * get_default_vorbis_header(bgav_stream_t * stream, int * len)
   {
-  int bitrate;
 
   char * ret = NULL;
   int ret_len = 0;
@@ -878,9 +877,6 @@ static char * get_default_vorbis_header(bgav_stream_t * stream, int * len)
   vorbis_info_init(&vi);
   vorbis_comment_init(&vc);
   vorbis_comment_add_tag(&vc,"ENCODER","vorbis.acm"); /* LOL */
-
-
-  bitrate = aOggFormatIndexToDetail[format_index].nAvgBytesPerSec * 8;
   
   vorbis_encode_init_vbr(&vi,stream->data.audio.format.num_channels,
                          stream->data.audio.format.num_channels,aOggFormatIndexToDetail[format_index].flQuality);

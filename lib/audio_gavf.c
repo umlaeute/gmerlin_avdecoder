@@ -30,6 +30,9 @@ typedef struct
   {
   gavl_audio_frame_t * frame;
   bgav_packet_t * p;
+
+  gavl_dsp_context_t * dsp;
+  
   } gavf_audio_t;
 
 static gavl_source_status_t decode_frame_gavf_audio(bgav_stream_t * s)
@@ -53,7 +56,7 @@ static gavl_source_status_t decode_frame_gavf_audio(bgav_stream_t * s)
   p.pts      = priv->p->pts;
   p.duration = priv->p->duration;
 
-  gavf_packet_to_audio_frame(&p, priv->frame, &s->data.audio.format);
+  gavf_packet_to_audio_frame(&p, priv->frame, &s->data.audio.format, &s->m, &priv->dsp);
   
   gavl_audio_frame_copy_ptrs(&s->data.audio.format, s->data.audio.frame, priv->frame);
   

@@ -190,8 +190,8 @@ get_data(bgav_stream_t * s, SchroBuffer ** ret_p)
     {
     if(priv->p->pts != priv->last_pts)
       {
-      uint32_t pic_num;
-      pic_num = BGAV_PTR_2_32BE(priv->buffer_ptr + 13);
+      //      uint32_t pic_num;
+      //      pic_num = BGAV_PTR_2_32BE(priv->buffer_ptr + 13);
       
       //      fprintf(stderr, "Got picture %d\n", pic_num);
       

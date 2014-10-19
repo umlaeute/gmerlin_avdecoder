@@ -82,13 +82,10 @@ static const uint8_t y_8_to_yj_8[256] =
 static void decode_mono(bgav_stream_t * s, bgav_packet_t * p, gavl_video_frame_t * f)
   {
   int i, j;
-  yuv_priv_t * priv;
 
   const uint8_t * src;
   uint8_t * dst;
   
-  priv = s->decoder_priv;
-
   src = p->data;
   
   for(i = 0; i < s->data.video.format.image_height; i++)

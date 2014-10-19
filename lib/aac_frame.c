@@ -107,7 +107,7 @@ int bgav_aac_frame_parse(bgav_aac_frame_t * f,
                 &f->samplerate, &f->channels);
     }
   
-  memset(&f->frame_info, 0, sizeof(&f->frame_info));
+  memset(&f->frame_info, 0, sizeof(f->frame_info));
   frame = faacDecDecode(f->dec, &f->frame_info, data, data_len);
 
   if(!frame)

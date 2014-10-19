@@ -280,9 +280,7 @@ static void seek_8svx(bgav_demuxer_context_t * ctx, gavl_time_t time,
   bgav_stream_t * s;
   int64_t position;
   int64_t sample;
-  svx_priv_t * priv;
   s = &ctx->tt->cur->audio_streams[0];
-  priv = ctx->priv;
 
   sample = gavl_time_rescale(scale, s->data.audio.format.samplerate, time);
   

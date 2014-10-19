@@ -79,7 +79,7 @@ static gavl_source_status_t decode_frame_faad2(bgav_stream_t * s)
     
   priv = s->decoder_priv;
 
-  memset(&frame_info, 0, sizeof(&frame_info));
+  memset(&frame_info, 0, sizeof(frame_info));
   
   if(priv->buf.size < FAAD_MIN_STREAMSIZE)
     {

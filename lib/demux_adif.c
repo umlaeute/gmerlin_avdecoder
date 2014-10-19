@@ -173,9 +173,7 @@ static int next_packet_adif(bgav_demuxer_context_t * ctx)
   {
   bgav_stream_t * s;
   bgav_packet_t * p;
-  aac_priv_t * priv;
   int bytes_read;
-  priv = ctx->priv;
   s = ctx->tt->cur->audio_streams;
   
   /* Just copy the bytes, we have no idea about
