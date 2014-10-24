@@ -892,6 +892,18 @@ static void setup_chapter_track(bgav_demuxer_context_t * ctx, qt_trak_t * trak)
     bgav_log(ctx->opt, BGAV_LOG_WARNING, LOG_DOMAIN,
              "Unknown encoding for chapter names");
     }
+
+  stts = &trak->mdia.minf.stbl.stts;
+  stsc = &trak->mdia.minf.stbl.stsc;
+  stsz = &trak->mdia.minf.stbl.stsz;
+  stco = &trak->mdia.minf.stbl.stco;
+
+  if(!stsz->entries)
+    {
+    bgav_log(ctx->opt, BGAV_LOG_WARNING, LOG_DOMAIN,
+             "No samples in chapter names");
+    return;
+    }
   
   total_chapters = bgav_qt_trak_samples(trak);
   ctx->tt->cur->chapter_list =
@@ -903,11 +915,6 @@ static void setup_chapter_track(bgav_demuxer_context_t * ctx, qt_trak_t * trak)
   stts_count = 0;
   stsc_index = 0;
   stsc_count = 0;
-
-  stts = &trak->mdia.minf.stbl.stts;
-  stsc = &trak->mdia.minf.stbl.stsc;
-  stsz = &trak->mdia.minf.stbl.stsz;
-  stco = &trak->mdia.minf.stbl.stco;
   
   pos = stco->entries[chunk_index];
   
