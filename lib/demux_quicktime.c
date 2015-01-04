@@ -952,23 +952,28 @@ static void setup_chapter_track(bgav_demuxer_context_t * ctx, qt_trak_t * trak)
       ctx->tt->cur->chapter_list->chapters[i].name =
         bgav_convert_string(cnv, (char*)(buffer+2), len, NULL);
       }
+
     /* Increase file position */
-    pos += stsz->entries[i];
-    stsc_count++;
-    if(stsc_count >= stsc->entries[stsc_index].samples_per_chunk)
+    if(i < total_chapters - 1)
       {
-      chunk_index++;
-      if((stsc_index < stsc->num_entries-1) &&
-         (chunk_index +1 >= stsc->entries[stsc_index+1].first_chunk))
+      pos += stsz->entries[i];
+      stsc_count++;
+      if(stsc_count >= stsc->entries[stsc_index].samples_per_chunk)
         {
-        stsc_index++;
+        chunk_index++;
+        if((stsc_index < stsc->num_entries-1) &&
+           (chunk_index +1 >= stsc->entries[stsc_index+1].first_chunk))
+          {
+          stsc_index++;
+          }
+        stsc_count = 0;
+        pos = stco->entries[chunk_index];
         }
-      stsc_count = 0;
-      pos = stco->entries[chunk_index];
       }
     }
   
-  if(buffer) free(buffer);
+  if(buffer)
+    free(buffer);
   bgav_input_seek(ctx->input, old_pos, SEEK_SET);
   }
 

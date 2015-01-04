@@ -1179,7 +1179,7 @@ static void cleanup_stream_avi(bgav_stream_t * s)
 static int init_audio_stream(bgav_demuxer_context_t * ctx,
                              strh_t * strh, chunk_header_t * ch)
   {
-  uint8_t * buf, * pos;
+  uint8_t * buf;
   bgav_WAVEFORMAT_t wf;
   int keep_going;
   bgav_stream_t * bg_as;
@@ -1201,7 +1201,6 @@ static int init_audio_stream(bgav_demuxer_context_t * ctx,
         buf = malloc(ch->ckSize);
         if(bgav_input_read_data(ctx->input, buf, ch->ckSize) < ch->ckSize)
           return 0;
-        pos = buf;
         bgav_WAVEFORMAT_read(&wf, buf, ch->ckSize);
         bgav_WAVEFORMAT_get_format(&wf, bg_as);
         if(ctx->opt->dump_headers)
@@ -1698,7 +1697,6 @@ static void idx1_build_superindex(bgav_demuxer_context_t * ctx)
   uint32_t i;
   int stream_id;
   audio_priv_t * avi_as;
-  video_priv_t * avi_vs;
   bgav_stream_t * stream;
   avi_priv_t * avi;
   int64_t base_offset;
@@ -1718,7 +1716,6 @@ static void idx1_build_superindex(bgav_demuxer_context_t * ctx)
 
   for(i = 0; i < ctx->tt->cur->num_video_streams; i++)
     {
-    avi_vs = ctx->tt->cur->video_streams[i].priv;
     ctx->tt->cur->video_streams[i].duration = 0;
     }
 

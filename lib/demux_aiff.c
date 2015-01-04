@@ -436,7 +436,6 @@ static int next_packet_aiff(bgav_demuxer_context_t * ctx)
 
 static void seek_aiff(bgav_demuxer_context_t * ctx, int64_t time, int scale)
   {
-  aiff_priv_t * priv;
   int64_t pos;
   int64_t time_scaled;
   bgav_stream_t * s = &ctx->tt->cur->audio_streams[0];
@@ -444,8 +443,6 @@ static void seek_aiff(bgav_demuxer_context_t * ctx, int64_t time, int scale)
     gavl_time_rescale(scale,
                       s->data.audio.format.samplerate,
                       time);
-  
-  priv = ctx->priv;
   
   pos = time_2_pos(ctx, time_scaled);
   bgav_input_seek(ctx->input, pos, SEEK_SET);
