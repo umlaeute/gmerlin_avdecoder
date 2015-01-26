@@ -83,7 +83,7 @@ static gavl_source_status_t read_srt(bgav_stream_t * s, bgav_packet_t * p)
       if(!strncasecmp(ctx->line, "@OFF=", 5))
         {
         ctx->time_offset += (int)(atof(ctx->line+5) * 1000);
-//        fprintf(stderr, "new time offset: %"PRId64"\n", ctx->time_offset);
+        // fprintf(stderr, "new time offset: %"PRId64"\n", ctx->time_offset);
         }
       else if(!strncasecmp(ctx->line, "@SCALE=", 7))
         {
