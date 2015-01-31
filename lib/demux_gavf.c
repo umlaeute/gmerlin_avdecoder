@@ -64,17 +64,16 @@ static int64_t seek_func(void * priv, int64_t pos, int whence)
 
 static int init_track(bgav_track_t * track,
                       gavf_t * dec,
-                      const bgav_options_t * opt, int * have_duration)
+                      const bgav_options_t * opt)
   {
   int i;
   bgav_stream_t * s;
   const gavl_audio_format_t * afmt;
   const gavl_video_format_t * vfmt;
-
   const int64_t * pts;
-
   const gavf_program_header_t * ph;
 
+  
   ph = gavf_get_program_header(dec);
   
   gavl_metadata_copy(&track->metadata, &ph->m);
@@ -115,10 +114,7 @@ static int init_track(bgav_track_t * track,
       s->start_time = pts[i];
       pts = gavf_end_pts(dec);
       if(pts)
-        {
         s->duration = pts[i] - s->start_time;
-        *have_duration = 1;
-        }
       }
     s->stream_id = ph->streams[i].id;
     }
@@ -132,8 +128,9 @@ static int open_gavf(bgav_demuxer_context_t * ctx)
   const gavl_chapter_list_t * cl;
   gavf_options_t * opt;
   uint32_t flags = 0;
-  int have_duration = 0;
   gavf_demuxer_t * priv = calloc(1, sizeof(*priv));
+  const gavf_program_header_t * ph;
+  gavl_time_t duration;
   
   ctx->priv = priv;
 
@@ -161,12 +158,14 @@ static int open_gavf(bgav_demuxer_context_t * ctx)
   ctx->tt = bgav_track_table_create(1);
 
   if(!init_track(ctx->tt->cur, priv->dec,
-                 ctx->opt, &have_duration))
+                 ctx->opt))
     return 0;
 
-  if(have_duration)
+  ph = gavf_get_program_header(priv->dec);
+  
+  if(gavl_metadata_get_long(&ph->m, GAVL_META_APPROX_DURATION, &duration))
     {
-    bgav_track_calc_duration(ctx->tt->cur);
+    ctx->tt->cur->duration = duration;
 
     if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
       ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
@@ -221,12 +220,8 @@ static int next_packet_gavf(bgav_demuxer_context_t * ctx)
   gavf_demuxer_t * priv;
   bgav_stream_t * s;
 
-  int64_t position;
-  
   priv = ctx->priv;
 
-  position = ctx->input->position;
-  
   ph = gavf_packet_read_header(priv->dec);
   if(!ph)
     {
@@ -264,8 +259,6 @@ static int next_packet_gavf(bgav_demuxer_context_t * ctx)
 
 static void resync_gavf(bgav_demuxer_context_t * ctx, bgav_stream_t * s)
   {
-  gavf_demuxer_t * priv;
-  priv = ctx->priv;
   }
 
 static void close_gavf(bgav_demuxer_context_t * ctx)
