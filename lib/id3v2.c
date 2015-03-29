@@ -419,7 +419,6 @@ bgav_id3v2_tag_t * bgav_id3v2_read(bgav_input_context_t * input)
   {
   uint8_t probe_data[3];
   int64_t tag_start_pos;
-  int64_t start_pos;
   int frames_alloc = 0;
   bgav_input_context_t * input_mem;
   uint8_t * data;
@@ -451,8 +450,6 @@ bgav_id3v2_tag_t * bgav_id3v2_read(bgav_input_context_t * input)
 
   if(ret->header.flags & ID3V2_TAG_EXTENDED_HEADER)
     {
-    start_pos = input->position;
-
     if(!read_32_syncsave(input, &ret->extended_header.size))
       goto fail;
     bgav_input_skip(input, ret->extended_header.size-4);

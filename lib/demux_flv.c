@@ -159,7 +159,6 @@ static int init_audio_stream(bgav_demuxer_context_t * ctx, bgav_stream_t * s,
                               uint8_t flags)
   {
   uint8_t tmp_8;
-  int adpcm_bits;
   flv_priv_t * priv;
 
   priv = ctx->priv;
@@ -189,8 +188,7 @@ static int init_audio_stream(bgav_demuxer_context_t * ctx, bgav_stream_t * s,
            several packets */
         if(!bgav_input_get_data(ctx->input, &tmp_8, 1))
           return 0;
-        adpcm_bits = 2 +
-          s->data.audio.format.num_channels * (((tmp_8 >> 6) + 2) * 4096 + 16 + 6);
+        // ?? s->data.audio.format.num_channels * (((tmp_8 >> 6) + 2) * 4096 + 16 + 6);
         break;
       case 2: /* MP3 */
         s->fourcc = BGAV_MK_FOURCC('.', 'm', 'p', '3');
@@ -543,9 +541,6 @@ static int read_metadata(bgav_demuxer_context_t * ctx, flv_tag * t)
                               
 static int next_packet_flv(bgav_demuxer_context_t * ctx)
   {
-  meta_object_t * obj;
-  int num_obj;
-  
   //  double number;
   uint8_t flags;
   uint8_t header[16];
@@ -588,8 +583,6 @@ static int next_packet_flv(bgav_demuxer_context_t * ctx)
     
       priv->have_metadata = read_metadata(ctx, &t);
 
-      obj = priv->metadata.data.object.children;
-      num_obj = priv->metadata.data.object.num_children;
     
 #if 0
       /* Check if we can detect an audio stream */

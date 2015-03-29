@@ -32,7 +32,6 @@ int bgav_qt_wave_read(qt_atom_header_t * h, bgav_input_context_t * ctx,
   {
   int done = 0;
   qt_atom_header_t ch; /* Child header */
-  uint8_t * data_ptr;
   bgav_input_context_t * input_mem;
     
   ret->raw_size = h->size - (ctx->position - h->start_position);
@@ -46,7 +45,7 @@ int bgav_qt_wave_read(qt_atom_header_t * h, bgav_input_context_t * ctx,
   
   while(input_mem->position < ret->raw_size)
     {
-    data_ptr = ret->raw + input_mem->position;
+    //    data_ptr = ret->raw + input_mem->position;
     
     if(!bgav_qt_atom_read_header(input_mem, &ch))
       return 0;

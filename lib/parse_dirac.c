@@ -102,7 +102,6 @@ static int parse_frame_dirac(bgav_video_parser_t * parser,
   uint8_t * start =   p->data;
   uint8_t * end = p->data + p->data_size;
   bgav_dirac_picture_header_t ph;
-  int ret = PARSER_CONTINUE;
   priv = parser->priv;
 #if 0
   fprintf(stderr, "parse_frame_dirac %lld %lld\n",
@@ -126,7 +125,7 @@ static int parse_frame_dirac(bgav_video_parser_t * parser,
             return PARSER_ERROR;
           //          bgav_dirac_sequence_header_dump(&priv->sh);
           priv->have_sh = 1;
-          ret = PARSER_CONTINUE;
+          // ret = PARSER_CONTINUE;
           set_format(parser);
           }
         break;

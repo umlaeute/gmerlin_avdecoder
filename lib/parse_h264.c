@@ -558,7 +558,6 @@ static int parse_frame_h264(bgav_video_parser_t * parser, bgav_packet_t * p, int
   const uint8_t * pps_start = NULL;
   const uint8_t * pps_end = NULL;
 
-  int has_aud = 0;
   h264_priv_t * priv = parser->priv;
   
   nal_start = p->data; // Assume that we have a startcode
@@ -708,7 +707,7 @@ static int parse_frame_h264(bgav_video_parser_t * parser, bgav_packet_t * p, int
             break;
           }
 #endif
-           has_aud = 1;
+        //           has_aud = 1;
            break;
       case H264_NAL_END_OF_SEQUENCE:
         break;
@@ -730,22 +729,20 @@ static int parse_frame_h264(bgav_video_parser_t * parser, bgav_packet_t * p, int
 
 static int parse_avc_extradata(bgav_video_parser_t * parser)
   {
-  int num_units;
   const uint8_t * ptr;
-  const uint8_t * end;
   bgav_h264_nal_header_t nh;
   int nal_len;
   h264_priv_t * priv = parser->priv;
   
   ptr = parser->s->ext_data;
-  end = ptr + parser->s->ext_size;
+  //  end = ptr + parser->s->ext_size;
 
   ptr += 4; // Version, profile, profile compat, level
   priv->nal_size_length = (*ptr & 0x3) + 1;
   ptr++;
   
   /* SPS (we parse just the first one) */
-  num_units = *ptr & 0x1f; ptr++;
+  ptr++; // num_units = *ptr & 0x1f; ptr++;
 
   nal_len = BGAV_PTR_2_16BE(ptr); ptr += 2;
 

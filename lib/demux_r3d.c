@@ -318,7 +318,6 @@ static void build_superindex(bgav_demuxer_context_t * ctx)
   int audio_pos = 0, video_pos = 0;
   bgav_stream_t * s;
   r3d_priv_t * priv;
-  int do_audio;
   int duration;
   int offset;
   priv = ctx->priv;
@@ -328,7 +327,6 @@ static void build_superindex(bgav_demuxer_context_t * ctx)
 
   for(i = 0; i < priv->reob.audio_packets+priv->reob.video_packets; i++)
     {
-    do_audio = 0;
     if(audio_pos < priv->reob.audio_packets &&
        ((video_pos >= priv->reob.video_packets) ||
         priv->rdao[audio_pos] < priv->rdvo[video_pos]))

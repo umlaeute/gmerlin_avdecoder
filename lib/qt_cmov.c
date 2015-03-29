@@ -36,7 +36,6 @@ int bgav_qt_cmov_read(qt_atom_header_t * h, bgav_input_context_t * input,
   {
   qt_atom_header_t ch;
   uint32_t compression_id;
-  int have_dcom = 0;
   uint32_t size_compressed;
   uint32_t size_uncompressed;
   uLongf size_uncompressed_ret; /* use zlib type to keep gcc happy */
@@ -59,7 +58,7 @@ int bgav_qt_cmov_read(qt_atom_header_t * h, bgav_input_context_t * input,
         switch(compression_id)
           {
           case BGAV_MK_FOURCC('z', 'l', 'i', 'b'):
-            have_dcom = 1;
+            // have_dcom = 1;
             break;
           default:
             bgav_log(input->opt, BGAV_LOG_ERROR, LOG_DOMAIN,

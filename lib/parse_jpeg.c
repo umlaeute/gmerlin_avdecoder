@@ -65,21 +65,21 @@ static gavl_pixelformat_t get_pixelformat(bgav_packet_t * p)
       case 0xFFCe:
       case 0xFFCf:
         {
-        int tmp, i;
+        int i;
         int num_components;
         //        gavl_hexdump(ptr, 16, 16);
       
         len = BGAV_PTR_2_16BE(ptr); ptr+=2;
         //        fprintf(stderr, "Got SOF %d\n", len-2);
         
-        tmp = *ptr; ptr++;
+        ptr++; // tmp = *ptr; ptr++;
 
         //        fprintf(stderr, "Bits: %d\n", tmp);
       
-        tmp = BGAV_PTR_2_16BE(ptr); ptr+=2;
+        ptr+=2; // tmp = BGAV_PTR_2_16BE(ptr); ptr+=2;
         //        fprintf(stderr, "Height: %d\n", tmp);
 
-        tmp = BGAV_PTR_2_16BE(ptr); ptr+=2;
+        ptr+=2; // tmp = BGAV_PTR_2_16BE(ptr); ptr+=2;
         //        fprintf(stderr, "Width: %d\n", tmp);
         
         num_components = *ptr; ptr++;

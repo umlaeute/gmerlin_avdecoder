@@ -987,7 +987,7 @@ static void    close_dvd(bgav_input_context_t * ctx)
 static int select_track_dvd(bgav_input_context_t * ctx, int track)
   {
   dvd_t * dvd;
-  int ttn, pgn;
+  int ttn;
   int pgc_id, i;
   tt_srpt_t *ttsrpt;
   track_priv_t * track_priv;
@@ -1009,7 +1009,7 @@ static int select_track_dvd(bgav_input_context_t * ctx, int track)
   
   vts_ptt_srpt = dvd->vts_ifo->vts_ptt_srpt;
   pgc_id = vts_ptt_srpt->title[ttn - 1].ptt[track_priv->chapter].pgcn;
-  pgn    = vts_ptt_srpt->title[ttn - 1].ptt[track_priv->chapter].pgn;
+  //  pgn    = vts_ptt_srpt->title[ttn - 1].ptt[track_priv->chapter].pgn;
 
   
   dvd->pgc = dvd->vts_ifo->vts_pgcit->pgci_srp[pgc_id - 1].pgc;

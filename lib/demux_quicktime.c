@@ -1284,8 +1284,6 @@ static void quicktime_init(bgav_demuxer_context_t * ctx)
   bgav_stream_t * bg_ss;
   stream_priv_t * stream_priv;
   bgav_track_t * track;
-  int skip_first_frame = 0;
-  int skip_last_frame = 0;
   qt_priv_t * priv = ctx->priv;
   qt_moov_t * moov = &priv->moov;
 
@@ -1313,8 +1311,6 @@ static void quicktime_init(bgav_demuxer_context_t * ctx)
     /* Video stream */
     else if(trak->mdia.minf.has_vmhd)
       {
-      skip_first_frame = 0;
-      skip_last_frame = 0;
 
       if(!stsd->entries)
         continue;

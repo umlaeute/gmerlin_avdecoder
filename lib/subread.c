@@ -680,11 +680,8 @@ static void close_vobsub(bgav_stream_t * s)
 
 static void seek_vobsub(bgav_stream_t * s, int64_t time1, int scale)
   {
-  bgav_subtitle_reader_context_t * ctx;
-  vobsub_priv_t * priv;
-  
-  ctx = s->data.subtitle.subreader;
-  priv = ctx->priv;
+  //  bgav_subtitle_reader_context_t * ctx;
+  //  ctx = s->data.subtitle.subreader;
   
   }
 

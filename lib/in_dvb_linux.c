@@ -1051,7 +1051,7 @@ static void check_eit(bgav_input_context_t* ctx)
     
     if(tmp >> 13 == 0x04)
       {
-      int desc_len, desc_tag;
+      int desc_tag;
       uint8_t * end_pos;
       gavl_metadata_t * m;
       char time_string[GAVL_METADATA_DATE_TIME_STRING_LEN];
@@ -1086,8 +1086,8 @@ static void check_eit(bgav_input_context_t* ctx)
       while(1)
         {
         desc_tag = *pos; pos++;
-        desc_len = *pos; pos++;
-
+        pos++; // desc_len = *pos; pos++;
+        
         end_pos = pos + len;
 
         switch(desc_tag)

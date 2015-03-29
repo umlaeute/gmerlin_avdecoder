@@ -395,9 +395,7 @@ static void init_video_stream(bgav_demuxer_context_t * ctx, bgav_stream_t * s,
                               mxf_track_t * st, mxf_descriptor_t * sd,
                               uint32_t fourcc)
   {
-  stream_priv_t * priv;
   init_stream_common(ctx, s, st, sd, fourcc);
-  priv = s->priv;
   
   if((s->fourcc == BGAV_MK_FOURCC('m','p','g','v')) ||
      (s->fourcc == BGAV_MK_FOURCC('m','x','5','p')) ||
@@ -446,7 +444,6 @@ handle_source_track_simple(bgav_demuxer_context_t * ctx,
   {
   mxf_descriptor_t * sd;
   mxf_sequence_t * ss;
-  mxf_source_clip_t * sc;
   mxf_t * priv;
   uint32_t fourcc;
   bgav_stream_t * s = NULL;
@@ -474,8 +471,6 @@ handle_source_track_simple(bgav_demuxer_context_t * ctx,
     
     if(ss->structural_components[0]->type != MXF_TYPE_SOURCE_CLIP)
       return;
-    
-    sc = (mxf_source_clip_t*)(ss->structural_components[0]);
     
     sd = bgav_mxf_get_source_descriptor(&priv->mxf, sp, t);
     if(!sd)

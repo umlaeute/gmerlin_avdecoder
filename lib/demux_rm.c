@@ -469,11 +469,9 @@ static void init_audio_stream_mp3(bgav_demuxer_context_t * ctx, bgav_rmff_stream
   {
   bgav_stream_t * bg_as;
   bgav_track_t * track = ctx->tt->cur;
-  rm_private_t * priv;
   rm_audio_stream_t * rm_as;
   rm_as = calloc(1, sizeof(*rm_as));
 
-  priv = ctx->priv;
   
   bg_as = bgav_track_add_audio_stream(track, ctx->opt);
   bg_as->cleanup = cleanup_stream_rm;
@@ -498,16 +496,14 @@ static void init_video_stream(bgav_demuxer_context_t * ctx,
                               bgav_rmff_stream_t * stream,
                               uint8_t * data_start, int len)
   {
-  uint16_t fps, fps2;
   bgav_stream_t * bg_vs;
   rm_video_stream_t * rm_vs;
-  rm_private_t * priv;
   
   bgav_track_t * track = ctx->tt->cur;
 
   uint8_t * data = data_start;
-  
-  priv = ctx->priv;
+
+  rm_private_t * priv = ctx->priv;
   
   bg_vs = bgav_track_add_video_stream(track, ctx->opt);
   bg_vs->cleanup = cleanup_stream_rm;
@@ -544,9 +540,10 @@ static void init_video_stream(bgav_demuxer_context_t * ctx,
   bg_vs->data.video.format.timescale = 1000;
   bg_vs->data.video.format.framerate_mode = GAVL_FRAMERATE_VARIABLE;
   
-  fps =  BGAV_PTR_2_16BE(data); data+=2; /* fps */
+  data += 2; // fps =  BGAV_PTR_2_16BE(data); data+=2; /* fps */
+  
   data += 4; /* Unknown */
-  fps2 =  BGAV_PTR_2_16BE(data); data+=2; /* fps2 */
+  data += 2; // fps2 =  BGAV_PTR_2_16BE(data); data+=2; /* fps2 */
   data += 2; /* Unknown */
 
   //  fprintf(stderr, "FPS: %d, FPS2: %d\n", fps, fps2);

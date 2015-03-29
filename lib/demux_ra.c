@@ -61,11 +61,9 @@ static int open_ra(bgav_demuxer_context_t * ctx)
   uint8_t  *audio_header;
   uint32_t  hdr_size;
   uint16_t  version;
-  int framesize;
   int offset;
   bgav_stream_t * s;
   ra_priv_t * priv;
-  int sub_packet_size   = 0;
   //  int sub_packet_height = 0;
   int codec_flavor      = 0;
   int coded_framesize   = 0;
@@ -137,9 +135,9 @@ static int open_ra(bgav_demuxer_context_t * ctx)
     s->data.audio.bits_per_sample     = audio_header[0x35];
     s->data.audio.format.num_channels = audio_header[0x37];
 
-    sub_packet_size    = BGAV_PTR_2_16BE(audio_header + 0x2C);
+    // sub_packet_size    = BGAV_PTR_2_16BE(audio_header + 0x2C);
     priv->sub_packet_h       = BGAV_PTR_2_16BE(audio_header + 0x28);    
-    framesize = BGAV_PTR_2_16BE(audio_header + 0x2A);
+    // framesize = BGAV_PTR_2_16BE(audio_header + 0x2A);
     codec_flavor       = BGAV_PTR_2_16BE(audio_header + 0x16);
     coded_framesize    = BGAV_PTR_2_32BE(audio_header + 0x18); 
 

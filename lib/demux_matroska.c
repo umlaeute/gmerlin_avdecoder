@@ -478,6 +478,7 @@ static int init_subtitle(bgav_demuxer_context_t * ctx,
     uint32_t line_alloc = 0;
     uint32_t * pal = NULL;
     bgav_input_context_t * input_mem;
+    int width = 0, height = 0;
     
     input_mem =
       bgav_input_open_memory(track->CodecPrivate, track->CodecPrivateLen,
@@ -486,11 +487,14 @@ static int init_subtitle(bgav_demuxer_context_t * ctx,
     /* Get the palette from the codec data */
     while(bgav_input_read_line(input_mem, &line, &line_alloc, 0, NULL))
       {
-      //      fprintf(stderr, "Got line: %s\n", line);
+      // fprintf(stderr, "Got line: %s\n", line);
       if(!strncmp(line, "palette:", 8))
         pal = bgav_get_vobsub_palette(line + 8);
+
+      if(!strncmp(line, "size:", 5))
+        sscanf(line + 5, "%dx%d", &width, &height);
       
-      if(pal)
+      if(pal && width && height)
         break;
       }
     if(line)
@@ -506,6 +510,11 @@ static int init_subtitle(bgav_demuxer_context_t * ctx,
       s->fourcc = BGAV_MK_FOURCC('D', 'V', 'D', 'S');
       s->ext_data = (uint8_t*)pal;
       s->ext_size = 16 * 4; // 64
+      s->data.subtitle.video.format.image_width  = width;
+      s->data.subtitle.video.format.image_height = height;
+      
+      s->data.subtitle.video.format.frame_width  = width;
+      s->data.subtitle.video.format.frame_height = height;
       }
     
     }

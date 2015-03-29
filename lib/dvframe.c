@@ -412,7 +412,7 @@ static const int dv_audio_frequency[3] = {
 void bgav_dv_dec_init_audio(bgav_dv_dec_t * d, bgav_stream_t * s)
   {
   const uint8_t* as_pack;
-  int freq, stype, smpls, quant;
+  int freq, stype, quant;
   
   as_pack = dv_extract_pack(d->buffer, dv_audio_source);
   if (!as_pack || !d->profile)
@@ -420,7 +420,7 @@ void bgav_dv_dec_init_audio(bgav_dv_dec_t * d, bgav_stream_t * s)
     return;
     }
 
-  smpls = as_pack[1] & 0x3f; /* samples in this frame - min. samples */
+  // smpls = as_pack[1] & 0x3f; /* samples in this frame - min. samples */
   freq = (as_pack[4] >> 3) & 0x07; /* 0 - 48KHz, 1 - 44,1kHz, 2 - 32 kHz */
   stype = (as_pack[3] & 0x1f); /* 0 - 2CH, 2 - 4CH */
   quant = as_pack[4] & 0x07; /* 0 - 16bit linear, 1 - 12bit nonlinear */

@@ -90,11 +90,9 @@ static int next_packet_mpegvideo(bgav_demuxer_context_t * ctx)
   int ret;
   bgav_packet_t * p;
   bgav_stream_t * s;
-  mpegvideo_priv_t * priv;
 
   int bytes_to_read;
   
-  priv = ctx->priv;
   
   s = ctx->tt->cur->video_streams;
 

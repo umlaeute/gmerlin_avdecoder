@@ -151,7 +151,6 @@ static gavl_source_status_t decode_dvdsub(bgav_stream_t * s, gavl_overlay_t * ov
   dvdsub_t * priv;
   uint16_t date;
   uint8_t palette[4] = { 0,0,0,0 }, alpha[4] = { 0,0,0,0 };
-  int start_date = 0, end_date = -1;
   int x1 = 0, y1 = 0, x2= 0, y2= 0, i;
   uint16_t offset1 = 0, offset2 = 0;
   int ctrl_seq_end;
@@ -201,10 +200,10 @@ static gavl_source_status_t decode_dvdsub(bgav_stream_t * s, gavl_overlay_t * ov
         case 0x00: /* Force display (or menu subtitle?) */
           break;
         case 0x01: /* Start display time */
-          start_date = date;
+          //          start_date = date;
           break;
         case 0x02: /* End display time */
-          end_date = date;
+          //          end_date = date;
           break;
         case 0x03: /* Set Palette */
           palette[3] = ptr[0] >> 4;

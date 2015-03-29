@@ -646,11 +646,9 @@ static void set_eof(bgav_demuxer_context_t * ctx)
 
 static void * tcp_thread(void * data)
   {
-  rtp_priv_t * priv;
   bgav_demuxer_context_t * ctx = data;
   uint8_t c = 0;
   uint16_t len;
-  priv = ctx->priv;
 
   while(1)
     {
@@ -1257,9 +1255,7 @@ static void send_nal(bgav_stream_t * s, uint8_t * nal, int len,
                      int64_t time)
   {
   uint8_t start_sequence[]= { 0, 0, 1 };
-  rtp_stream_priv_t * sp;
 
-  sp = s->priv;
   
   if(s->packet && (s->packet->pts != time))
     {
@@ -1408,9 +1404,7 @@ static int init_h264(bgav_stream_t * s)
 static int
 process_mpa(bgav_stream_t * s, rtp_header_t * h, uint8_t * data, int len)
   {
-  rtp_stream_priv_t * sp;
   bgav_packet_t * p;
-  sp = s->priv;
   
   p = bgav_stream_get_packet_write(s);
   bgav_packet_alloc(p, len - 4);
@@ -1436,10 +1430,8 @@ static int init_mpa(bgav_stream_t * s)
 static int
 process_mpv(bgav_stream_t * s, rtp_header_t * h, uint8_t * data, int len)
   {
-  rtp_stream_priv_t * sp;
   bgav_packet_t * p;
   uint32_t i;
-  sp = s->priv;
   
   p = bgav_stream_get_packet_write(s);
 
@@ -1558,11 +1550,9 @@ static int init_mp4v_es(bgav_stream_t * s)
 static int process_h263_1998(bgav_stream_t * s,
                              rtp_header_t * h, uint8_t * data, int len)
   {
-  rtp_stream_priv_t * sp;
   int p_bit;
   int skip = 2;
 
-  sp = s->priv;
 
   p_bit = !!(data[0] & 0x4);
   
@@ -1734,7 +1724,7 @@ static int get_v_ogg(uint8_t * data1, int * ret)
 static int extract_extradata_ogg(bgav_stream_t * s, uint8_t * data, int siz)
   {
   int i;
-  int count_total, count, len;
+  int count_total, count;
   int sizes[3];
   uint8_t * pos;
   ogg_packet op;
@@ -1755,7 +1745,7 @@ static int extract_extradata_ogg(bgav_stream_t * s, uint8_t * data, int siz)
     }
 
   sp->priv.xiph.ident  = BGAV_PTR_2_24BE(data); data += 3;
-  len = BGAV_PTR_2_16BE(data); data += 2;
+  data += 2; // len = BGAV_PTR_2_16BE(data); data += 2;
 
   //  fprintf(stderr, "ID: %d, len: %d\n",
   //          sp->priv.xiph.ident, len);

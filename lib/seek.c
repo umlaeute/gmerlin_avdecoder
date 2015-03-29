@@ -234,11 +234,9 @@ static void seek_iterative(bgav_t * b, int64_t * time, int scale)
   bgav_track_t * track = b->tt->cur;
   
   int64_t seek_time;
-  int64_t diff_time;
   int64_t sync_time;
   int64_t out_time           = GAVL_TIME_UNDEFINED;
   
-  int64_t seek_time_upper    = GAVL_TIME_UNDEFINED;
   int64_t seek_time_lower    = GAVL_TIME_UNDEFINED;
 
   int64_t sync_time_upper    = GAVL_TIME_UNDEFINED;
@@ -274,7 +272,7 @@ static void seek_iterative(bgav_t * b, int64_t * time, int scale)
 #ifdef DUMP_ITERATIVE
     bgav_dprintf("Sync time: %"PRId64"\n", sync_time);
 #endif    
-    diff_time = *time - sync_time;
+    // diff_time = *time - sync_time;
 
     if(sync_time > *time) /* Sync time too late */
       {
@@ -292,7 +290,7 @@ static void seek_iterative(bgav_t * b, int64_t * time, int scale)
       if((sync_time_upper == GAVL_TIME_UNDEFINED) ||
          (sync_time_upper > sync_time))
         {
-        seek_time_upper = seek_time;
+        //        seek_time_upper = seek_time;
         sync_time_upper = sync_time;
         }
       /* If we were too early before, exit here */

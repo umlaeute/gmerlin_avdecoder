@@ -108,7 +108,6 @@ static int next_packet_rdt(bgav_input_context_t * ctx, int block)
   {
   int size;
   int flags1, flags2;
-  int unknown1;
   
   uint32_t timestamp;
   bgav_rmff_packet_header_t ph;
@@ -207,7 +206,7 @@ static int next_packet_rdt(bgav_input_context_t * ctx, int block)
         }
 
       flags2=header[7];
-      unknown1 = (header[5]<<16)+(header[6]<<8)+(header[7]);
+      // unknown1 = (header[5]<<16)+(header[6]<<8)+(header[7]);
       if(bgav_read_data_fd(ctx->opt, fd, header, 6, ctx->opt->read_timeout) < 6)
         return 0;
 
