@@ -292,6 +292,9 @@ static void init_mpa(bgav_stream_t * s)
 
   if((int)p->audio.SamplingFrequency < 32000)
     p->frame_samples /= 2;
+
+  /* Need bitrate */
+  s->flags |= STREAM_PARSE_FULL;
   
   }
 

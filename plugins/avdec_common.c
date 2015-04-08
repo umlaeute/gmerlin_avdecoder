@@ -355,7 +355,7 @@ void bg_avdec_seek(void * priv, int64_t * t, int scale)
 
 int bg_avdec_init(avdec_priv * avdec)
   {
-  int i;
+  int i, j;
   const bgav_metadata_t * m;
   const gavl_chapter_list_t * cl;
   gavl_time_t duration;
@@ -380,24 +380,56 @@ int bg_avdec_init(avdec_priv * avdec)
       avdec->track_info[i].audio_streams =
         calloc(avdec->track_info[i].num_audio_streams,
                sizeof(*avdec->track_info[i].audio_streams));
+
+      for(j = 0; j < avdec->track_info[i].num_audio_streams; j++)
+        {
+        gavl_audio_format_copy(&(avdec->track_info[i].audio_streams[j].format),
+                               bgav_get_audio_format(avdec->dec, j));
+
+        gavl_metadata_copy(&(avdec->track_info[i].audio_streams[j].m),
+                           bgav_get_audio_metadata(avdec->dec, j));
+        
+        }
       }
     if(avdec->track_info[i].num_video_streams)
       {
       avdec->track_info[i].video_streams =
         calloc(avdec->track_info[i].num_video_streams,
                sizeof(*avdec->track_info[i].video_streams));
+
+      for(j = 0; j < avdec->track_info[i].num_video_streams; j++)
+        {
+        gavl_video_format_copy(&(avdec->track_info[i].video_streams[j].format),
+                               bgav_get_video_format(avdec->dec, j));
+
+        gavl_metadata_copy(&(avdec->track_info[i].video_streams[j].m),
+                           bgav_get_video_metadata(avdec->dec, j));
+        
+        }
       }
     if(avdec->track_info[i].num_text_streams)
       {
       avdec->track_info[i].text_streams =
         calloc(avdec->track_info[i].num_text_streams,
                sizeof(*avdec->track_info[i].text_streams));
+
+      for(j = 0; j < avdec->track_info[i].num_text_streams; j++)
+        {
+        gavl_metadata_copy(&(avdec->track_info[i].text_streams[j].m),
+                           bgav_get_text_metadata(avdec->dec, j));
+        }
       }
     if(avdec->track_info[i].num_overlay_streams)
       {
       avdec->track_info[i].overlay_streams =
         calloc(avdec->track_info[i].num_overlay_streams,
                sizeof(*avdec->track_info[i].overlay_streams));
+
+      for(j = 0; j < avdec->track_info[i].num_overlay_streams; j++)
+        {
+        gavl_metadata_copy(&(avdec->track_info[i].overlay_streams[j].m),
+                           bgav_get_overlay_metadata(avdec->dec, j));
+        }
       }
     
     duration = bgav_get_duration(avdec->dec, i);
