@@ -17,16 +17,16 @@ dnl Look for header
 found_header="false"
 
 AC_TRY_COMPILE([
-#include <libavcodec/avcodec.h>],[], [found_header="true";AVCODEC_HEADER="<libavcodec/avcodec.h>";VDPAU_HEADER="<libavcodec/vdpau.h>" ],)
+#include <libavcodec/avcodec.h>],[], [found_header="true";AVCODEC_HEADER="<libavcodec/avcodec.h>";VAAPI_HEADER="<libavcodec/vaapi.h>" ],)
 
 if test $found_header = "false"; then
 AC_TRY_COMPILE([
-#include <avcodec.h>],[],[found_header="true";AVCODEC_HEADER="<avcodec.h>";VDPAU_HEADER="<vdpau.h>"])
+#include <avcodec.h>],[],[found_header="true";AVCODEC_HEADER="<avcodec.h>";VAAPI_HEADER="<vaapi.h>"])
 fi
 
 if test $found_header = "false"; then
 AC_TRY_COMPILE([
-#include <ffmpeg/avcodec.h>],[], [found_header="true";AVCODEC_HEADER="<ffmpeg/avcodec.h>";VDPAU_HEADER="<vdpau.h>" ],)
+#include <ffmpeg/avcodec.h>],[], [found_header="true";AVCODEC_HEADER="<ffmpeg/avcodec.h>";VAAPI_HEADER="<vaapi.h>" ],)
 fi
 
 AC_CHECK_HEADERS([libavcore/avcore.h])
@@ -100,8 +100,8 @@ avcodec_done="false"
 
 AH_TEMPLATE([AVCODEC_HEADER],
             [Header for libavcodec])
-AH_TEMPLATE([VDPAU_HEADER],
-            [Header for vdpau])
+AH_TEMPLATE([VAAPI_HEADER],
+            [Header for vaapi])
 
 dnl
 dnl First preference: configure options
@@ -140,7 +140,7 @@ fi
 if test "x$avcodec_done" = "xtrue"; then
   ifelse([$2], , :, [$2])
   AC_DEFINE_UNQUOTED(AVCODEC_HEADER, $AVCODEC_HEADER)
-  AC_DEFINE_UNQUOTED(VDPAU_HEADER, $VDPAU_HEADER)
+  AC_DEFINE_UNQUOTED(VAAPI_HEADER, $VAAPI_HEADER)
 else
   ifelse([$3], , :, [$3])
 fi

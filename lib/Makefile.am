@@ -253,14 +253,14 @@ xadll_sources =
 xadll_libs = 
 endif
 
-if HAVE_VDPAU
-vdpau_sources = vdpau.c
-vdpau_libs = @VDPAU_LIBS@ @X_LIBS@
-vdpau_cflags = @VDPAU_CFLAGS@ @X_CFLAGS@
+if HAVE_LIBVA
+vaapi_sources = vaapi.c
+vaapi_libs = @LIBVA_LIBS@ @X_LIBS@
+vaapi_cflags = @LIBVA_CFLAGS@ @X_CFLAGS@
 else
-vdpau_sources =
-vdpau_libs = 
-vdpau_cflags =
+vaapi_sources =
+vaapi_libs = 
+vaapi_cflags =
 endif
 
 
@@ -313,7 +313,7 @@ $(schroedinger_libs) \
 $(speex_libs) \
 $(libpostproc_libs) \
 $(libswscale_libs) \
-$(vdpau_libs) \
+$(vaapi_libs) \
 $(gsm_libs) \
 @ICONV_LIBS@ \
 @LIBINTL@ \
@@ -345,7 +345,7 @@ $(schroedinger_cflags) \
 $(speex_cflags) \
 $(libpostproc_cflags) \
 $(libswscale_cflags) \
-$(vdpau_cflags)
+$(vaapi_cflags)
 
 libgmerlin_avdec_la_SOURCES = \
 $(vorbis_sources) \
@@ -371,7 +371,7 @@ $(theora_sources) \
 $(schroedinger_sources) \
 $(speex_sources) \
 $(dvb_sources) \
-$(vdpau_sources) \
+$(vaapi_sources) \
 $(gsm_sources) \
 RTjpeg.c \
 a52_header.c \

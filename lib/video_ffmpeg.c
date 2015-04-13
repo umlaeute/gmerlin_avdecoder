@@ -33,14 +33,12 @@
 
 #include AVCODEC_HEADER
 
-#if LIBAVCODEC_BUILD < ((52<<16)+(12<<8)+0)
 #undef HAVE_VDPAU
-#endif
 
-#ifdef HAVE_VDPAU
-#include VDPAU_HEADER
-#include <bgav_vdpau.h>
-#define VDPAU_MAX_STATES 16
+#ifdef HAVE_VAAPI
+#include VAAPI_HEADER
+// #include <bgav_vdpau.h>
+// #define VDPAU_MAX_STATES 16
 #endif
 
 #include <dvframe.h>
@@ -161,6 +159,9 @@ typedef struct
   
   AVPacket pkt;
 
+#ifdef HAVE_LIBVA
+#endif
+  
 #ifdef HAVE_VDPAU
   bgav_vdpau_context_t * vdpau_ctx;
 
