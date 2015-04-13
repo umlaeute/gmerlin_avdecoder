@@ -81,7 +81,8 @@ AH_TEMPLATE([AVFORMAT_HEADER], [libavformat header])
 
 have_avformat=false
 
-AVFORMAT_BUILD="3415808"
+dnl 53.10.0
+AVFORMAT_BUILD="3475968"
 
 AC_ARG_ENABLE(libavformat,
 [AC_HELP_STRING([--disable-libavformat],[Disable libavformat (default: autodetect)])],
@@ -1966,7 +1967,7 @@ AC_DEFUN([GMERLIN_CHECK_OPUS],[
 AH_TEMPLATE([HAVE_OPUS],
             [Do we have libopus installed?])
 
-have_theora="false"
+have_opus="false"
 
 OPUS_REQUIRED="1.0.0"
 
@@ -1990,6 +1991,117 @@ AM_CONDITIONAL(HAVE_OPUS, test x$have_opus = xtrue)
 
 if test "x$have_opus" = "xtrue"; then
 AC_DEFINE([HAVE_OPUS])
+fi
+
+])
+
+dnl
+dnl X11
+dnl
+
+AC_DEFUN([GMERLIN_CHECK_X11],[
+
+have_x="false"
+
+X_CFLAGS=""
+X_LIBS=""
+
+
+AC_PATH_X
+
+if test x$no_x != xyes; then
+  if test "x$x_includes" != "x"; then
+    X_CFLAGS="-I$x_includes"
+  elif test -d /usr/X11R6/include; then 
+    X_CFLAGS="-I/usr/X11R6/include"
+  else
+    X_CFLAGS=""
+  fi
+
+  if test "x$x_libraries" != "x"; then
+    X_LIBS="-L$x_libraries -lX11"
+  else
+    X_LIBS="-lX11"
+  fi
+  have_x="true"
+else
+  PKG_CHECK_MODULES(X, x11 >= 1.0.0, have_x=true, have_x=false)
+fi
+
+if test x$have_x = xtrue; then
+  X_LIBS="$X_LIBS -lXext"
+fi
+
+
+AC_SUBST(X_CFLAGS)
+AC_SUBST(X_LIBS)
+AM_CONDITIONAL(HAVE_X11, test x$have_x = xtrue)
+
+])
+
+
+dnl
+dnl libva
+dnl
+
+AC_DEFUN([GMERLIN_CHECK_LIBVA],[
+
+AH_TEMPLATE([HAVE_LIBVA],
+            [Do we have libva installed?])
+AH_TEMPLATE([HAVE_LIBVA_X11],
+            [Do we have libva (x11) installed?])
+
+have_libva="false"
+have_libva_glx="false"
+have_libva_x11="false"
+
+LIBVA_CFLAGS=""
+LIBVA_LIBS=""
+
+AC_ARG_ENABLE(libva,
+[AC_HELP_STRING([--disable-libva],[Disable libva (default: autodetect)])],
+[case "${enableval}" in
+   yes) test_libva=true ;;
+   no)  test_libva=false ;;
+esac],[test_libva=true])
+
+if test x$have_x != xtrue; then
+test_libva="false"
+fi
+
+if test x$test_libva = xtrue; then
+PKG_CHECK_MODULES(LIBVA_BASE, libva, have_libva="true", have_libva="false")
+fi
+
+if test "x$have_libva" = "xtrue"; then
+LIBVA_CFLAGS=$LIBVA_BASE_CFLAGS
+LIBVA_LIBS=$LIBVA_BASE_LIBS
+
+if test x$have_x = xtrue; then
+PKG_CHECK_MODULES(LIBVA_X11, libva-x11, have_libva_x11="true", have_libva_x11="false")
+fi
+
+if test "x$have_libva_x11" = "xtrue"; then
+LIBVA_CFLAGS="$LIBVA_CFLAGS $LIBVA_X11_CFLAGS"
+LIBVA_LIBS="$LIBVA_LIBS $LIBVA_X11_LIBS"
+else
+have_libva="false"
+fi
+
+fi
+
+AC_SUBST(LIBVA_LIBS)
+AC_SUBST(LIBVA_CFLAGS)
+
+AM_CONDITIONAL(HAVE_LIBVA, test x$have_libva = xtrue)
+AM_CONDITIONAL(HAVE_LIBVA_X11, test x$have_libva_x11 = xtrue)
+
+if test "x$have_libva" = "xtrue"; then
+AC_DEFINE([HAVE_LIBVA])
+fi
+
+if test "x$have_libva_x11" = "xtrue"; then
+AC_DEFINE([HAVE_LIBVA_X11])
 fi
 
 ])
