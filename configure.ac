@@ -293,6 +293,12 @@ dnl
 GMERLIN_CHECK_VDPAU
 
 dnl
+dnl libva
+dnl
+
+GMERLIN_CHECK_LIBVA
+
+dnl
 dnl Check for theora
 dnl
 

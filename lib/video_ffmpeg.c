@@ -272,6 +272,23 @@ vdpau_get_format(struct AVCodecContext *s, const enum PixelFormat *fmt)
 
 #endif
 
+static enum PixelFormat
+my_get_format(struct AVCodecContext *s, const enum PixelFormat *fmt)
+  {
+  int i = 0;
+
+  while(fmt[i] != -1)
+    {
+    if(fmt[i] == AV_PIX_FMT_VAAPI_VLD)
+      {
+      fprintf(stderr, "VAAPI support\n");
+
+      }
+    i++;
+    }
+  return fmt[0]; // Fallback
+  }
+
 static codec_info_t * lookup_codec(bgav_stream_t * s);
 
 static gavl_source_status_t 
@@ -838,7 +855,6 @@ static int init_ffmpeg(bgav_stream_t * s)
   /* Check for vdpau */
 #ifdef HAVE_VDPAU
   if(codec->capabilities & CODEC_CAP_HWACCEL_VDPAU)
-
     {
     int vdpau_ok = 1;
     
