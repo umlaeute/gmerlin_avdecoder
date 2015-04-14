@@ -26,7 +26,7 @@ fi
 
 if test $found_header = "false"; then
 AC_TRY_COMPILE([
-#include <ffmpeg/avcodec.h>],[], [found_header="true";AVCODEC_HEADER="<ffmpeg/avcodec.h>";VAAPI_HEADER="<vaapi.h>" ],)
+#include <ffmpeg/avcodec.h>],[], [found_header="true";AVCODEC_HEADER="<ffmpeg/avcodec.h>";VAAPI_HEADER="<ffmpeg/vaapi.h>" ],)
 fi
 
 AC_CHECK_HEADERS([libavcore/avcore.h])

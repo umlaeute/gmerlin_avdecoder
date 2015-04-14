@@ -22,13 +22,16 @@
 #include <config.h>
 #include <avdec_private.h>
 
+#include <X11/Xlib.h>
+
 #include AVCODEC_HEADER
 #include VAAPI_HEADER
 
+#include <va/va.h>
 #include <bgav_vaapi.h>
 
-#include <va/va.h>
 
+#include <gavl/hw_vaapi_x11.h>
 
 static int get_profile(enum AVCodecID id)
   {
@@ -52,33 +55,125 @@ static int get_profile(enum AVCodecID id)
       profile = VAProfileVC1Advanced;
       break;
     default:
-      profile = -1;
+      profile = VAProfileNone;
       break;
     }
   return profile;
   }
 
-static int has_profile(vaDisplay dpy, VAProfile profile)
+static int has_profile(VADisplay dpy, VAProfile profile)
   {
+  VAProfile * p = NULL;
+  int num, i;
+  VAStatus status;
+  int ret = 0;
 
+  num = vaMaxNumProfiles(dpy);
+
+  p = calloc(num, sizeof(*p));
+
+  if((status = vaQueryConfigProfiles(dpy, p, &num)) != VA_STATUS_SUCCESS)
+    goto fail;
+
+  for(i = 0; i < num; i++)
+    {
+    if(p[i] == profile)
+      {
+      ret = 1;
+      break;
+      }
+    }
+
+  fail:
+
+  if(p)
+    free(p);
+  return ret;
   }
 
-static int has_entrypoint(vaDisplay dpy, VAProfile profile,
-                            VAEntrypoint entrypoint)
+static int has_entrypoint(VADisplay dpy, VAProfile profile,
+                          VAEntrypoint entrypoint)
   {
+  int ret = 0;
+  int num;
+  VAStatus status;
+  VAEntrypoint * ep = NULL;
+  int i;
 
-  }
-
-int bgav_vaapi_init(bgav_vaapi_t * v, AVCodecContext * avctx)
-  {
-  int profile = get_profile(avctx->codec_id);
-  if(profile < 0)
-    return 0;
-
+  num = vaMaxNumEntrypoints(dpy);
+  ep = calloc(num, sizeof(*ep));
   
+  if((status = vaQueryConfigEntrypoints(dpy, profile, ep, &num)) != VA_STATUS_SUCCESS)
+    goto fail;
+
+  for(i = 0; i < num; i++)
+    {
+    if(ep[i] == entrypoint)
+      {
+      ret = 1;
+      break;
+      }
+    }
+  fail:
+  if(ep)
+    free(ep);
+
+  return ret;
+  }
+
+static VAEntrypoint get_entrypoint(enum PixelFormat pfmt)
+  {
+  switch(pfmt)
+    {
+    case AV_PIX_FMT_VAAPI_MOCO:
+      return VAEntrypointVLD;
+      break;
+    case AV_PIX_FMT_VAAPI_IDCT:
+      return VAEntrypointIDCT;
+      break;
+    case AV_PIX_FMT_VAAPI_VLD:
+      return VAEntrypointMoComp;
+      break;
+    default:
+      break;
+    }
+  return 0;
+  }
+
+int bgav_vaapi_init(bgav_vaapi_t * v, AVCodecContext * avctx, enum PixelFormat pfmt)
+  {
+  VAProfile profile;
+  VAEntrypoint ep;
+
+  if((profile = get_profile(avctx->codec_id)) == VAProfileNone)
+    goto fail;
+
+  /* Connect to hardware */
+  if(!(v->hwctx = gavl_hw_ctx_create_vaapi_x11(NULL)))
+    goto fail;
+  v->vaapi_ctx.display = gavl_hw_ctx_vaapi_x11_get_va_display(v->hwctx);
+
+  if(!has_profile(v->vaapi_ctx.display, profile))
+    goto fail;
+
+  if(!(ep = get_entrypoint(pfmt)))
+    goto fail;
+
+  if(!has_entrypoint(v->vaapi_ctx.display, profile, ep))
+    goto fail;
+
+  /* */
+ 
+  return 1; 
+  
+  fail: // Cleanup
+
+  bgav_vaapi_cleanup(v);
+  return 0;
   }
 
 void bgav_vaapi_cleanup(bgav_vaapi_t * v)
   {
-
+  if(v->hwctx)
+    gavl_hw_ctx_destroy(v->hwctx);
   }

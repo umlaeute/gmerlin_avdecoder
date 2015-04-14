@@ -293,6 +293,12 @@ dnl
 GMERLIN_CHECK_VDPAU
 
 dnl
+dnl X11
+dnl
+
+GMERLIN_CHECK_X11
+
+dnl
 dnl libva
 dnl
 
