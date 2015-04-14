@@ -144,6 +144,8 @@ int bgav_vaapi_init(bgav_vaapi_t * v, AVCodecContext * avctx, enum PixelFormat p
   {
   VAProfile profile;
   VAEntrypoint ep;
+  VAConfigAttrib attr;
+  VAStatus status;
 
   if((profile = get_profile(avctx->codec_id)) == VAProfileNone)
     goto fail;
@@ -162,8 +164,24 @@ int bgav_vaapi_init(bgav_vaapi_t * v, AVCodecContext * avctx, enum PixelFormat p
   if(!has_entrypoint(v->vaapi_ctx.display, profile, ep))
     goto fail;
 
-  /* */
- 
+  /* Get surface format */
+  
+  attr.type = VAConfigAttribRTFormat;
+  vaGetConfigAttributes(v->vaapi_ctx.display, profile, ep, &attr, 1);
+
+  if(!(attr.value & VA_RT_FORMAT_YUV420))
+    goto fail;
+  
+  /* Create config */
+  
+  if(!(status = vaCreateConfig(v->vaapi_ctx.display, profile, ep,
+                               &attr, 1, &v->vaapi_ctx.config_id)) != VA_STATUS_SUCCESS)
+    goto fail;
+
+  /* Create context */
+
+  
+  
   return 1; 
   
   fail: // Cleanup
