@@ -229,12 +229,24 @@ int bgav_video_start(bgav_stream_t * s)
              tmp_string);
     }
   
-  
   if((s->action == BGAV_STREAM_PARSE) &&
      ((s->data.video.format.framerate_mode == GAVL_FRAMERATE_VARIABLE) ||
       (s->data.video.format.interlace_mode == GAVL_INTERLACE_MIXED)))
     {
     s->data.video.ft = bgav_video_format_tracker_create(s);
+    }
+
+  /*
+   *  Set max ref frames. Needs to be set before the decoder is started.
+   *  Multiple references should already be set by the H.264 parser
+   */
+  
+  if(!s->ci.max_ref_frames)
+    {
+    if(s->ci.flags & GAVL_COMPRESSION_HAS_B_FRAMES)
+      s->ci.max_ref_frames = 2;
+    else if(s->ci.flags & GAVL_COMPRESSION_HAS_P_FRAMES)
+      s->ci.max_ref_frames = 1;
     }
   
   if(s->action == BGAV_STREAM_DECODE)

@@ -695,7 +695,7 @@ bgav_video_parser_create(bgav_stream_t * s)
 
   if(s->type == BGAV_STREAM_VIDEO)
     {
-    ret->s->ci.max_ref_frames = 2;
+    //    ret->s->ci.max_ref_frames = 2;
     ret->format = &s->data.video.format;
     }
   ret->start_pos = -1;

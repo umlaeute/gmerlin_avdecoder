@@ -1712,7 +1712,8 @@ static void fix_index(bgav_demuxer_context_t * ctx)
             (s->fourcc == BGAV_MK_FOURCC('m', 'x', '3', 'p')) ||
             (s->fourcc == BGAV_MK_FOURCC('m', 'x', '5', 'n')) ||
             (s->fourcc == BGAV_MK_FOURCC('m', 'x', '4', 'n')) ||
-            (s->fourcc == BGAV_MK_FOURCC('m', 'x', '3', 'n')))
+            (s->fourcc == BGAV_MK_FOURCC('m', 'x', '3', 'n')) ||
+            (s->fourcc == BGAV_MK_FOURCC('a', 'v', 'c', '1')))
       {
       s->flags |= STREAM_PARSE_FRAME;
       }

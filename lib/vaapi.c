@@ -147,6 +147,8 @@ int bgav_vaapi_init(bgav_vaapi_t * v, AVCodecContext * avctx, enum PixelFormat p
   VAConfigAttrib attr;
   VAStatus status;
 
+  bgav_stream_t * s = avctx->opaque;
+  
   if((profile = get_profile(avctx->codec_id)) == VAProfileNone)
     goto fail;
 
@@ -182,8 +184,12 @@ int bgav_vaapi_init(bgav_vaapi_t * v, AVCodecContext * avctx, enum PixelFormat p
                                &attr, 1, &v->vaapi_ctx.config_id)) != VA_STATUS_SUCCESS)
     goto fail;
 
-  /* Create surface */
+  /* Create surfaces */
   
+  if(s->ci.max_ref_frames)
+    {
+    
+    }
 
   /* Create context */
 
