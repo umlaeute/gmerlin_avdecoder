@@ -155,6 +155,10 @@ int bgav_vaapi_init(bgav_vaapi_t * v, AVCodecContext * avctx, enum PixelFormat p
     goto fail;
   v->vaapi_ctx.display = gavl_hw_ctx_vaapi_x11_get_va_display(v->hwctx);
 
+  /* Make IDs invalid */
+  v->vaapi_ctx.config_id = VA_INVALID_ID;
+  v->vaapi_ctx.context_id = VA_INVALID_ID;
+
   if(!has_profile(v->vaapi_ctx.display, profile))
     goto fail;
 
@@ -178,6 +182,9 @@ int bgav_vaapi_init(bgav_vaapi_t * v, AVCodecContext * avctx, enum PixelFormat p
                                &attr, 1, &v->vaapi_ctx.config_id)) != VA_STATUS_SUCCESS)
     goto fail;
 
+  /* Create surface */
+  
+
   /* Create context */
 
   
@@ -192,6 +199,14 @@ int bgav_vaapi_init(bgav_vaapi_t * v, AVCodecContext * avctx, enum PixelFormat p
 
 void bgav_vaapi_cleanup(bgav_vaapi_t * v)
   {
-  if(v->hwctx)
-    gavl_hw_ctx_destroy(v->hwctx);
+  if(!v->hwctx)
+    return;
+
+  if(v->vaapi_ctx.config_id != VA_INVALID_ID)
+    vaDestroyConfig(v->vaapi_ctx.display, v->vaapi_ctx.config_id);
+
+  if(v->vaapi_ctx.context_id != VA_INVALID_ID)
+    vaDestroyConfig(v->vaapi_ctx.display, v->vaapi_ctx.context_id);
+
+  gavl_hw_ctx_destroy(v->hwctx);
   }
