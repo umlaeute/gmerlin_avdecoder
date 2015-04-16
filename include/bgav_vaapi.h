@@ -21,6 +21,13 @@
 
 typedef struct
   {
+  VASurfaceID s;
+  gavl_video_frame_t * f;
+  AVBufferRef *buf;
+  } bgav_vaapi_frame_t;
+
+typedef struct
+  {
   gavl_hw_context_t * hwctx;
   
   /* Passed to libavcodec */
@@ -29,9 +36,12 @@ typedef struct
   int num_surfaces;
   VASurfaceID * surfaces;
 
+  bgav_vaapi_frame_t * frames;
+  
   } bgav_vaapi_t;
 
 int bgav_vaapi_init(bgav_vaapi_t *, AVCodecContext * avctx, enum PixelFormat pfmt);
 
 void bgav_vaapi_cleanup(bgav_vaapi_t *);
 
+bgav_vaapi_frame_t * bgav_vaapi_get_frame(bgav_vaapi_t *);

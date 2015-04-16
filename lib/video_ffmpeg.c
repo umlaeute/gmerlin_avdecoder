@@ -275,6 +275,25 @@ vdpau_get_format(struct AVCodecContext *s, const enum PixelFormat *fmt)
 #endif
 
 #ifdef HAVE_LIBVA
+
+static int vaapi_get_buffer2(struct AVCodecContext *avctx,
+                             AVFrame *frame, int flags)
+  {
+  bgav_vaapi_frame_t * f;
+  bgav_stream_t * s = avctx->opaque;
+  ffmpeg_video_priv * priv = s->decoder_priv;
+  
+  f = bgav_vaapi_get_frame(&priv->vaapi);
+
+  frame->data[0] = (uint8_t*)(uintptr_t)f->s;
+  frame->data[3] = frame->data[0];
+
+  frame->buf[0] = av_buffer_ref(f->buf);
+  frame->reordered_opaque = avctx->reordered_opaque;
+  
+  return 0;
+  }
+
 static enum PixelFormat
 vaapi_get_format(struct AVCodecContext *avctx, const enum PixelFormat *fmt)
   {
@@ -289,7 +308,10 @@ vaapi_get_format(struct AVCodecContext *avctx, const enum PixelFormat *fmt)
       fprintf(stderr, "VAAPI support\n");
 
       if(bgav_vaapi_init(&priv->vaapi, priv->ctx, fmt[i]))
+        {
+        priv->ctx->get_buffer2 = vaapi_get_buffer2;
         return fmt[i];
+        }
       }
     i++;
     }
@@ -2175,8 +2197,11 @@ static gavl_pixelformat_t get_pixelformat(enum PixelFormat p,
 /* Static functions (moved here, to make the above mess more readable) */
 static void get_format(AVCodecContext * ctx, gavl_video_format_t * format)
   {
-  format->pixelformat =
-    get_pixelformat(ctx->pix_fmt, format->pixelformat);
+  if(format->pixelformat == GAVL_PIXELFORMAT_NONE)
+    {
+    format->pixelformat =
+      get_pixelformat(ctx->pix_fmt, format->pixelformat);
+    }
   
   if(ctx->codec_id == CODEC_ID_DVVIDEO)
     {

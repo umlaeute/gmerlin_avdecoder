@@ -126,13 +126,13 @@ static VAEntrypoint get_entrypoint(enum PixelFormat pfmt)
   switch(pfmt)
     {
     case AV_PIX_FMT_VAAPI_MOCO:
-      return VAEntrypointVLD;
+      return VAEntrypointMoComp;
       break;
     case AV_PIX_FMT_VAAPI_IDCT:
       return VAEntrypointIDCT;
       break;
     case AV_PIX_FMT_VAAPI_VLD:
-      return VAEntrypointMoComp;
+      return VAEntrypointVLD;
       break;
     default:
       break;
@@ -140,8 +140,16 @@ static VAEntrypoint get_entrypoint(enum PixelFormat pfmt)
   return 0;
   }
 
-int bgav_vaapi_init(bgav_vaapi_t * v, AVCodecContext * avctx, enum PixelFormat pfmt)
+/* Noop because we don't have dynamic memory in the buffer */
+static void free_buffer(void * opaque, uint8_t * data)
   {
+  }
+
+int bgav_vaapi_init(bgav_vaapi_t * v,
+                    AVCodecContext * avctx,
+                    enum PixelFormat pfmt)
+  {
+  int i;
   VAProfile profile;
   VAEntrypoint ep;
   VAConfigAttrib attr;
@@ -193,13 +201,14 @@ int bgav_vaapi_init(bgav_vaapi_t * v, AVCodecContext * avctx, enum PixelFormat p
   
   /* Create config */
   
-  if(!(status = vaCreateConfig(v->vaapi_ctx.display, profile, ep,
+  if((status = vaCreateConfig(v->vaapi_ctx.display, profile, ep,
                                &attr, 1, &v->vaapi_ctx.config_id)) != VA_STATUS_SUCCESS)
     goto fail;
 
   /* Create surfaces */
   
-  v->num_surfaces = s->ci.max_ref_frames + 1;
+  v->num_surfaces = s->ci.max_ref_frames + 2; // Reference frames + render frame + 1 safety frame 
+                                                
   v->surfaces = calloc(v->num_surfaces, sizeof(*v->surfaces));
   
   /* Make invalid so we won't destroy invalid surfaces if the create call fails */
@@ -210,7 +219,8 @@ int bgav_vaapi_init(bgav_vaapi_t * v, AVCodecContext * avctx, enum PixelFormat p
                                 surface_width, surface_height,
                                 v->surfaces, v->num_surfaces, NULL, 0) != VA_STATUS_SUCCESS))
     goto fail;
-
+  
+  
   /* Create context */
   if(s->data.video.format.interlace_mode == GAVL_INTERLACE_NONE)
     context_flags |= VA_PROGRESSIVE;
@@ -226,13 +236,42 @@ int bgav_vaapi_init(bgav_vaapi_t * v, AVCodecContext * avctx, enum PixelFormat p
     goto fail;
  
   avctx->hwaccel_context = &v->vaapi_ctx;
- 
+
+  /* Create frames */
+  
+  v->frames = calloc(v->num_surfaces, sizeof(*v->frames));
+
+  for(i = 0; i < v->num_surfaces; i++)
+    {
+    v->frames[i].s = v->surfaces[i];
+    v->frames[i].f = gavl_video_frame_create(NULL);
+    v->frames[i].f->user_data = v->surfaces + i;
+    v->frames[i].f->hwctx = v->hwctx;
+    v->frames[i].buf = av_buffer_create((uint8_t*)(uintptr_t)v->frames[i].s, 0,
+                                        free_buffer, NULL, 0);
+    }
+  
+  s->data.video.format.pixelformat = GAVL_YUV_420_P;
   return 1; 
   
   fail: // Cleanup
 
   bgav_vaapi_cleanup(v);
   return 0;
+  }
+
+bgav_vaapi_frame_t * bgav_vaapi_get_frame(bgav_vaapi_t * v)
+  {
+  int i;
+  for(i = 0; i < v->num_surfaces; i++)
+    {
+    if(av_buffer_get_ref_count(v->frames[i].buf) < 2)
+      {
+      fprintf(stderr, "bgav_vaapi_get_frame %d\n", i);
+      return &v->frames[i];
+      }
+    }
+  return NULL;
   }
 
 void bgav_vaapi_cleanup(bgav_vaapi_t * v)
