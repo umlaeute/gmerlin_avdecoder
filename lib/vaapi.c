@@ -146,6 +146,8 @@ int bgav_vaapi_init(bgav_vaapi_t * v, AVCodecContext * avctx, enum PixelFormat p
   VAEntrypoint ep;
   VAConfigAttrib attr;
   VAStatus status;
+  int context_flags = 0;
+  int surface_width, surface_height, context_width, context_height;
 
   bgav_stream_t * s = avctx->opaque;
   
@@ -170,6 +172,17 @@ int bgav_vaapi_init(bgav_vaapi_t * v, AVCodecContext * avctx, enum PixelFormat p
   if(!has_entrypoint(v->vaapi_ctx.display, profile, ep))
     goto fail;
 
+  if(!s->ci.max_ref_frames)
+    goto fail;
+
+  /* Get dimensions. What about padding here? */
+  
+  surface_width  = s->data.video.format.image_width;
+  surface_height = s->data.video.format.image_height;
+
+  context_width  = s->data.video.format.image_width;
+  context_height = s->data.video.format.image_height;
+
   /* Get surface format */
   
   attr.type = VAConfigAttribRTFormat;
@@ -186,15 +199,34 @@ int bgav_vaapi_init(bgav_vaapi_t * v, AVCodecContext * avctx, enum PixelFormat p
 
   /* Create surfaces */
   
-  if(s->ci.max_ref_frames)
-    {
-    
-    }
+  v->num_surfaces = s->ci.max_ref_frames + 1;
+  v->surfaces = calloc(v->num_surfaces, sizeof(*v->surfaces));
+  
+  /* Make invalid so we won't destroy invalid surfaces if the create call fails */
+  v->surfaces[0] = VA_INVALID_ID;
+
+  if((status = vaCreateSurfaces(v->vaapi_ctx.display,
+                                VA_RT_FORMAT_YUV420,
+                                surface_width, surface_height,
+                                v->surfaces, v->num_surfaces, NULL, 0) != VA_STATUS_SUCCESS))
+    goto fail;
 
   /* Create context */
+  if(s->data.video.format.interlace_mode == GAVL_INTERLACE_NONE)
+    context_flags |= VA_PROGRESSIVE;
 
-  
-  
+  if((status = vaCreateContext(v->vaapi_ctx.display,
+                               v->vaapi_ctx.config_id,
+                               context_width,
+                               context_height,
+                               context_flags,
+                               v->surfaces,
+                               v->num_surfaces,
+                               &v->vaapi_ctx.context_id) != VA_STATUS_SUCCESS))
+    goto fail;
+ 
+  avctx->hwaccel_context = &v->vaapi_ctx;
+ 
   return 1; 
   
   fail: // Cleanup
@@ -205,6 +237,8 @@ int bgav_vaapi_init(bgav_vaapi_t * v, AVCodecContext * avctx, enum PixelFormat p
 
 void bgav_vaapi_cleanup(bgav_vaapi_t * v)
   {
+  int i;
+
   if(!v->hwctx)
     return;
 
@@ -213,6 +247,13 @@ void bgav_vaapi_cleanup(bgav_vaapi_t * v)
 
   if(v->vaapi_ctx.context_id != VA_INVALID_ID)
     vaDestroyConfig(v->vaapi_ctx.display, v->vaapi_ctx.context_id);
+
+  if(v->surfaces)
+    {
+    if(v->surfaces[0] != VA_INVALID_ID)
+      vaDestroySurfaces(v->vaapi_ctx.display, v->surfaces, v->num_surfaces);
+    free(v->surfaces);
+    }
 
   gavl_hw_ctx_destroy(v->hwctx);
   }

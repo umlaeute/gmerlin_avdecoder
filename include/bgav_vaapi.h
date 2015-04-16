@@ -25,6 +25,10 @@ typedef struct
   
   /* Passed to libavcodec */
   struct vaapi_context vaapi_ctx;
+
+  int num_surfaces;
+  VASurfaceID * surfaces;
+
   } bgav_vaapi_t;
 
 int bgav_vaapi_init(bgav_vaapi_t *, AVCodecContext * avctx, enum PixelFormat pfmt);

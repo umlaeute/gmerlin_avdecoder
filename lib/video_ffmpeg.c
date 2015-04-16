@@ -35,10 +35,10 @@
 
 #undef HAVE_VDPAU
 
-#ifdef HAVE_VAAPI
+#ifdef HAVE_LIBVA
+#include <va/va.h>
 #include VAAPI_HEADER
-// #include <bgav_vdpau.h>
-// #define VDPAU_MAX_STATES 16
+#include <bgav_vaapi.h>
 #endif
 
 #include <dvframe.h>
@@ -160,6 +160,7 @@ typedef struct
   AVPacket pkt;
 
 #ifdef HAVE_LIBVA
+  bgav_vaapi_t vaapi;
 #endif
   
 #ifdef HAVE_VDPAU
@@ -273,10 +274,13 @@ vdpau_get_format(struct AVCodecContext *s, const enum PixelFormat *fmt)
 
 #endif
 
+#ifdef HAVE_LIBVA
 static enum PixelFormat
-my_get_format(struct AVCodecContext *s, const enum PixelFormat *fmt)
+vaapi_get_format(struct AVCodecContext *avctx, const enum PixelFormat *fmt)
   {
   int i = 0;
+  bgav_stream_t * s = avctx->opaque;
+  ffmpeg_video_priv * priv = s->decoder_priv;
 
   while(fmt[i] != -1)
     {
@@ -284,11 +288,14 @@ my_get_format(struct AVCodecContext *s, const enum PixelFormat *fmt)
       {
       fprintf(stderr, "VAAPI support\n");
 
+      if(bgav_vaapi_init(&priv->vaapi, priv->ctx, fmt[i]))
+        return fmt[i];
       }
     i++;
     }
   return fmt[0]; // Fallback
   }
+#endif
 
 static codec_info_t * lookup_codec(bgav_stream_t * s);
 
@@ -881,6 +888,10 @@ static int init_ffmpeg(bgav_stream_t * s)
       bgav_log(s->opt, BGAV_LOG_INFO, LOG_DOMAIN,
                "Using VDPAU for decoding");
     }
+#endif
+
+#ifdef HAVE_LIBVA
+  priv->ctx->get_format = vaapi_get_format;
 #endif
   
   priv->ctx->width = s->data.video.format.frame_width;
