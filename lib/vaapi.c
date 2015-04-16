@@ -252,6 +252,7 @@ int bgav_vaapi_init(bgav_vaapi_t * v,
     }
   
   s->data.video.format.pixelformat = GAVL_YUV_420_P;
+  s->data.video.format.hwctx = v->hwctx;
   return 1; 
   
   fail: // Cleanup
