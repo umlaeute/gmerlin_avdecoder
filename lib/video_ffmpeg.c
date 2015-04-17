@@ -1191,7 +1191,14 @@ static void close_ffmpeg(bgav_stream_t * s)
   if(priv->swsContext)
     sws_freeContext(priv->swsContext);
 #endif
-  
+
+#ifdef HAVE_LIBVA
+  if(priv->vaapi.hwctx)
+    {
+    bgav_vaapi_cleanup(&priv->vaapi);
+    priv->vaapi.hwctx = NULL;
+    }
+#endif 
   av_frame_free(&priv->frame);
   free(priv);
   }

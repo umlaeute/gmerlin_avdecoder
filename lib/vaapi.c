@@ -286,7 +286,7 @@ void bgav_vaapi_cleanup(bgav_vaapi_t * v)
     vaDestroyConfig(v->vaapi_ctx.display, v->vaapi_ctx.config_id);
 
   if(v->vaapi_ctx.context_id != VA_INVALID_ID)
-    vaDestroyConfig(v->vaapi_ctx.display, v->vaapi_ctx.context_id);
+    vaDestroyContext(v->vaapi_ctx.display, v->vaapi_ctx.context_id);
 
   if(v->surfaces)
     {
@@ -294,6 +294,24 @@ void bgav_vaapi_cleanup(bgav_vaapi_t * v)
       vaDestroySurfaces(v->vaapi_ctx.display, v->surfaces, v->num_surfaces);
     free(v->surfaces);
     }
+ 
+  if(v->frames)
+    {
+    for(i = 0; i < v->num_surfaces; i++)
+      {
+      if(v->frames[i].f)
+        {
+        gavl_video_frame_null(v->frames[i].f);
+        v->frames[i].f->hwctx = NULL;
+        gavl_video_frame_destroy(v->frames[i].f);
+        }
+      if(v->frames[i].buf)
+        av_buffer_unref(&v->frames[i].buf);
+      }
+
+    free(v->frames);
+    }
 
   gavl_hw_ctx_destroy(v->hwctx);
+  v->hwctx = NULL;
   }
