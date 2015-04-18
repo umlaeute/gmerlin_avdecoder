@@ -45,3 +45,5 @@ int bgav_vaapi_init(bgav_vaapi_t *, AVCodecContext * avctx, enum PixelFormat pfm
 void bgav_vaapi_cleanup(bgav_vaapi_t *);
 
 bgav_vaapi_frame_t * bgav_vaapi_get_frame(bgav_vaapi_t *);
+
+bgav_vaapi_frame_t * bgav_vaapi_get_frame_by_id(bgav_vaapi_t *, VASurfaceID id);

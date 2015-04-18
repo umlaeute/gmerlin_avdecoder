@@ -89,7 +89,10 @@ read_video_nocopy(void * sp,
   if(!check_still(s))
     return GAVL_SOURCE_AGAIN;
   if((st = s->data.video.decoder->decode(sp, NULL)) != GAVL_SOURCE_OK)
+    {
+    fprintf(stderr, "EOF :)\n");
     return st;
+    }
   if(frame)
     *frame = s->vframe;
 #ifdef DUMP_TIMESTAMPS
@@ -129,6 +132,7 @@ static gavl_source_status_t read_video_copy(void * sp,
 int bgav_video_start(bgav_stream_t * s)
   {
   int result;
+  int src_flags;
   bgav_video_decoder_t * dec;
 
   if(!s->timescale && s->data.video.format.timescale)
@@ -273,23 +277,22 @@ int bgav_video_start(bgav_stream_t * s)
       s->data.video.format.interlace_mode = GAVL_INTERLACE_NONE;
     if(s->data.video.format.framerate_mode == GAVL_FRAMERATE_UNKNOWN)
       s->data.video.format.framerate_mode = GAVL_FRAMERATE_CONSTANT;
+
+    src_flags = s->src_flags;
     
     if(s->vframe)
-      {
-      int src_flags = GAVL_SOURCE_SRC_ALLOC | s->src_flags;
-      
+      src_flags |= GAVL_SOURCE_SRC_ALLOC;
+    
+    if(src_flags & GAVL_SOURCE_SRC_ALLOC)
       s->data.video.vsrc =
         gavl_video_source_create(read_video_nocopy,
                                  s, src_flags,
                                  &s->data.video.format);
-      }
     else
-      {
       s->data.video.vsrc =
         gavl_video_source_create(read_video_copy,
                                  s, 0,
                                  &s->data.video.format);
-      }
     }
   else if(s->action == BGAV_STREAM_READRAW)
     {

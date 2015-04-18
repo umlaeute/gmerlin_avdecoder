@@ -261,6 +261,17 @@ int bgav_vaapi_init(bgav_vaapi_t * v,
   return 0;
   }
 
+bgav_vaapi_frame_t * bgav_vaapi_get_frame_by_id(bgav_vaapi_t * v, VASurfaceID id)
+  {
+  int i;
+  for(i = 0; i < v->num_surfaces; i++)
+    {
+    if(v->frames[i].s == id)
+      return &v->frames[i];
+    }
+  return NULL;
+  }
+
 bgav_vaapi_frame_t * bgav_vaapi_get_frame(bgav_vaapi_t * v)
   {
   int i;
@@ -268,12 +279,14 @@ bgav_vaapi_frame_t * bgav_vaapi_get_frame(bgav_vaapi_t * v)
     {
     if(av_buffer_get_ref_count(v->frames[i].buf) < 2)
       {
-      fprintf(stderr, "bgav_vaapi_get_frame %d\n", i);
+      //      fprintf(stderr, "bgav_vaapi_get_frame %d %d\n", i + 1, v->num_surfaces);
       return &v->frames[i];
       }
     }
+  //  fprintf(stderr, "Out of frames\n");
   return NULL;
   }
+
 
 void bgav_vaapi_cleanup(bgav_vaapi_t * v)
   {

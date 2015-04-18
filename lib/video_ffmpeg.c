@@ -276,6 +276,27 @@ vdpau_get_format(struct AVCodecContext *s, const enum PixelFormat *fmt)
 
 #ifdef HAVE_LIBVA
 
+static void put_frame_vaapi(bgav_stream_t * s, gavl_video_frame_t * f1)
+  {
+  VAStatus result;
+  VASurfaceID id;
+  bgav_vaapi_frame_t * f;
+  ffmpeg_video_priv * priv = s->decoder_priv;
+
+  id = (VASurfaceID)(uintptr_t)priv->frame->data[0];
+#if 0
+  if((result = vaSyncSurface(priv->vaapi.vaapi_ctx.display, id)) != VA_STATUS_SUCCESS)
+    {
+    fprintf(stderr, "vaSyncSurface failed: %s\n", vaErrorStr(result));
+    }
+#endif
+  
+  f = bgav_vaapi_get_frame_by_id(&priv->vaapi, id);
+  s->vframe = f->f;
+  gavl_video_frame_copy_metadata(s->vframe, priv->gavl_frame);
+  
+  }
+
 static int vaapi_get_buffer2(struct AVCodecContext *avctx,
                              AVFrame *frame, int flags)
   {
@@ -294,6 +315,26 @@ static int vaapi_get_buffer2(struct AVCodecContext *avctx,
   return 0;
   }
 
+static void vaapi_draw_horiz_band(struct AVCodecContext *avctx,
+                                  const AVFrame *src, int offset[AV_NUM_DATA_POINTERS],
+                                  int y, int type, int height)
+  {
+  VAStatus result;
+  VASurfaceID id;
+  bgav_stream_t * s = avctx->opaque;
+  ffmpeg_video_priv * priv = s->decoder_priv;
+
+  id = (VASurfaceID)(uintptr_t)src->data[0];
+
+  //  fprintf(stderr, "vaSyncSurface\n");
+  if((result = vaSyncSurface(priv->vaapi.vaapi_ctx.display, id)) != VA_STATUS_SUCCESS)
+    {
+    //    fprintf(stderr, "vaSyncSurface failed: %s\n", vaErrorStr(result));
+    }
+  
+  
+  }
+
 static enum PixelFormat
 vaapi_get_format(struct AVCodecContext *avctx, const enum PixelFormat *fmt)
   {
@@ -305,13 +346,16 @@ vaapi_get_format(struct AVCodecContext *avctx, const enum PixelFormat *fmt)
     {
     if(fmt[i] == AV_PIX_FMT_VAAPI_VLD)
       {
-      fprintf(stderr, "VAAPI support\n");
-
-      if(bgav_vaapi_init(&priv->vaapi, priv->ctx, fmt[i]))
+      if(!priv->vaapi.hwctx && bgav_vaapi_init(&priv->vaapi, priv->ctx, fmt[i]))
         {
+        bgav_log(s->opt, BGAV_LOG_INFO, LOG_DOMAIN, "Using VAAPI");
         priv->ctx->get_buffer2 = vaapi_get_buffer2;
+        priv->ctx->draw_horiz_band = vaapi_draw_horiz_band;
+        s->src_flags |= GAVL_SOURCE_SRC_ALLOC;
         return fmt[i];
         }
+      else if(priv->vaapi.hwctx)
+        return fmt[i];
       }
     i++;
     }
@@ -469,6 +513,7 @@ static gavl_source_status_t decode_picture(bgav_stream_t * s)
       switch(st)
         {
         case GAVL_SOURCE_EOF:
+          //          fprintf(stderr, "*** EOF 1\n");
           p = NULL;
           break;
         case GAVL_SOURCE_AGAIN:
@@ -483,8 +528,10 @@ static gavl_source_status_t decode_picture(bgav_stream_t * s)
     
     /* Early EOF detection */
     if(!p && !(priv->flags & HAS_DELAY))
+      {
+      //      fprintf(stderr, "*** EOF 2\n");
       return GAVL_SOURCE_EOF;
-
+      }
     if(p) /* Got packet */
       {
       /* Check what to skip */
@@ -636,14 +683,17 @@ static gavl_source_status_t decode_picture(bgav_stream_t * s)
         priv->flags &= ~GOT_EOS;
         }
       else
+        {
+        //        fprintf(stderr, "*** EOF 3\n");
         return GAVL_SOURCE_EOF;
+        }
       }
     
     if(have_picture)
       {
       int i;
       s->flags |= STREAM_HAVE_FRAME; 
-
+      
       /* Set our internal frame */
       for(i = 0; i < 3; i++)
         {
@@ -715,10 +765,21 @@ decode_ffmpeg(bgav_stream_t * s, gavl_video_frame_t * f)
   if(!(s->flags & STREAM_HAVE_FRAME))
     {
     if((st = decode_picture(s)) != GAVL_SOURCE_OK)
+      {
+      //      fprintf(stderr, "*** EOF 5\n");
       return st;
+      }
     }
   if(s->flags & STREAM_HAVE_FRAME)
     {
+    if(priv->put_frame)
+      {
+      priv->put_frame(s, f);
+      /* Set frame metadata */
+      if(f)
+        gavl_video_frame_copy_metadata(f, priv->gavl_frame);
+      }
+#if 0    
     if(f)
       {
       if(priv->put_frame)
@@ -735,10 +796,13 @@ decode_ffmpeg(bgav_stream_t * s, gavl_video_frame_t * f)
         gavl_video_frame_copy_metadata(f, priv->gavl_frame);
         }
       }
+#endif
     }
   else if(!(priv->flags & NEED_FORMAT))
+    {
+    //    fprintf(stderr, "*** EOF 4\n");
     return GAVL_SOURCE_EOF; /* EOF */
-  
+    }
   return GAVL_SOURCE_OK;
   }
 
@@ -1128,6 +1192,24 @@ static void resync_ffmpeg(bgav_stream_t * s)
   {
   ffmpeg_video_priv * priv;
   priv = s->decoder_priv;
+
+  while(1)
+    {
+    int bytes_used, have_picture = 0;
+    priv->pkt.data = NULL;
+    priv->pkt.size = 0;
+    
+    bytes_used = avcodec_decode_video2(priv->ctx,
+                                       priv->frame,
+                                       &have_picture,
+                                       &priv->pkt);
+    
+    if(!have_picture)
+      break;
+    }
+  
+
+
   avcodec_flush_buffers(priv->ctx);
 
   priv->ip_age[0] = 256*256*256*64;
@@ -2492,6 +2574,11 @@ static void init_put_frame(bgav_stream_t * s)
 #ifdef HAVE_VDPAU
   else if(priv->vdpau_ctx)
     priv->put_frame = put_frame_vdpau;
+#endif
+
+#ifdef HAVE_LIBVA
+  else if(priv->vaapi.hwctx)
+    priv->put_frame = put_frame_vaapi;
 #endif
 
 #if LIBAVUTIL_VERSION_INT < (50<<16)
