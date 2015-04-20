@@ -884,6 +884,8 @@ struct bgav_options_s
   int shrink;
 
   int vdpau;
+  int vaapi;
+
   int threads;
 
   int log_level;

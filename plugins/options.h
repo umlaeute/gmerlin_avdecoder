@@ -68,10 +68,10 @@
     .help_string = TRS("This enables downscaling of images while decoding. Currently only supported for JPEG-2000."), \
   }, \
   {  \
-    .name      =  "vdpau",                  \
-    .long_name =  TRS("Use vdpau"),         \
+    .name      =  "vaapi",                  \
+    .long_name =  TRS("Use vaapi"),         \
     .type      =  BG_PARAMETER_CHECKBUTTON, \
-    .help_string = TRS("Use VDPAU"),        \
+    .help_string = TRS("Use VAAPI"),        \
     .val_default = { .val_i = 1 },          \
   }
 

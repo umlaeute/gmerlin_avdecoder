@@ -640,11 +640,27 @@ void bgav_options_set_shrink(bgav_options_t* opt,
  *  \param vdpau 1 to enable vdpau, 0 else
  *
  *  Since 1.0.2
+ *
+ *  This is a noop now since VDPAU support was removed. Might get enabled
+ *  again in the future.
  */
 
 BGAV_PUBLIC
 void bgav_options_set_vdpau(bgav_options_t* opt,
                             int vdpau);
+
+/** \ingroup options
+ *  \brief VAAPI acceleration
+ *  \param opt Option container
+ *  \param vaapi 1 to enable vaapi, 0 else
+ *
+ *  Since 1.0.2
+ *
+ */
+
+BGAV_PUBLIC
+void bgav_options_set_vaapi(bgav_options_t* opt,
+                            int vaapi);
 
 /** \ingroup options
  *  \brief Dump file headers

@@ -147,6 +147,10 @@ bg_avdec_option_set_parameter(bgav_options_t * opt, const char * name,
     {
     bgav_options_set_vdpau(opt, val->val_i);
     }
+  else if(!strcmp(name, "vaapi"))
+    {
+    bgav_options_set_vaapi(opt, val->val_i);
+    }
   else if(!strcmp(name, "threads"))
     {
     bgav_options_set_threads(opt, val->val_i);

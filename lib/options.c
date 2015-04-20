@@ -206,6 +206,12 @@ void bgav_options_set_vdpau(bgav_options_t* opt,
   opt->vdpau = vdpau;
   }
 
+void bgav_options_set_vaapi(bgav_options_t* opt,
+                            int vaapi)
+  {
+  opt->vaapi = vaapi;
+  }
+
 void bgav_options_set_threads(bgav_options_t * opt, int threads)
   {
   opt->threads = threads;
@@ -340,6 +346,7 @@ void bgav_options_copy(bgav_options_t * dst, const bgav_options_t * src)
   CP_INT(shrink);
 
   CP_INT(vdpau);
+  CP_INT(vaapi);
   CP_INT(threads);
   CP_INT(dump_headers);
   CP_INT(dump_indices);
