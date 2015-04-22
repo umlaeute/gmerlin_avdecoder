@@ -1790,6 +1790,20 @@ static int open_quicktime(bgav_demuxer_context_t * ctx)
           return 0;
         bgav_qt_atom_skip(ctx->input, &h);
         break;
+      case BGAV_MK_FOURCC('m','o','o','f'):
+        {
+        qt_moof_t moof;
+        memset(&moof, 0, sizeof(moof));
+        if(!bgav_qt_moof_read(&h, ctx->input, &moof))
+          {
+          bgav_log(ctx->opt, BGAV_LOG_ERROR, LOG_DOMAIN,
+                   "Reading moof atom failed");
+          return 0;
+          }
+        bgav_qt_moof_dump(0, &moof);
+        bgav_qt_moof_free(&moof);
+        }
+        break;
       default:
         bgav_qt_atom_skip_unknown(ctx->input, &h, 0);
       }
