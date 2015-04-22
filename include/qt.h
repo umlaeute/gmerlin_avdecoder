@@ -1074,6 +1074,115 @@ void bgav_qt_moov_dump(int indent, qt_moov_t * c);
 
 int bgav_qt_is_chapter_track(qt_moov_t * moov, qt_trak_t * trak);
 
+/*
+ *  Movie fragment header
+ */
+
+typedef struct
+  {
+  qt_atom_header_t h;
+  int version;
+  uint32_t flags;
+  uint32_t sequence_number;  
+  } qt_mfhd_t;
+
+int bgav_qt_mfhd_read(qt_atom_header_t * h, bgav_input_context_t * ctx,
+                      qt_mfhd _t * ret);
+
+void bgav_qt_mfhd_dump(int indent, qt_mfhd_t * c);
+
+/*
+ *  Track fragment header
+ */
+
+typedef struct
+  {
+  qt_atom_header_t h;
+  int version;
+  uint32_t flags;
+  
+  uint32_t track_ID;
+// all the following are optional fields
+  uint64_t base_data_offset;
+  uint32_t sample_description_index;
+  uint32_t default_sample_duration;
+  uint32_t default_sample_size;
+  uint32_t default_sample_flags;
+  } qt_tfhd _t;
+
+int bgav_qt_tfhd_read(qt_atom_header_t * h, bgav_input_context_t * ctx,
+                      qt_tfhd_t * ret);
+
+void bgav_qt_tfhd_dump(int indent, qt_tfhd_t * c);
+
+/*
+ *  Track Fragment Run Box
+ */
+
+typedef struct
+  {
+  uint32_t sample_duration;
+  uint32_t sample_size;
+  uint32_t sample_flags
+  uint32_t sample_composition_time_offset;
+  } qt_trun_sample_t;
+
+typedef struct
+  {
+  qt_atom_header_t h;
+  int version;
+  uint32_t flags;
+
+  uint32_t sample_count;
+  int32_t data_offset;
+  uint32_t first_sample_flags;
+  
+  qt_trun_sample_t * samples;
+  } qt_trun_t;
+
+int bgav_qt_trun_read(qt_atom_header_t * h, bgav_input_context_t * ctx,
+                      qt_trun_t * ret);
+
+void bgav_qt_trun_dump(int indent, qt_trun_t * c);
+
+
+typedef struct
+  {
+  qt_atom_header_t h;
+  int version;
+  uint32_t flags;
+  int64_t decode_time;
+  } qt_tfdt_t;
+
+int bgav_qt_tfdt_read(qt_atom_header_t * h, bgav_input_context_t * ctx,
+                      qt_tfdt_t * ret);
+
+void bgav_qt_tfdt_dump(int indent, qt_tfdt_t * c);
+
+typedef struct
+  {
+  qt_tfhd_t tfhd;
+  
+  int num_truns;
+  int truns_alloc;
+  qt_trun_t * trun;
+  } qt_traf_t;
+
+int bgav_qt_traf_read(qt_atom_header_t * h, bgav_input_context_t * ctx,
+                      qt_traf_t * ret);
+
+void bgav_qt_traf_dump(int indent, qt_traf_t * c);
+
+/* moof */
+
+typedef struct
+  {
+  qt_mfhd_t mfhd;
+  
+  int num_traf;
+  int traf_alloc;
+  qt_traf_t * traf;
+  } qt_moof_t;
 
 /*
  *  Quicktime specific utilities
