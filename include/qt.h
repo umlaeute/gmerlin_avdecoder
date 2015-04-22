@@ -1086,14 +1086,21 @@ typedef struct
   uint32_t sequence_number;  
   } qt_mfhd_t;
 
-int bgav_qt_mfhd_read(qt_atom_header_t * h, bgav_input_context_t * ctx,
-                      qt_mfhd _t * ret);
+int bgav_qt_mfhd_read(qt_atom_header_t * h, bgav_input_context_t * input,
+                      qt_mfhd_t * ret);
 
 void bgav_qt_mfhd_dump(int indent, qt_mfhd_t * c);
 
 /*
  *  Track fragment header
  */
+
+#define TFHD_BASE_DATA_OFFSET_PRESENT         0x000001
+#define TFHD_SAMPLE_DESCRIPTION_INDEX_PRESENT 0x000002
+#define TFHD_DEFAULT_SAMPLE_DURATION_PRESENT  0x000008
+#define TFHD_DEFAULT_SAMPLE_SIZE_PRESENT      0x000010
+#define TFHD_DEFAULT_SAMPLE_FLAGS_PRESENT     0x000020
+#define TFHD_DURATION_IS_EMPTY                0x010000
 
 typedef struct
   {
@@ -1108,9 +1115,9 @@ typedef struct
   uint32_t default_sample_duration;
   uint32_t default_sample_size;
   uint32_t default_sample_flags;
-  } qt_tfhd _t;
+  } qt_tfhd_t;
 
-int bgav_qt_tfhd_read(qt_atom_header_t * h, bgav_input_context_t * ctx,
+int bgav_qt_tfhd_read(qt_atom_header_t * h, bgav_input_context_t * input,
                       qt_tfhd_t * ret);
 
 void bgav_qt_tfhd_dump(int indent, qt_tfhd_t * c);
@@ -1123,9 +1130,16 @@ typedef struct
   {
   uint32_t sample_duration;
   uint32_t sample_size;
-  uint32_t sample_flags
+  uint32_t sample_flags;
   uint32_t sample_composition_time_offset;
   } qt_trun_sample_t;
+
+#define TRUN_DATA_OFFSET_PRESENT                     0x000001 
+#define TRUN_FIRST_SAMPLE_FLAGS_PRESENT              0x000004 
+#define TRUN_SAMPLE_DURATION_PRESENT                 0x000100 
+#define TRUN_SAMPLE_SIZE_PRESENT                     0x000200 
+#define TRUN_SAMPLE_FLAGS_PRESENT                    0x000400 
+#define TRUN_SAMPLE_COMPOSITION_TIME_OFFSETS_PRESENT 0x000800 
 
 typedef struct
   {
@@ -1140,10 +1154,12 @@ typedef struct
   qt_trun_sample_t * samples;
   } qt_trun_t;
 
-int bgav_qt_trun_read(qt_atom_header_t * h, bgav_input_context_t * ctx,
+int bgav_qt_trun_read(qt_atom_header_t * h, bgav_input_context_t * input,
                       qt_trun_t * ret);
 
 void bgav_qt_trun_dump(int indent, qt_trun_t * c);
+
+void bgav_qt_trun_free(qt_trun_t * c);
 
 
 typedef struct
@@ -1154,13 +1170,14 @@ typedef struct
   int64_t decode_time;
   } qt_tfdt_t;
 
-int bgav_qt_tfdt_read(qt_atom_header_t * h, bgav_input_context_t * ctx,
+int bgav_qt_tfdt_read(qt_atom_header_t * h, bgav_input_context_t * input,
                       qt_tfdt_t * ret);
 
 void bgav_qt_tfdt_dump(int indent, qt_tfdt_t * c);
 
 typedef struct
   {
+  qt_atom_header_t h;
   qt_tfhd_t tfhd;
   
   int num_truns;
@@ -1168,30 +1185,42 @@ typedef struct
   qt_trun_t * trun;
   } qt_traf_t;
 
-int bgav_qt_traf_read(qt_atom_header_t * h, bgav_input_context_t * ctx,
+int bgav_qt_traf_read(qt_atom_header_t * h, bgav_input_context_t * input,
                       qt_traf_t * ret);
 
 void bgav_qt_traf_dump(int indent, qt_traf_t * c);
+
+void bgav_qt_traf_free(qt_traf_t * c);
+
 
 /* moof */
 
 typedef struct
   {
+  qt_atom_header_t h;
   qt_mfhd_t mfhd;
   
-  int num_traf;
-  int traf_alloc;
+  int num_trafs;
+  int trafs_alloc;
   qt_traf_t * traf;
   } qt_moof_t;
+
+int bgav_qt_moof_read(qt_atom_header_t * h, bgav_input_context_t * input,
+                      qt_moof_t * ret);
+
+void bgav_qt_moof_dump(int indent, qt_moof_t * c);
+
+void bgav_qt_moof_free(qt_moof_t * c);
+
 
 /*
  *  Quicktime specific utilities
  */
 
-int bgav_qt_read_fixed32(bgav_input_context_t * ctx,
+int bgav_qt_read_fixed32(bgav_input_context_t * input,
                          float * ret);
 
-int bgav_qt_read_fixed16(bgav_input_context_t * ctx,
+int bgav_qt_read_fixed16(bgav_input_context_t * input,
                          float * ret);
 
 /* language/charset support */
@@ -1201,6 +1230,6 @@ const char * bgav_qt_get_charset(int mac_code);
 
 /* Timecode support */
 
-void bgav_qt_init_timecodes(bgav_input_context_t * ctx,
+void bgav_qt_init_timecodes(bgav_input_context_t * input,
                             bgav_stream_t * s,
                             qt_trak_t * trak, int64_t pts_offset);

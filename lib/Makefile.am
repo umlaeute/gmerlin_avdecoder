@@ -536,7 +536,9 @@ qt_hdlr.c \
 qt_language.c \
 qt_mdhd.c \
 qt_mdia.c \
+qt_mfhd.c \
 qt_minf.c \
+qt_moof.c \
 qt_moov.c \
 qt_mvhd.c \
 qt_nmhd.c \
@@ -553,11 +555,14 @@ qt_stss.c \
 qt_stsz.c \
 qt_stts.c \
 qt_tcmi.c \
+qt_tfhd.c \
 qt_timecode.c \
 qt_tkhd.c \
 qt_tmcd.c \
+qt_traf.c \
 qt_trak.c \
 qt_tref.c \
+qt_trun.c \
 qt_udta.c \
 qt_useratoms.c \
 qt_utils.c \
