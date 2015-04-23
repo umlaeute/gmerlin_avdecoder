@@ -53,6 +53,11 @@ int bgav_qt_traf_read(qt_atom_header_t * h, bgav_input_context_t * input,
         if(!bgav_qt_tfhd_read(&ch, input, &ret->tfhd))
           return 0;
         break;
+      case BGAV_MK_FOURCC('t', 'f', 'd', 't'):
+        if(!bgav_qt_tfdt_read(&ch, input, &ret->tfdt))
+          return 0;
+        ret->have_tfdt = 1;
+        break;
       case BGAV_MK_FOURCC('t', 'r', 'u', 'n'):
         if(ret->num_truns + 1 > ret->truns_alloc)
           {
@@ -93,10 +98,13 @@ void bgav_qt_traf_dump(int indent, qt_traf_t * c)
   int i;
   bgav_diprintf(indent, "traf\n");
   bgav_qt_tfhd_dump(indent+2, &c->tfhd);
+ 
+  if(c->have_tfdt)
+    bgav_qt_tfdt_dump(indent+2, &c->tfdt);
 
   for(i = 0; i < c->num_truns; i++)
     bgav_qt_trun_dump(indent+2, c->trun + i);
   
-  bgav_diprintf(indent, "traf\n");
+  bgav_diprintf(indent, "end of traf\n");
   
   }

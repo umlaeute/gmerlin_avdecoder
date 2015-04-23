@@ -97,6 +97,6 @@ void bgav_qt_moof_dump(int indent, qt_moof_t * c)
   for(i = 0; i < c->num_trafs; i++)
     bgav_qt_traf_dump(indent+2, c->traf + i);
   
-  bgav_diprintf(indent, "moof\n");
+  bgav_diprintf(indent, "end of moof\n");
   
   }

@@ -1167,7 +1167,7 @@ typedef struct
   qt_atom_header_t h;
   int version;
   uint32_t flags;
-  int64_t decode_time;
+  uint64_t decode_time;
   } qt_tfdt_t;
 
 int bgav_qt_tfdt_read(qt_atom_header_t * h, bgav_input_context_t * input,
@@ -1179,7 +1179,10 @@ typedef struct
   {
   qt_atom_header_t h;
   qt_tfhd_t tfhd;
-  
+ 
+  int have_tfdt;
+  qt_tfdt_t tfdt;
+ 
   int num_truns;
   int truns_alloc;
   qt_trun_t * trun;

@@ -555,6 +555,7 @@ qt_stss.c \
 qt_stsz.c \
 qt_stts.c \
 qt_tcmi.c \
+qt_tfdt.c \
 qt_tfhd.c \
 qt_timecode.c \
 qt_tkhd.c \
