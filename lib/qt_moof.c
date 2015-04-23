@@ -85,6 +85,9 @@ void bgav_qt_moof_free(qt_moof_t * c)
       bgav_qt_traf_free(&c->traf[i]);
     free(c->traf);
     }
+
+  /* Reinitialize */
+  memset(c, 0, sizeof(*c));
   }
  
 

@@ -113,6 +113,10 @@ typedef struct
   
   qt_trak_t * timecode_track;
   int num_timecode_tracks;
+ 
+  int fragmented;
+  qt_moof_t current_moof;
+
   } qt_priv_t;
 
 /*

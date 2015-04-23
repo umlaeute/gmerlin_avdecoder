@@ -44,6 +44,8 @@
 #include <dvframe.h>
 #include <mpeg4_header.h>
 
+#include <libavutil/pixdesc.h>
+
 #ifdef HAVE_LIBPOSTPROC
 #include POSTPROC_HEADER
 
@@ -215,12 +217,19 @@ static void vaapi_draw_horiz_band(struct AVCodecContext *avctx,
   
   }
 
+static int pixelformat_is_ram(enum PixelFormat fmt)
+  {
+  AVPixFmtDescriptor * desc = av_pix_fmt_desc_get(fmt);
+  return (desc->flags & AV_PIX_FMT_FLAG_HWACCEL) ? 0 : 1;
+  }
+
 static enum PixelFormat
 vaapi_get_format(struct AVCodecContext *avctx, const enum PixelFormat *fmt)
   {
   int i = 0;
   bgav_stream_t * s = avctx->opaque;
   ffmpeg_video_priv * priv = s->decoder_priv;
+  enum PixelFormat fallback = -1;
 
   while(fmt[i] != -1)
     {
@@ -237,9 +246,11 @@ vaapi_get_format(struct AVCodecContext *avctx, const enum PixelFormat *fmt)
       else if(priv->vaapi.hwctx)
         return fmt[i];
       }
+    else if((fallback == -1) && (pixelformat_is_ram(fmt[i])))
+      fallback = fmt[i];
     i++;
     }
-  return fmt[0]; // Fallback
+  return fallback; // Fallback
   }
 
 static int vaapi_supported(struct AVCodecContext *avctx)
