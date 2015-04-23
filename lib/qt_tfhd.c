@@ -85,7 +85,7 @@ void bgav_qt_tfhd_dump(int indent, qt_tfhd_t * g)
   bgav_diprintf(indent+2, "version:                  %d\n", g->version);
   bgav_diprintf(indent+2, "flags:                    %08x\n", g->flags);
   bgav_diprintf(indent+2, "track_ID:                 %d\n", g->track_ID);
-
+  
   if(g->flags & TFHD_BASE_DATA_OFFSET_PRESENT)
     bgav_diprintf(indent+2, "base_data_offset:         %"PRId64"\n", g->base_data_offset);
 

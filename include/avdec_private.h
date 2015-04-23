@@ -433,6 +433,8 @@ struct bgav_stream_s
   void * decoder_priv;
   
   int initialized; /* Mostly means, that the format is valid */
+
+  int64_t dts; // Auxillary variable for generating timestamps on the fly
   
   const bgav_options_t * opt;
 
@@ -798,6 +800,9 @@ int bgav_track_has_sync(bgav_track_t * t);
 
 /* Calculate duration from stream durations */
 void bgav_track_calc_duration(bgav_track_t * t);
+
+void bgav_track_reset_index_positions(bgav_track_t * t);
+
 
 /* Tracktable */
 

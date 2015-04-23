@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <limits.h>
 
 #define LOG_DOMAIN "track"
 
@@ -630,6 +631,21 @@ int bgav_track_foreach(bgav_track_t * t,
     return 0;
   return 1;
   }
+
+static int reset_index_positions(void * priv, bgav_stream_t * s)
+  {
+  s->first_index_position = INT_MAX;
+  s->last_index_position = 0;
+  s->index_position = 0;
+  return 1;
+  }
+
+void bgav_track_reset_index_positions(bgav_track_t * t)
+  {
+  bgav_track_foreach(t, reset_index_positions, NULL);
+  return;
+  }
+
 
 static int clear_stream(void * priv, bgav_stream_t * s)
   {

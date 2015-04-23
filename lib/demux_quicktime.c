@@ -36,6 +36,13 @@
 #include <aac_frame.h>
 #endif
 
+static void set_mdat(bgav_input_context_t * input,
+                     qt_atom_header_t * h,
+                     qt_mdat_t * mdat)
+  {
+  mdat->start = input->position;
+  mdat->size  = h->size - (input->position - h->start_position);
+  }
 
 static void time_to_metadata(gavl_metadata_t * m,
                              const char * key,
@@ -105,11 +112,7 @@ typedef struct
   int mdats_alloc;
   int current_mdat;
   
-  struct
-    {
-    int64_t start;
-    int64_t size;
-    } * mdats;
+  qt_mdat_t * mdats;
   
   qt_trak_t * timecode_track;
   int num_timecode_tracks;
@@ -118,7 +121,7 @@ typedef struct
   int64_t first_moof;
 
   qt_moof_t current_moof;
-
+  qt_mdat_t fragment_mdat;
   } qt_priv_t;
 
 /*
@@ -837,7 +840,7 @@ static void process_packet_subtitle_tx3g(bgav_stream_t * s, bgav_packet_t * p)
     p->data_size = 1;
     }
   //  p->duration = -1;
-
+  
 #if 0  
   /* De-Macify linebreaks */
   for(i = 0; i < len; i++)
@@ -846,6 +849,17 @@ static void process_packet_subtitle_tx3g(bgav_stream_t * s, bgav_packet_t * p)
       p->data[i] = '\n';
     }
 #endif
+  }
+
+static void process_packet_fragmented(bgav_stream_t * s, bgav_packet_t * p)
+  {
+  /* Load the next moof atom if necessary */
+  
+  if(s->index_position == s->last_index_position)
+    {
+    
+    }
+  
   }
 
 static void setup_chapter_track(bgav_demuxer_context_t * ctx, qt_trak_t * trak)
@@ -1757,8 +1771,7 @@ static int open_quicktime(bgav_demuxer_context_t * ctx)
         priv->mdats = realloc(priv->mdats, (priv->num_mdats+1)*sizeof(*(priv->mdats)));
         memset(&priv->mdats[priv->num_mdats], 0, sizeof(*(priv->mdats)));
 
-        priv->mdats[priv->num_mdats].start = ctx->input->position;
-        priv->mdats[priv->num_mdats].size  = h.size - (ctx->input->position - h.start_position);
+        set_mdat(ctx->input, &h, priv->mdats + priv->num_mdats);
         priv->num_mdats++;
         
         /* Some files have the moov atom at the end */
@@ -1798,18 +1811,17 @@ static int open_quicktime(bgav_demuxer_context_t * ctx)
         break;
       case BGAV_MK_FOURCC('m','o','o','f'):
         {
-        qt_moof_t moof;
-        memset(&moof, 0, sizeof(moof));
-        if(!bgav_qt_moof_read(&h, ctx->input, &moof))
+        if(!bgav_qt_moof_read(&h, ctx->input, &priv->current_moof))
           {
           bgav_log(ctx->opt, BGAV_LOG_ERROR, LOG_DOMAIN,
                    "Reading moof atom failed");
           return 0;
           }
-        bgav_qt_moof_dump(0, &moof);
-        bgav_qt_moof_free(&moof);
+        bgav_qt_moof_dump(0, &priv->current_moof);
         priv->fragmented = 1;
         priv->first_moof = h.start_position;
+        fprintf(stderr, "First moof: %ld\n", h.start_position);
+        priv->fragment_mdat.start = -1; // Set invalid
         }
         break;
       default:
@@ -1828,7 +1840,7 @@ static int open_quicktime(bgav_demuxer_context_t * ctx)
     }
 
   /* Check for redirecting */
-  if(!have_mdat)
+  if(!have_mdat && !priv->fragmented)
     {
     if(priv->moov.has_rmra)
       {

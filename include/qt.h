@@ -1236,3 +1236,11 @@ const char * bgav_qt_get_charset(int mac_code);
 void bgav_qt_init_timecodes(bgav_input_context_t * input,
                             bgav_stream_t * s,
                             qt_trak_t * trak, int64_t pts_offset);
+
+/* mdat */
+
+typedef struct
+  {
+  int64_t start;
+  int64_t size;
+  } qt_mdat_t;

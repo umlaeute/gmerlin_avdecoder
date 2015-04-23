@@ -219,7 +219,7 @@ static void vaapi_draw_horiz_band(struct AVCodecContext *avctx,
 
 static int pixelformat_is_ram(enum PixelFormat fmt)
   {
-  AVPixFmtDescriptor * desc = av_pix_fmt_desc_get(fmt);
+  const AVPixFmtDescriptor * desc = av_pix_fmt_desc_get(fmt);
   return (desc->flags & AV_PIX_FMT_FLAG_HWACCEL) ? 0 : 1;
   }
 
