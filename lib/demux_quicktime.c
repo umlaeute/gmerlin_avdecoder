@@ -115,6 +115,8 @@ typedef struct
   int num_timecode_tracks;
  
   int fragmented;
+  int64_t first_moof;
+
   qt_moof_t current_moof;
 
   } qt_priv_t;
@@ -1806,13 +1808,17 @@ static int open_quicktime(bgav_demuxer_context_t * ctx)
           }
         bgav_qt_moof_dump(0, &moof);
         bgav_qt_moof_free(&moof);
+        priv->fragmented = 1;
+        priv->first_moof = h.start_position;
         }
         break;
       default:
         bgav_qt_atom_skip_unknown(ctx->input, &h, 0);
       }
 
-    if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
+    if(priv->first_moof)
+      done = 1;    
+    else if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
       {
       if(ctx->input->position >= ctx->input->total_bytes)
         done = 1;
