@@ -188,10 +188,18 @@ static void bgav_qt_moof_to_superindex(bgav_demuxer_context_t * ctx,
           if(tfhd->default_sample_flags & 0x10000)
             keyframe = 0;
           }
-
+        
         timestamp = s->dts +
           trun->samples[k].sample_composition_time_offset -
           trun->samples[0].sample_composition_time_offset;
+
+        if(s)
+          {
+          if(!keyframe) /* Got cleared earlier since stss is missing */
+            s->ci.flags |= GAVL_COMPRESSION_HAS_P_FRAMES; 
+          if(trun->samples[k].sample_composition_time_offset)
+            s->ci.flags |= GAVL_COMPRESSION_HAS_B_FRAMES; 
+          }
         
         bgav_superindex_add_packet(si, s,
                                    offset,
@@ -1950,10 +1958,10 @@ static int open_quicktime(bgav_demuxer_context_t * ctx)
                    "Reading moof atom failed");
           return 0;
           }
-        bgav_qt_moof_dump(0, &priv->current_moof);
+        // bgav_qt_moof_dump(0, &priv->current_moof);
         priv->fragmented = 1;
         priv->first_moof = h.start_position;
-        fprintf(stderr, "First moof: %ld\n", h.start_position);
+        // fprintf(stderr, "First moof: %ld\n", h.start_position);
         priv->fragment_mdat.start = -1; // Set invalid
         }
         break;
@@ -2019,10 +2027,14 @@ static int open_quicktime(bgav_demuxer_context_t * ctx)
                     ctx->si->entries[0].offset -
                     priv->mdats[priv->current_mdat].start);
 #else
-  
-  if(ctx->input->position < ctx->si->entries[0].offset)
-    bgav_input_skip(ctx->input, ctx->si->entries[0].offset - ctx->input->position);
 
+  if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
+    {
+    bgav_input_seek(ctx->input, ctx->si->entries[0].offset, SEEK_SET);
+    }
+  else if(ctx->input->position < ctx->si->entries[0].offset)
+    bgav_input_skip(ctx->input, ctx->si->entries[0].offset - ctx->input->position);
+  
 #endif
 
   if(priv->fragmented)

@@ -350,11 +350,7 @@ static void init_superindex(bgav_demuxer_context_t * ctx)
     else
       {
       bgav_superindex_set_durations(ctx->si, &ctx->tt->cur->video_streams[i]);
-      
-      if(!(ctx->tt->cur->video_streams[i].flags & STREAM_DTS_ONLY) &&
-         (ctx->tt->cur->video_streams[i].ci.flags & GAVL_COMPRESSION_HAS_B_FRAMES))
-        bgav_superindex_set_coding_types(ctx->si,
-                                         &ctx->tt->cur->video_streams[i]);
+      bgav_superindex_set_coding_types(ctx->si, &ctx->tt->cur->video_streams[i]);
       i++;
       }
     }
@@ -536,26 +532,22 @@ int bgav_demuxer_next_packet_interleaved(bgav_demuxer_context_t * ctx)
     ctx->si->current_position++;
     return 1;
     }
-
-  /* Skip until this packet */
-
-  if(ctx->si->entries[ctx->si->current_position].offset > ctx->input->position)
-    {
-    // fprintf(stderr, "Skipping %ld bytes\n",
-    //            ctx->si->entries[ctx->si->current_position].offset - ctx->input->position);
-    bgav_input_skip(ctx->input,
-                    ctx->si->entries[ctx->si->current_position].offset - ctx->input->position);
-    }
   
   p = bgav_stream_get_packet_write(stream);
   bgav_packet_alloc(p, ctx->si->entries[ctx->si->current_position].size);
   p->data_size = ctx->si->entries[ctx->si->current_position].size;
-
   p->flags = ctx->si->entries[ctx->si->current_position].flags;
   
   p->pts = ctx->si->entries[ctx->si->current_position].pts;
   p->duration = ctx->si->entries[ctx->si->current_position].duration;
   p->position = ctx->si->current_position;
+
+  /* Skip until this packet */
+  if(ctx->si->entries[ctx->si->current_position].offset > ctx->input->position)
+    {
+    bgav_input_skip(ctx->input,
+                    ctx->si->entries[ctx->si->current_position].offset - ctx->input->position);
+    }
   
   if(bgav_input_read_data(ctx->input, p->data, p->data_size) < p->data_size)
     return 0;
@@ -580,16 +572,21 @@ static int next_packet_noninterleaved(bgav_demuxer_context_t * ctx)
     return 0;
   
   /* If the file is truely noninterleaved, this isn't neccessary, but who knows? */
-  while(ctx->si->entries[s->index_position].stream_id !=
-        s->stream_id)
+  while(ctx->si->entries[s->index_position].stream_id != s->stream_id)
     {
     s->index_position++;
     }
-  
-  bgav_input_seek(ctx->input,
-                  ctx->si->entries[s->index_position].offset,
-                  SEEK_SET);
 
+  if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
+    {
+    bgav_input_seek(ctx->input, ctx->si->entries[s->index_position].offset, SEEK_SET);
+    }
+  else if(ctx->si->entries[s->index_position].offset > ctx->input->position)
+    {
+    bgav_input_skip(ctx->input,
+                    ctx->si->entries[s->index_position].offset - ctx->input->position);
+    }
+  
   p = bgav_stream_get_packet_write(s);
   p->data_size = ctx->si->entries[s->index_position].size;
   bgav_packet_alloc(p, p->data_size);

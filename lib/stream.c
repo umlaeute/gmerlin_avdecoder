@@ -359,6 +359,7 @@ bgav_stream_get_packet_read(bgav_stream_t * s, bgav_packet_t ** ret)
     {
     bgav_dprintf("Packet out (stream %d): ", s->stream_id);
     bgav_packet_dump(p);
+    gavl_hexdump(p->data, p->data_size < 16 ? p->data_size : 16, 16);
     }
   
   if(s->max_packet_size_tmp < p->data_size)

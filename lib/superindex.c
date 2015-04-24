@@ -265,6 +265,9 @@ void bgav_superindex_set_coding_types(bgav_superindex_t * idx,
   int64_t last_pts = 0;
   int b_pyramid = 0;
   int num_entries = 0;
+
+  if(idx->entries[s->first_index_position].flags & GAVL_PACKET_TYPE_MASK)
+    return;
   
   for(i = 0; i < idx->num_entries; i++)
     {
