@@ -124,6 +124,91 @@ typedef struct
   qt_mdat_t fragment_mdat;
   } qt_priv_t;
 
+static void bgav_qt_moof_to_superindex(bgav_demuxer_context_t * ctx,
+                                       qt_moof_t * m, bgav_superindex_t * si)
+  {
+  int i, j, k;
+
+  int64_t offset;
+  uint32_t size; //
+  int stream_id; //
+  int64_t timestamp;
+  int keyframe;
+  int duration; //
+  bgav_stream_t * s;
+  qt_priv_t * priv = ctx->priv;
+  bgav_track_t * t = ctx->tt->cur;
+  
+  for(i = 0; i < m->num_trafs; i++)
+    {
+    qt_tfhd_t * tfhd = &m->traf[i].tfhd;
+
+    for(j = 0; j < priv->moov.num_tracks; j++)
+      {
+      if(priv->streams[j].trak->tkhd.track_id == tfhd->track_ID)
+        {
+        stream_id = j;
+        break;
+        }
+      }
+
+    s = bgav_track_find_stream_all(t, stream_id);
+    
+    for(j = 0; j < m->traf[i].num_truns; j++)
+      {
+      qt_trun_t * trun = &m->traf[i].trun[j];
+
+      if(tfhd->flags & TFHD_BASE_DATA_OFFSET_PRESENT)
+        offset = tfhd->base_data_offset;
+      else
+        offset = m->h.start_position; // moof Start
+
+      offset += trun->data_offset;
+      
+      for(k = 0; k < trun->sample_count; k++)
+        {
+        if(trun->flags & TRUN_SAMPLE_SIZE_PRESENT)
+          size = trun->samples[k].sample_size;
+        else if(tfhd->flags & TFHD_DEFAULT_SAMPLE_SIZE_PRESENT)
+          size = tfhd->default_sample_size;
+        
+        if(trun->flags & TRUN_SAMPLE_DURATION_PRESENT)
+          duration = trun->samples[k].sample_duration;
+        else if(tfhd->flags & TFHD_DEFAULT_SAMPLE_DURATION_PRESENT)
+          duration = tfhd->default_sample_duration;
+
+        keyframe = 1;
+        if(trun->flags & TRUN_SAMPLE_FLAGS_PRESENT)
+          {
+          if(trun->samples[k].sample_flags & 0x10000)
+            keyframe = 0;
+          }
+        else if(tfhd->flags & TFHD_DEFAULT_SAMPLE_FLAGS_PRESENT)
+          {
+          if(tfhd->default_sample_flags & 0x10000)
+            keyframe = 0;
+          }
+
+        timestamp = s->dts +
+          trun->samples[k].sample_composition_time_offset -
+          trun->samples[0].sample_composition_time_offset;
+        
+        bgav_superindex_add_packet(si, s,
+                                   offset,
+                                   size,
+                                   stream_id,
+                                   timestamp,
+                                   keyframe,
+                                   duration);
+        
+        s->dts += duration;
+        offset += size;
+        }
+      }
+    }
+  }
+
+
 /*
  *  We support all 3 types of quicktime audio encapsulation:
  *
@@ -294,6 +379,48 @@ static void add_packet(bgav_demuxer_context_t * ctx,
     }
   }
 
+static int next_moof(bgav_demuxer_context_t * ctx)
+  {
+  qt_atom_header_t h;
+  qt_priv_t * priv;
+  priv = ctx->priv;
+  bgav_qt_moof_free(&priv->current_moof);
+
+  while(1)
+    {
+    if(!bgav_qt_atom_read_header(ctx->input, &h))
+      return 0;
+    if(h.fourcc == BGAV_MK_FOURCC('m','o','o','f'))
+      {
+      bgav_qt_moof_read(&h, ctx->input, &priv->current_moof);
+      return 1;
+      }
+    else
+      bgav_qt_atom_skip(ctx->input, &h);
+    }
+  return 0;
+  }
+
+static void build_index_fragmented(bgav_demuxer_context_t * ctx)
+  {
+  qt_priv_t * priv;
+  priv = ctx->priv;
+
+  ctx->si = bgav_superindex_create(0);
+
+  while(1)
+    {
+    /* current_moof is already loaded */
+    bgav_qt_moof_to_superindex(ctx, &priv->current_moof, ctx->si);
+ 
+    if(!(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE))    
+      break;
+
+    if(!next_moof(ctx))
+      break;    
+    }
+  }
+
 static void build_index(bgav_demuxer_context_t * ctx)
   {
   int i, j;
@@ -310,6 +437,12 @@ static void build_index(bgav_demuxer_context_t * ctx)
   qt_trak_t * trak;
   int pts_offset;
   priv = ctx->priv;
+
+  if(priv->fragmented)
+    {
+    build_index_fragmented(ctx);
+    return;
+    }
 
   /* 1 step: Count the total number of chunks */
   for(i = 0; i < priv->moov.num_tracks; i++)
@@ -1873,18 +2006,32 @@ static int open_quicktime(bgav_demuxer_context_t * ctx)
     build_edl(ctx);
   
   priv->current_mdat = 0;
-  
+
+#if 0
   if((ctx->input->position != priv->mdats[priv->current_mdat].start) &&
      (ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE))
     bgav_input_seek(ctx->input, priv->mdats[priv->current_mdat].start, SEEK_SET);
   
   /* Skip until first chunk */
   
-  if(priv->mdats[priv->current_mdat].start < ctx->si->entries[0].offset)
+  if(priv->mdats && (priv->mdats[priv->current_mdat].start < ctx->si->entries[0].offset))
     bgav_input_skip(ctx->input,
                     ctx->si->entries[0].offset -
                     priv->mdats[priv->current_mdat].start);
+#else
+  
+  if(ctx->input->position < ctx->si->entries[0].offset)
+    bgav_input_skip(ctx->input, ctx->si->entries[0].offset - ctx->input->position);
 
+#endif
+
+  if(priv->fragmented)
+    {
+    /* Read first mdat */
+    }
+
+
+  /* Set Format description */
   switch(priv->ftyp_fourcc)
     {
     case BGAV_MK_FOURCC('M','4','A',' '):

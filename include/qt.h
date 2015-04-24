@@ -1215,7 +1215,6 @@ void bgav_qt_moof_dump(int indent, qt_moof_t * c);
 
 void bgav_qt_moof_free(qt_moof_t * c);
 
-
 /*
  *  Quicktime specific utilities
  */
