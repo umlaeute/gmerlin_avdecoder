@@ -46,18 +46,6 @@
 
 #include <libavutil/pixdesc.h>
 
-#ifdef HAVE_LIBPOSTPROC
-#include POSTPROC_HEADER
-
-# if (defined HAVE_PP_CONTEXT) && (!defined HAVE_PP_CONTEXT_T)
-#  define pp_context_t pp_context
-# endif
-# if (defined HAVE_PP_MODE) && (!defined HAVE_PP_MODE_T)
-#  define pp_mode_t pp_mode
-# endif
-
-#endif
-
 #ifdef HAVE_LIBSWSCALE
 #include SWSCALE_HEADER
 #endif
@@ -122,11 +110,6 @@ typedef struct
   /* State variables */
   int flags;
 
-#ifdef HAVE_LIBPOSTPROC
-  int do_pp;
-  pp_context_t *pp_context;
-  pp_mode_t    *pp_mode;
-#endif
 
 #ifdef HAVE_LIBSWSCALE
   struct SwsContext *swsContext;
@@ -329,9 +312,6 @@ static void done_data(bgav_stream_t * s, bgav_packet_t * p)
 static void get_format(AVCodecContext * ctx, gavl_video_format_t * format);
 static void init_put_frame(bgav_stream_t * s);
 
-#ifdef HAVE_LIBPOSTPROC
-static void init_pp(bgav_stream_t * s);
-#endif
 
 /* Codec specific hacks */
 
@@ -895,9 +875,6 @@ static int init_ffmpeg(bgav_stream_t * s)
 
   priv->flags &= ~NEED_FORMAT;
       
-#ifdef HAVE_LIBPOSTPROC
-  init_pp(s);
-#endif
   
   /* Handle unsupported colormodels */
   if(s->data.video.format.pixelformat == GAVL_PIXELFORMAT_NONE)
@@ -1014,12 +991,6 @@ static void close_ffmpeg(bgav_stream_t * s)
   
   if(priv->extradata)
     free(priv->extradata);
-#ifdef HAVE_LIBPOSTPROC
-  if(priv->pp_mode)
-    pp_free_mode(priv->pp_mode);
-  if(priv->pp_context)
-    pp_free_context(priv->pp_context);
-#endif
   
 #ifdef HAVE_LIBSWSCALE
   if(priv->swsContext)
@@ -2117,71 +2088,6 @@ static void get_format(AVCodecContext * ctx, gavl_video_format_t * format)
     }
   }
 
-#ifdef HAVE_LIBPOSTPROC
-static void init_pp(bgav_stream_t * s)
-  {
-  int accel_flags;
-  int pp_flags;
-  int level;
-  ffmpeg_video_priv * priv;
-  priv = s->decoder_priv;
-
-  
-  /* Initialize postprocessing */
-  if(s->opt->pp_level > 0.0)
-    {
-    switch(priv->info->ffmpeg_id)
-      {
-      case CODEC_ID_MPEG4:
-      case CODEC_ID_MSMPEG4V1:
-      case CODEC_ID_MSMPEG4V2:
-      case CODEC_ID_MSMPEG4V3:
-      case CODEC_ID_WMV1:
-      case CODEC_ID_WMV2:
-      case CODEC_ID_WMV3:
-        priv->do_pp = 1;
-        accel_flags = gavl_accel_supported();
-
-        if(s->data.video.format.pixelformat != GAVL_YUV_420_P)
-          {
-          bgav_log(s->opt, BGAV_LOG_WARNING, LOG_DOMAIN,
-                   "Unsupported pixelformat for postprocessing");
-          priv->do_pp = 0;
-          break;
-          }
-        pp_flags = PP_FORMAT_420;
-            
-        if(accel_flags & GAVL_ACCEL_MMX)
-          pp_flags |= PP_CPU_CAPS_MMX;
-        if(accel_flags & GAVL_ACCEL_MMXEXT)
-          pp_flags |= PP_CPU_CAPS_MMX2;
-        if(accel_flags & GAVL_ACCEL_3DNOW)
-          pp_flags |= PP_CPU_CAPS_3DNOW;
-
-        priv->pp_context =
-          pp_get_context(priv->ctx->width, priv->ctx->height,
-                         pp_flags);
-
-        level = (int)(s->opt->pp_level * 6.0 + 0.5);
-
-        if(level > 6)
-          level = 6;
-        
-        priv->pp_mode = pp_get_mode_by_name_and_quality("hb:a,vb:a,dr:a",
-                                                        level);
-        
-        if(priv->flags & FLIP_Y)
-          priv->flip_frame = gavl_video_frame_create(&s->data.video.format);
-            
-        break;
-      default:
-        priv->do_pp = 0;
-        break;
-      }
-        
-    }
-  }
-#endif
 
 static void put_frame_palette(bgav_stream_t * s, gavl_video_frame_t * f)
   {
@@ -2215,28 +2121,6 @@ static void put_frame_yuva420(bgav_stream_t * s, gavl_video_frame_t * f)
                     s->data.video.format.image_height, !!(priv->flags & FLIP_Y));
   }
 
-static void put_frame_pp(bgav_stream_t * s, gavl_video_frame_t * f)
-  {
-  ffmpeg_video_priv * priv = s->decoder_priv;
-  if(priv->flags & FLIP_Y)
-    {
-    pp_postprocess((const uint8_t**)priv->frame->data, priv->frame->linesize,
-                   priv->flip_frame->planes, priv->flip_frame->strides,
-                   priv->ctx->width, priv->ctx->height,
-                   priv->frame->qscale_table, priv->frame->qstride,
-                   priv->pp_mode, priv->pp_context,
-                   priv->frame->pict_type);
-    gavl_video_frame_copy_flip_y(&s->data.video.format,
-                                 f, priv->flip_frame);
-    }
-  else
-    pp_postprocess((const uint8_t**)priv->frame->data, priv->frame->linesize,
-                   f->planes, f->strides,
-                   priv->ctx->width, priv->ctx->height,
-                   priv->frame->qscale_table, priv->frame->qstride,
-                   priv->pp_mode, priv->pp_context,
-                   priv->frame->pict_type);
-  }
 
 static void put_frame_flip(bgav_stream_t * s, gavl_video_frame_t * f)
   {
@@ -2302,7 +2186,7 @@ static void put_frame_swscale(bgav_stream_t * s, gavl_video_frame_t * f)
   }
 #endif
 
-/* Copy/postprocess/flip internal frame to output */
+/* Copy/flip internal frame to output */
 static void init_put_frame(bgav_stream_t * s)
   {
 #ifndef HAVE_LIBSWSCALE
@@ -2328,21 +2212,12 @@ static void init_put_frame(bgav_stream_t * s)
     priv->put_frame = put_frame_yuva420;
   else if(!priv->do_convert)
     {
-#ifdef HAVE_LIBPOSTPROC
-    if(priv->do_pp)
-      priv->put_frame = put_frame_pp;
+    if(priv->flags & FLIP_Y)
+      priv->put_frame = put_frame_flip;
+    else if(priv->flags & SWAP_FIELDS_OUT)
+      priv->put_frame = put_frame_swapfields;
     else
-      {
-#endif
-      if(priv->flags & FLIP_Y)
-        priv->put_frame = put_frame_flip;
-      else if(priv->flags & SWAP_FIELDS_OUT)
-        priv->put_frame = put_frame_swapfields;
-      else
-        priv->put_frame = NULL;
-#ifdef HAVE_LIBPOSTPROC
-      }
-#endif
+      priv->put_frame = NULL;
     }
   else
     {
