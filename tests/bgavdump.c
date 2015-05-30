@@ -205,7 +205,6 @@ int main(int argc, char ** argv)
   
   gavl_audio_frame_t * af;
   gavl_video_frame_t * vf;
-  int64_t start_time;
   const gavl_audio_format_t * audio_format;
   const gavl_video_format_t * video_format;
   const gavl_edl_t * edl;
@@ -573,10 +572,7 @@ int main(int argc, char ** argv)
           {
           if(video_seek >= 0)
             bgav_seek_video(file, i, video_seek);
-          start_time = bgav_video_start_time(file, i);
           }
-        else
-          start_time = 0;
         for(j = 0; j < frames_to_read; j++)
           {
           fprintf(stderr, "Reading frame from video stream %d...", i+1);

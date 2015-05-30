@@ -122,6 +122,13 @@ static int init_track(bgav_track_t * track,
   return 1;
   }
 
+static void metadata_callback(void * data,const gavl_metadata_t * m)
+  {
+  bgav_demuxer_context_t * ctx = data;
+
+  if(ctx->opt->metadata_change_callback)
+    ctx->opt->metadata_change_callback(ctx->opt->metadata_change_callback_data, m);
+  }
 
 static int open_gavf(bgav_demuxer_context_t * ctx)
   {
@@ -144,6 +151,8 @@ static int open_gavf(bgav_demuxer_context_t * ctx)
     flags |= GAVF_OPT_FLAG_DUMP_INDICES;
   gavf_options_set_flags(opt, flags);
 
+  gavf_options_set_metadata_callback(opt, metadata_callback, ctx);
+  
   priv->io =
     gavf_io_create(read_func,
                    NULL,

@@ -201,7 +201,6 @@ static int write_video(bgav_t * b, int index, stream_t * s, gavl_packet_t * p)
 int main(int argc, char ** argv)
   {
   bgav_t * file;
-  bgav_options_t * opt;
 
   int num_audio_streams;
   int num_video_streams;
@@ -223,8 +222,7 @@ int main(int argc, char ** argv)
   gavl_time_t min_time;
   
   file = bgav_create();
-  opt = bgav_get_options(file);
-
+  
   if(argc == 1)
     {
     fprintf(stderr, "Usage: bgavdemux [-dp] [-t track] [-as <num>] [-vs <num>] <location>\n");
