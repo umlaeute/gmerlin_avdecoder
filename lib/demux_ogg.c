@@ -1609,7 +1609,7 @@ static int new_streaming_track(bgav_demuxer_context_t * ctx)
   int serialno;
   int done, audio_done, video_done;
   ogg_t * priv = ctx->priv;
-    
+  
   /*
    *  Ok, we try to get the new stuff, update the serial numbers from
    *  the streams, and otherwise do as if nothing had happened...
