@@ -417,6 +417,7 @@ demux_gif.c \
 demux_gsm.c \
 demux_gxf.c \
 demux_ircam.c \
+demux_rawaudio.c \
 demux_sphere.c \
 demux_matroska.c \
 demux_mpegaudio.c \
