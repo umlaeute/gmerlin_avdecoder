@@ -681,3 +681,4 @@ int bgav_http_can_seek(bgav_http_t * h)
   {
   return h->can_seek;
   }
+
