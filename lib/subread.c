@@ -41,6 +41,8 @@ static int glob_errfunc(const char *epath, int eerrno)
 
 /* SRT format */
 
+#define LOG_DOMAIN "srt"
+
 static int probe_srt(char * line, bgav_input_context_t * ctx)
   {
   int a1,a2,a3,a4,b1,b2,b3,b4,i;
@@ -78,18 +80,25 @@ static gavl_source_status_t read_srt(bgav_stream_t * s, bgav_packet_t * p)
                                      &ctx->line_alloc, &line_len))
       return GAVL_SOURCE_EOF;
 
+    // fprintf(stderr, "Line: %s (%c)\n", ctx->line, ctx->line[0]);
+    
     if(ctx->line[0] == '@')
       {
       if(!strncasecmp(ctx->line, "@OFF=", 5))
         {
         ctx->time_offset += (int)(atof(ctx->line+5) * 1000);
-        // fprintf(stderr, "new time offset: %"PRId64"\n", ctx->time_offset);
+        bgav_log(s->opt, BGAV_LOG_INFO, LOG_DOMAIN,
+                 "new time offset: %"PRId64, ctx->time_offset);
         }
       else if(!strncasecmp(ctx->line, "@SCALE=", 7))
         {
         sscanf(ctx->line + 7, "%d:%d", &ctx->scale_num, &ctx->scale_den);
-//        fprintf(stderr, "new scale factor: %d:%d\n",
-//                ctx->scale_num, ctx->scale_den);
+        bgav_log(s->opt, BGAV_LOG_INFO, LOG_DOMAIN,
+                 "new scale factor: %d:%d", ctx->scale_num, ctx->scale_den);
+        
+
+        //        fprintf(stderr, "new scale factor: %d:%d\n",
+        //                ctx->scale_num, ctx->scale_den);
         }
       continue;
       }
@@ -171,6 +180,8 @@ static gavl_source_status_t read_srt(bgav_stream_t * s, bgav_packet_t * p)
   
   return GAVL_SOURCE_EOF;
   }
+
+#undef LOG_DOMAIN
 
 /* MPSub */
 
