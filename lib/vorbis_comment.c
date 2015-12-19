@@ -136,11 +136,16 @@ void bgav_vorbis_comment_2_metadata(bgav_vorbis_comment_t * comment,
     gavl_metadata_set(m, GAVL_META_GENRE, field);
 
   if((field = bgav_vorbis_comment_get_field(comment, date_key)))
-    gavl_metadata_set(m, GAVL_META_DATE, field);
+    {
+    if(strlen(field) == 4)
+      gavl_metadata_set(m, GAVL_META_YEAR, field);
+    else
+      gavl_metadata_set(m, GAVL_META_DATE, field);
+    
+    }
 
   if((field = bgav_vorbis_comment_get_field(comment, copyright_key)))
     gavl_metadata_set(m, GAVL_META_COPYRIGHT, field);
-
   if((field = bgav_vorbis_comment_get_field(comment, albumartist1_key)))
     gavl_metadata_set(m, GAVL_META_ALBUMARTIST, field);
   else if((field = bgav_vorbis_comment_get_field(comment, albumartist2_key)))
