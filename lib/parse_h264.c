@@ -359,7 +359,7 @@ handle_sei_new(bgav_video_parser_t * parser, bgav_packet_t * p)
 static int parse_frame_avc(bgav_video_parser_t * parser,
                            bgav_packet_t * p, int64_t pts_orig)
   {
-  int nal_len;
+  int nal_len = 0;
   bgav_h264_nal_header_t nh;
   //  bgav_h264_slice_header_t sh;
   
@@ -387,6 +387,9 @@ static int parse_frame_avc(bgav_video_parser_t * parser,
         break;
       }
 
+    if(!nal_len)
+      return 0;
+    
     nh.ref_idc   = ptr[0] >> 5;
     nh.unit_type = ptr[0] & 0x1f;
     ptr++;
