@@ -268,8 +268,8 @@ int bg_avdec_set_text_stream(void * priv,
   }
 
 int bg_avdec_set_overlay_stream(void * priv,
-                                 int stream,
-                                 bg_stream_action_t action)
+                                int stream,
+                                bg_stream_action_t action)
   {
   bgav_stream_action_t  act;
   avdec_priv * avdec = priv;
@@ -415,8 +415,9 @@ int bg_avdec_init(avdec_priv * avdec)
 
       for(j = 0; j < avdec->track_info[i].num_text_streams; j++)
         {
+        int idx = j + avdec->track_info[i].num_overlay_streams;
         gavl_metadata_copy(&(avdec->track_info[i].text_streams[j].m),
-                           bgav_get_text_metadata(avdec->dec, j));
+                           bgav_get_text_metadata(avdec->dec, idx));
         }
       }
     if(avdec->track_info[i].num_overlay_streams)
