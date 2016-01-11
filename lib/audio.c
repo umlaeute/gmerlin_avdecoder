@@ -108,7 +108,7 @@ int bgav_audio_start(bgav_stream_t * s)
       }
     }
   
-  if(s->start_time == GAVL_TIME_UNDEFINED)
+  if(s->stats.pts_start == GAVL_TIME_UNDEFINED)
     {
     bgav_packet_t * p = NULL;
     char tmp_string[128];
@@ -118,15 +118,15 @@ int bgav_audio_start(bgav_stream_t * s)
       bgav_log(s->opt, BGAV_LOG_WARNING, LOG_DOMAIN,
                "EOF while getting start time");
       }
-    s->start_time = p->pts;
-    sprintf(tmp_string, "%" PRId64, s->start_time);
+    s->stats.pts_start = p->pts;
+    sprintf(tmp_string, "%" PRId64, s->stats.pts_start);
     bgav_log(s->opt, BGAV_LOG_INFO, LOG_DOMAIN, "Got initial audio timestamp: %s",
              tmp_string);
     } /* Else */
   //  else if(s->data.audio.pre_skip > 0)
-  //    s->start_time = -s->data.audio.pre_skip;
+  //    s->stats.pts_start = -s->data.audio.pre_skip;
 
-  s->out_time = s->start_time;
+  s->out_time = s->stats.pts_start;
   
   if(!s->timescale && s->data.audio.format.samplerate)
     s->timescale = s->data.audio.format.samplerate;
@@ -272,7 +272,7 @@ void bgav_audio_dump(bgav_stream_t * s)
   {
   bgav_dprintf("  Bits per sample:   %d\n", s->data.audio.bits_per_sample);
   bgav_dprintf("  Block align:       %d\n", s->data.audio.block_align);
-  bgav_dprintf("  Pre skip:          %d\n", s->data.audio.pre_skip);
+  bgav_dprintf("  Pre skip:          %d\n", s->ci.pre_skip);
   bgav_dprintf("Format:\n");
   gavl_audio_format_dump(&s->data.audio.format);
   }
@@ -537,9 +537,6 @@ int bgav_get_audio_compression_info(bgav_t * bgav, int stream,
     s->ci.bitrate = s->codec_bitrate;
   else if(s->container_bitrate)
     s->ci.bitrate = s->container_bitrate;
-
-  s->ci.max_packet_size = s->max_packet_size;
-  s->ci.pre_skip = s->data.audio.pre_skip;
 
   if(ret)
     gavl_compression_info_copy(ret, &s->ci);

@@ -91,12 +91,12 @@ int64_t bgav_overlay_duration(bgav_t * bgav, int stream)
 
 int64_t bgav_audio_start_time(bgav_t * bgav, int stream)
   {
-  return bgav->tt->cur->audio_streams[stream].start_time;
+  return bgav->tt->cur->audio_streams[stream].stats.pts_start;
   }
 
 int64_t bgav_video_start_time(bgav_t * bgav, int stream)
   {
-  return bgav->tt->cur->video_streams[stream].start_time;
+  return bgav->tt->cur->video_streams[stream].stats.pts_start;
   }
 
 
@@ -150,11 +150,11 @@ void bgav_seek_audio(bgav_t * bgav, int stream, int64_t sample)
            s->file_index->entries[s->index_position].position))
       s->index_position--;
     
-    s->out_time = s->file_index->entries[s->index_position].pts + s->start_time;
+    s->out_time = s->file_index->entries[s->index_position].pts + s->stats.pts_start;
 
     STREAM_SET_SYNC(s, gavl_time_rescale(s->data.audio.format.samplerate, s->timescale,
                                          s->out_time));
-    sample += s->start_time;
+    sample += s->stats.pts_start;
     
     if(bgav->demuxer->demuxer->resync)
       bgav->demuxer->demuxer->resync(bgav->demuxer, s);
@@ -219,9 +219,9 @@ void bgav_seek_video(bgav_t * bgav, int stream, int64_t time)
            s->file_index->entries[s->index_position].position))
       s->index_position--;
     
-    STREAM_SET_SYNC(s, s->file_index->entries[s->index_position].pts + s->start_time);
-    //    s->out_time = frame_time + s->start_time;
-    s->out_time = s->file_index->entries[s->index_position].pts + s->start_time;
+    STREAM_SET_SYNC(s, s->file_index->entries[s->index_position].pts + s->stats.pts_start);
+    //    s->out_time = frame_time + s->stats.pts_start;
+    s->out_time = s->file_index->entries[s->index_position].pts + s->stats.pts_start;
     
     // if(s->data.video.parser)
     //   bgav_video_parser_reset(s->data.video.parser, GAVL_TIME_UNDEFINED, frame_time);
@@ -233,7 +233,7 @@ void bgav_seek_video(bgav_t * bgav, int stream, int64_t time)
   bgav_video_resync(s);
 
 
-  time += s->start_time;
+  time += s->stats.pts_start;
   
   //  fprintf(stderr, "Skip to: %ld\n", time);
   bgav_video_skipto(s, &time, s->data.video.format.timescale);

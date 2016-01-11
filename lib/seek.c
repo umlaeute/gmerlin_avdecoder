@@ -150,7 +150,7 @@ static void seek_sa(bgav_t * b, int64_t * time, int scale)
       s = &b->tt->cur->video_streams[i];
       bgav_seek_video(b, i,
                       gavl_time_rescale(scale, s->data.video.format.timescale,
-                                        *time) - s->start_time);
+                                        *time) - s->stats.pts_start);
       if(s->flags & STREAM_EOF_C)
         {
         b->eof = 1;
@@ -176,7 +176,7 @@ static void seek_sa(bgav_t * b, int64_t * time, int scale)
       s = &b->tt->cur->audio_streams[i];
       bgav_seek_audio(b, i,
                       gavl_time_rescale(scale, s->data.audio.format.samplerate,
-                                        *time) - s->start_time);
+                                        *time) - s->stats.pts_start);
       if(s->flags & STREAM_EOF_C)
         {
         b->eof = 1;

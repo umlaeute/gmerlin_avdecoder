@@ -402,49 +402,53 @@ bgav_get_subtitle_metadata(bgav_t * b, int stream)
 const bgav_metadata_t *
 bgav_get_text_metadata(bgav_t * b, int stream)
   {
-  return &b->tt->cur->text_streams[stream].m;
+  return bgav_get_subtitle_metadata(b, stream);
   }
 
 const bgav_metadata_t *
 bgav_get_overlay_metadata(bgav_t * b, int stream)
   {
-  return &b->tt->cur->overlay_streams[stream].m;
+  return bgav_get_subtitle_metadata(b, stream);
   }
 
 gavl_packet_source_t *
 bgav_get_text_packet_source(bgav_t * b, int stream)
   {
-  return b->tt->cur->text_streams[stream].psrc;
+  bgav_stream_t * s = bgav_track_get_subtitle_stream(b->tt->cur, stream);
+  return s->psrc;
   }
 
-const gavl_video_format_t * bgav_get_overlay_format(bgav_t * bgav, int stream)
+const gavl_video_format_t * bgav_get_overlay_format(bgav_t * b, int stream)
   {
-  return &bgav->tt->cur->overlay_streams[stream].data.subtitle.video.format;
+  bgav_stream_t * s = bgav_track_get_subtitle_stream(b->tt->cur, stream);
+  return &s->data.subtitle.video.format;
   }
 
-
-int bgav_get_text_timescale(bgav_t * bgav, int stream)
+int bgav_get_text_timescale(bgav_t * b, int stream)
   {
-  return bgav->tt->cur->text_streams[stream].timescale;
+  bgav_stream_t * s = bgav_track_get_subtitle_stream(b->tt->cur, stream);
+  return s->timescale;
   }
 
 gavl_packet_source_t *
 bgav_get_overlay_packet_source(bgav_t * b, int stream)
   {
-  return b->tt->cur->overlay_streams[stream].psrc;
+  bgav_stream_t * s = bgav_track_get_subtitle_stream(b->tt->cur, stream);
+  return s->psrc;
   }
 
 gavl_video_source_t *
 bgav_get_overlay_source(bgav_t * b, int stream)
   {
-  return b->tt->cur->overlay_streams[stream].data.subtitle.video.vsrc;
+  bgav_stream_t * s = bgav_track_get_subtitle_stream(b->tt->cur, stream);
+  return s->data.subtitle.video.vsrc;
   }
 
-int bgav_get_overlay_compression_info(bgav_t * bgav, int stream,
+int bgav_get_overlay_compression_info(bgav_t * b, int stream,
                                       gavl_compression_info_t * ret)
   {
   gavl_codec_id_t id;
-  bgav_stream_t * s = &bgav->tt->cur->overlay_streams[stream];
+  bgav_stream_t * s = bgav_track_get_subtitle_stream(b->tt->cur, stream);
   
   if(ret)
     memset(ret, 0, sizeof(*ret));
@@ -458,7 +462,7 @@ int bgav_get_overlay_compression_info(bgav_t * bgav, int stream,
   else if(s->flags & STREAM_GOT_NO_CI)
     return 0;
 
-  bgav_track_get_compression(bgav->tt->cur);
+  bgav_track_get_compression(b->tt->cur);
   
   if(bgav_check_fourcc(s->fourcc, bgav_png_fourccs))
     id = GAVL_CODEC_ID_PNG;
@@ -479,8 +483,6 @@ int bgav_get_overlay_compression_info(bgav_t * bgav, int stream,
   else if(s->container_bitrate)
     s->ci.bitrate = s->container_bitrate;
   
-  s->ci.max_packet_size = s->max_packet_size;
-
   if(ret)
     gavl_compression_info_copy(ret, &s->ci);
   s->flags |= STREAM_GOT_CI;

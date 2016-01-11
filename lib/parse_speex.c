@@ -94,7 +94,7 @@ void bgav_audio_parser_init_speex(bgav_audio_parser_t * parser)
   
   speex_decoder_ctl(dec_state, SPEEX_GET_FRAME_SIZE, &frame_size);
   speex_decoder_ctl(dec_state, SPEEX_GET_LOOKAHEAD,
-                    &parser->s->data.audio.pre_skip);
+                    &parser->s->ci.pre_skip);
   
   priv->packet_samples = header->frames_per_packet * frame_size;
 
@@ -104,7 +104,7 @@ void bgav_audio_parser_init_speex(bgav_audio_parser_t * parser)
   parser->s->data.audio.format.num_channels = header->nb_channels;
   gavl_set_channel_setup(&parser->s->data.audio.format);
 
-  priv->pts_offset = -parser->s->data.audio.pre_skip;
+  priv->pts_offset = -parser->s->ci.pre_skip;
   
   speex_decoder_destroy(dec_state);
   free(header);

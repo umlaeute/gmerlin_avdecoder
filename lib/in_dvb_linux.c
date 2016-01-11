@@ -570,7 +570,7 @@ static int load_channel_cache(bgav_input_context_t * ctx)
                                             ctx->opt);
               s->timescale = 90000;
               s->flags |= STREAM_PARSE_FULL;
-              s->start_time = GAVL_TIME_UNDEFINED;
+              s->stats.pts_start = GAVL_TIME_UNDEFINED;
               stream_child = stream_node->children;
 
               while(stream_child)
@@ -619,7 +619,7 @@ static int load_channel_cache(bgav_input_context_t * ctx)
 
               s->timescale = 90000;
               s->flags |= STREAM_PARSE_FULL;
-              s->start_time = GAVL_TIME_UNDEFINED;
+              s->stats.pts_start = GAVL_TIME_UNDEFINED;
               stream_child = stream_node->children;
 
               while(stream_child)

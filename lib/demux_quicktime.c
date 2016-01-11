@@ -252,7 +252,7 @@ static void stream_init(bgav_stream_t * bgav_s, qt_trak_t * trak,
                                      trak->edts.elst.table[0].duration);
   
   if(s->first_pts)
-    bgav_s->start_time = GAVL_TIME_UNDEFINED;
+    bgav_s->stats.pts_start = GAVL_TIME_UNDEFINED;
   
   /* Set encoding software */
   if(trak->mdia.hdlr.component_name)
@@ -992,6 +992,7 @@ static void process_packet_subtitle_tx3g(bgav_stream_t * s, bgav_packet_t * p)
 #endif
   }
 
+#if 0
 static void process_packet_fragmented(bgav_stream_t * s, bgav_packet_t * p)
   {
   /* Load the next moof atom if necessary */
@@ -1002,6 +1003,7 @@ static void process_packet_fragmented(bgav_stream_t * s, bgav_packet_t * p)
     }
   
   }
+#endif
 
 static void setup_chapter_track(bgav_demuxer_context_t * ctx, qt_trak_t * trak)
   {
@@ -1284,6 +1286,11 @@ static void init_audio(bgav_demuxer_context_t * ctx,
   /* AC3 in mp4 can have multiple frames per packet */
   else if(bg_as->fourcc == BGAV_MK_FOURCC('a', 'c', '-', '3'))
     bg_as->flags |= STREAM_PARSE_FULL;
+
+  /* Signal VBR encoding (FIXME: Stream can still be cbr) */
+
+  if(!trak->mdia.minf.stbl.stsz.sample_size)
+    bg_as->container_bitrate = GAVL_BITRATE_VBR;
   }
 
 static void init_video(bgav_demuxer_context_t * ctx,

@@ -516,7 +516,7 @@ int bgav_pmt_section_setup_track(pmt_section_t * pmts,
       else
         s->flags |= (STREAM_PARSE_FULL);
       
-      s->start_time = GAVL_TIME_UNDEFINED;
+      s->stats.pts_start = GAVL_TIME_UNDEFINED;
       s->timescale = 90000;
       s->stream_id = pmts->streams[i].pid;
       ret++;

@@ -22,6 +22,7 @@
 #include "config.h"
 
 #include <avdec.h>
+#include <gavl/gavf.h>
 
 #include <stdio.h> /* Needed for fileindex stuff */
 
@@ -426,7 +427,6 @@ typedef struct
   
 struct bgav_stream_s
   {
-  uint32_t max_packet_size; // 0 if unknown
   uint32_t max_packet_size_tmp; // Incremented during parsing
   
   void * priv;
@@ -511,12 +511,14 @@ struct bgav_stream_s
   /* Passed to gavl_[audio|video]_source_create() */
   int src_flags;
   
+  gavf_stream_footer_t stats;
+  
   /*
    *  Timestamp of the first frame in *output* timescale
    *  must be set by bgav_start()
    */
   
-  int64_t start_time;
+  //  int64_t start_time;
   int64_t duration;
   
   /* The track, where this stream belongs */
@@ -585,16 +587,7 @@ struct bgav_stream_s
          can honour it when seeking. */
       
       int preroll;
-
-      /*
-       *  Number of *samples* which must be discarded at the start
-       *  of the stream (used for opus). pre_skip also needs to be subtracted from
-       *  the timestamps of the decoded frames, but *not* from the timestamps of
-       *  compressed packets
-       */
       
-      int pre_skip;
-
       bgav_audio_parser_t * parser;
 
       gavl_audio_frame_t * frame;

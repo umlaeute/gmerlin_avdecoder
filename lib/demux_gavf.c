@@ -111,10 +111,10 @@ static int init_track(bgav_track_t * track,
     pts = gavf_first_pts(dec);
     if(pts)
       {
-      s->start_time = pts[i];
+      s->stats.pts_start = pts[i];
       pts = gavf_end_pts(dec);
       if(pts)
-        s->duration = pts[i] - s->start_time;
+        s->duration = pts[i] - s->stats.pts_start;
       }
     s->stream_id = ph->streams[i].id;
     }

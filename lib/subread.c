@@ -1194,7 +1194,7 @@ bgav_subtitle_reader_open(bgav_input_context_t * input_ctx)
       new->filename = gavl_strdup(glob_buf.gl_pathv[i]);
       new->input    = bgav_input_create(input_ctx->opt);
       new->reader   = r;
-      new->charset  = charset;
+      new->charset  = gavl_strdup(charset);
       new->stream   = j;
       
       name = glob_buf.gl_pathv[i] + base_len;
@@ -1212,7 +1212,6 @@ bgav_subtitle_reader_open(bgav_input_context_t * input_ctx)
         }
     
       /* Append to list */
-    
       if(!ret)
         {
         ret = new;
@@ -1226,6 +1225,7 @@ bgav_subtitle_reader_open(bgav_input_context_t * input_ctx)
 
       }
     
+    free(charset);
     }
   globfree(&glob_buf);
   return ret;

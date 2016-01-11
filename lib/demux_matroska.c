@@ -337,7 +337,7 @@ static void init_stream_common(mkv_t * m,
   s->stream_id = track->TrackNumber;
   s->timescale = 1000000000 / m->segment_info.TimecodeScale;
 
-  s->start_time = GAVL_TIME_UNDEFINED;
+  s->stats.pts_start = GAVL_TIME_UNDEFINED;
   
   if(track->Language)
     gavl_metadata_set(&s->m, GAVL_META_LANGUAGE, track->Language);

@@ -179,7 +179,7 @@ static int parse_frame(bgav_audio_parser_t * parser,
         parser->s->file_index->entries[p->position+1].pts -
         parser->s->file_index->entries[p->position].pts;
     
-    parser->timestamp = parser->s->file_index->entries[p->position].pts + parser->s->start_time;
+    parser->timestamp = parser->s->file_index->entries[p->position].pts + parser->s->stats.pts_start;
     }
   else
     {

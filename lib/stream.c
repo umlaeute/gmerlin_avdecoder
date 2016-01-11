@@ -220,8 +220,8 @@ void bgav_stream_dump(bgav_stream_t * s)
   bgav_dprintf("  Timescale:         %d\n", s->timescale);
   bgav_dprintf("  Duration:          %"PRId64"\n", s->duration);
   bgav_dprintf("  MaxPacketSize:     ");
-  if(s->max_packet_size)
-    bgav_dprintf("%d\n", s->max_packet_size);
+  if(s->ci.max_packet_size)
+    bgav_dprintf("%d\n", s->ci.max_packet_size);
   else
     bgav_dprintf("Unknown\n");
   
@@ -438,7 +438,7 @@ void bgav_stream_set_from_gavl(bgav_stream_t * s,
   if(afmt)
     {
     gavl_audio_format_copy(&s->data.audio.format, afmt);
-    s->data.audio.pre_skip = ci->pre_skip;
+    s->ci.pre_skip = ci->pre_skip;
     s->timescale = s->data.audio.format.samplerate;
     }
   else if(vfmt)

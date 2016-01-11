@@ -149,7 +149,7 @@ static gavl_source_status_t decode_dvdsub(bgav_stream_t * s, gavl_overlay_t * ov
   uint8_t cmd;
   uint16_t ctrl_offset, ctrl_start, next_ctrl_offset;
   dvdsub_t * priv;
-  uint16_t date;
+  //  uint16_t date;
   uint8_t palette[4] = { 0,0,0,0 }, alpha[4] = { 0,0,0,0 };
   int x1 = 0, y1 = 0, x2= 0, y2= 0, i;
   uint16_t offset1 = 0, offset2 = 0;
@@ -185,7 +185,9 @@ static gavl_source_status_t decode_dvdsub(bgav_stream_t * s, gavl_overlay_t * ov
 
   while(1) /* Control packet loop */
     {
-    date             = BGAV_PTR_2_16BE(ptr); ptr += 2;
+    //date             = BGAV_PTR_2_16BE(ptr);
+    ptr += 2;
+    
     next_ctrl_offset = BGAV_PTR_2_16BE(ptr); ptr += 2;
     
     ctrl_seq_end = 0;

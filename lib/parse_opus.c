@@ -52,8 +52,8 @@ static int get_format(bgav_audio_parser_t * parser)
   if(parser->s->opt->dump_headers)
     bgav_opus_header_dump(&h);
 
-  parser->s->data.audio.pre_skip = h.pre_skip;
-  p->pts_offset = -parser->s->data.audio.pre_skip;
+  parser->s->ci.pre_skip = h.pre_skip;
+  p->pts_offset = -parser->s->ci.pre_skip;
   ret = 1;
   fail:
     
@@ -91,7 +91,7 @@ static void cleanup_opus(bgav_audio_parser_t * parser)
 static void reset_opus(bgav_audio_parser_t * parser)
   {
   opus_priv_t * p = parser->priv;
-  p->pts_offset = -parser->s->data.audio.pre_skip;
+  p->pts_offset = -parser->s->ci.pre_skip;
   }
 
 void bgav_audio_parser_init_opus(bgav_audio_parser_t * parser)

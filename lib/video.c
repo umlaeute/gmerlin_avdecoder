@@ -214,7 +214,7 @@ int bgav_video_start(bgav_stream_t * s)
       }
     }
   
-  if(s->start_time == GAVL_TIME_UNDEFINED)
+  if(s->stats.pts_start == GAVL_TIME_UNDEFINED)
     {
     bgav_packet_t * p = NULL;
     char tmp_string[128];
@@ -224,8 +224,8 @@ int bgav_video_start(bgav_stream_t * s)
       bgav_log(s->opt, BGAV_LOG_WARNING, LOG_DOMAIN,
                "EOF while getting start time");
       }
-    s->start_time = p->pts;
-    s->out_time = s->start_time;
+    s->stats.pts_start = p->pts;
+    s->out_time = s->stats.pts_start;
 
     sprintf(tmp_string, "%" PRId64, s->out_time);
     bgav_log(s->opt, BGAV_LOG_INFO, LOG_DOMAIN,
@@ -594,7 +594,7 @@ static gavl_frame_table_t * create_frame_table_fi(bgav_stream_t * s)
   int64_t last_time = GAVL_TIME_UNDEFINED;
   
   ret = gavl_frame_table_create();
-  ret->offset = s->start_time;
+  ret->offset = s->stats.pts_start;
   
   for(i = 0; i < fi->num_entries; i++)
     {
@@ -930,8 +930,6 @@ int bgav_get_video_compression_info(bgav_t * bgav, int stream,
     return 0;
     }
   
-  s->ci.max_packet_size = s->max_packet_size;
-
   if(ret)
     gavl_compression_info_copy(ret, &s->ci);
   s->flags |= STREAM_GOT_CI;
