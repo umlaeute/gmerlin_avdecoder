@@ -46,7 +46,8 @@ int bgav_num_overlay_streams(bgav_t * bgav, int track)
   return bgav->tt->tracks[track].num_overlay_streams;
   }
 
-int bgav_set_subtitle_stream(bgav_t * b, int stream, bgav_stream_action_t action)
+int bgav_set_subtitle_stream(bgav_t * b, int stream,
+                             bgav_stream_action_t action)
   {
   bgav_stream_t * s = bgav_track_get_subtitle_stream(b->tt->cur, stream);
   if(!s)
@@ -402,53 +403,48 @@ bgav_get_subtitle_metadata(bgav_t * b, int stream)
 const bgav_metadata_t *
 bgav_get_text_metadata(bgav_t * b, int stream)
   {
-  return bgav_get_subtitle_metadata(b, stream);
+  return &b->tt->cur->text_streams[stream].m;
   }
 
 const bgav_metadata_t *
 bgav_get_overlay_metadata(bgav_t * b, int stream)
   {
-  return bgav_get_subtitle_metadata(b, stream);
+  return &b->tt->cur->overlay_streams[stream].m;
   }
 
 gavl_packet_source_t *
 bgav_get_text_packet_source(bgav_t * b, int stream)
   {
-  bgav_stream_t * s = bgav_track_get_subtitle_stream(b->tt->cur, stream);
-  return s->psrc;
+  return b->tt->cur->text_streams[stream].psrc;
   }
 
 const gavl_video_format_t * bgav_get_overlay_format(bgav_t * b, int stream)
   {
-  bgav_stream_t * s = bgav_track_get_subtitle_stream(b->tt->cur, stream);
-  return &s->data.subtitle.video.format;
+  return &b->tt->cur->overlay_streams[stream].data.subtitle.video.format;
   }
 
 int bgav_get_text_timescale(bgav_t * b, int stream)
   {
-  bgav_stream_t * s = bgav_track_get_subtitle_stream(b->tt->cur, stream);
-  return s->timescale;
+  return b->tt->cur->text_streams[stream].timescale;
   }
 
 gavl_packet_source_t *
 bgav_get_overlay_packet_source(bgav_t * b, int stream)
   {
-  bgav_stream_t * s = bgav_track_get_subtitle_stream(b->tt->cur, stream);
-  return s->psrc;
+  return b->tt->cur->overlay_streams[stream].psrc;
   }
 
 gavl_video_source_t *
 bgav_get_overlay_source(bgav_t * b, int stream)
   {
-  bgav_stream_t * s = bgav_track_get_subtitle_stream(b->tt->cur, stream);
-  return s->data.subtitle.video.vsrc;
+  return b->tt->cur->overlay_streams[stream].data.subtitle.video.vsrc;
   }
 
 int bgav_get_overlay_compression_info(bgav_t * b, int stream,
                                       gavl_compression_info_t * ret)
   {
   gavl_codec_id_t id;
-  bgav_stream_t * s = bgav_track_get_subtitle_stream(b->tt->cur, stream);
+  bgav_stream_t * s = &b->tt->cur->overlay_streams[stream];
   
   if(ret)
     memset(ret, 0, sizeof(*ret));

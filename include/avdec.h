@@ -1249,7 +1249,7 @@ int bgav_num_subtitle_streams(bgav_t * bgav, int track);
  *  \brief Get the number of text streams of a track
  *  \param bgav A decoder instance
  *  \param track Track index (starting with 0)
- *  \returns The number of subtitle streams
+ *  \returns The number of text subtitle streams
  */
 
 BGAV_PUBLIC
@@ -1259,13 +1259,11 @@ int bgav_num_text_streams(bgav_t * bgav, int track);
  *  \brief Get the number of overlay streams of a track
  *  \param bgav A decoder instance
  *  \param track Track index (starting with 0)
- *  \returns The number of subtitle streams
+ *  \returns The number of overlay subtitle streams
  */
 
 BGAV_PUBLIC
 int bgav_num_overlay_streams(bgav_t * bgav, int track);
-
-  
 
 /** \ingroup track
  *  \brief Get the name a track
@@ -1647,7 +1645,8 @@ int bgav_set_video_stream(bgav_t * bgav, int stream, bgav_stream_action_t action
  */
 
 BGAV_PUBLIC
-int bgav_set_subtitle_stream(bgav_t * bgav, int stream, bgav_stream_action_t action);
+int bgav_set_subtitle_stream(bgav_t * bgav, int stream,
+                             bgav_stream_action_t action);
 
 /** \ingroup streams
  * \brief Select mode for a text stream
@@ -1660,7 +1659,8 @@ int bgav_set_subtitle_stream(bgav_t * bgav, int stream, bgav_stream_action_t act
  */
 
 BGAV_PUBLIC
-int bgav_set_text_stream(bgav_t * bgav, int stream, bgav_stream_action_t action);
+int bgav_set_text_stream(bgav_t * bgav, int stream,
+                         bgav_stream_action_t action);
 
 /** \ingroup streams
  * \brief Select mode for an overlay stream
@@ -1673,7 +1673,8 @@ int bgav_set_text_stream(bgav_t * bgav, int stream, bgav_stream_action_t action)
  */
 
 BGAV_PUBLIC
-int bgav_set_overlay_stream(bgav_t * bgav, int stream, bgav_stream_action_t action);
+int bgav_set_overlay_stream(bgav_t * bgav, int stream,
+                            bgav_stream_action_t action);
 
 /***************************************************
  * Stream handling functions

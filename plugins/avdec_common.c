@@ -137,7 +137,7 @@ gavl_packet_source_t *
 bg_avdec_get_text_packet_source(void * priv, int stream)
   {
   avdec_priv * avdec = priv;
-  return bgav_get_text_packet_source(avdec->dec, avdec->current_track->num_overlay_streams + stream);
+  return bgav_get_text_packet_source(avdec->dec, stream);
   }
 
 gavl_video_source_t *
@@ -320,16 +320,14 @@ int bg_avdec_start(void * priv)
 
   for(i = 0; i < avdec->current_track->num_text_streams; i++)
     {
-    int idx = i + avdec->current_track->num_overlay_streams;
-    
     gavl_metadata_merge2(&avdec->current_track->text_streams[i].m,
-                         bgav_get_text_metadata(avdec->dec, idx));
+                         bgav_get_text_metadata(avdec->dec, i));
     
     avdec->current_track->text_streams[i].duration =
-      bgav_text_duration(avdec->dec, idx);
+      bgav_text_duration(avdec->dec, i);
 
     avdec->current_track->text_streams[i].timescale = 
-      bgav_get_text_timescale(avdec->dec, idx);
+      bgav_get_text_timescale(avdec->dec, i);
     }
 
   for(i = 0; i < avdec->current_track->num_overlay_streams; i++)

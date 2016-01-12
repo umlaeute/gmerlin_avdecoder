@@ -189,7 +189,8 @@ int main(int argc, char ** argv)
   int i, j;
   int num_audio_streams;
   int num_video_streams;
-  int num_subtitle_streams;
+  int num_text_streams;
+  int num_overlay_streams;
   int num_urls;
   int num_tracks;
   int track;
@@ -433,7 +434,8 @@ int main(int argc, char ** argv)
     
     num_audio_streams = bgav_num_audio_streams(file, track);
     num_video_streams = bgav_num_video_streams(file, track);
-    num_subtitle_streams = bgav_num_subtitle_streams(file, track);
+    num_text_streams = bgav_num_text_streams(file, track);
+    num_overlay_streams = bgav_num_overlay_streams(file, track);
     
     if(do_audio)
       {
@@ -479,11 +481,15 @@ int main(int argc, char ** argv)
         bgav_set_video_stream(file, i, BGAV_STREAM_DECODE);
         }
       }
-    for(i = 0; i < num_subtitle_streams; i++)
+    for(i = 0; i < num_text_streams; i++)
       {
-      bgav_set_subtitle_stream(file, i, BGAV_STREAM_DECODE);
+      bgav_set_text_stream(file, i, BGAV_STREAM_DECODE);
+      }
+    for(i = 0; i < num_overlay_streams; i++)
+      {
+      bgav_set_overlay_stream(file, i, BGAV_STREAM_DECODE);
 
-      if(dump_ci && !bgav_subtitle_is_text(file, i))
+      if(dump_ci)
         {
         if(bgav_get_overlay_compression_info(file, i, &ci))
           {
@@ -500,6 +506,8 @@ int main(int argc, char ** argv)
         }
 
       }
+
+
     fprintf(stderr, "Starting decoders...\n");
     if(!bgav_start(file))
       {
@@ -628,45 +636,43 @@ int main(int argc, char ** argv)
         }
       }
 
-    for(i = 0; i < num_subtitle_streams; i++)
+    for(i = 0; i < num_text_streams; i++)
       {
-      video_format = bgav_get_subtitle_format(file, i);
-      
-      if(bgav_subtitle_is_text(file, i))
+      int timescale = bgav_get_text_timescale(file, i);
+        
+      fprintf(stderr, "Reading text subtitle from stream %d...", i+1);
+        
+      if(bgav_read_subtitle_text(file, &sub_text, &sub_text_alloc,
+                                 &sub_time, &sub_duration, i + num_overlay_streams))
         {
-        int timescale = bgav_get_text_timescale(file, i);
-        
-        fprintf(stderr, "Reading text subtitle from stream %d...", i+1);
-        
-        if(bgav_read_subtitle_text(file, &sub_text, &sub_text_alloc,
-                                   &sub_time, &sub_duration, i))
-          {
-          fprintf(stderr, "Done\nstart: %f, duration: %f\n%s\n",
-                  gavl_time_to_seconds(gavl_time_unscale(timescale,
-                                                         sub_time)),
-                  gavl_time_to_seconds(gavl_time_unscale(timescale, sub_duration)),
-                                       sub_text);
-          }
-        else
-          fprintf(stderr, "Failed\n");
+        fprintf(stderr, "Done\nstart: %f, duration: %f\n%s\n",
+                gavl_time_to_seconds(gavl_time_unscale(timescale,
+                                                       sub_time)),
+                gavl_time_to_seconds(gavl_time_unscale(timescale, sub_duration)),
+                sub_text);
         }
       else
+        fprintf(stderr, "Failed\n");
+      }
+    
+    for(i = 0; i < num_overlay_streams; i++)
+      {
+      video_format = bgav_get_overlay_format(file, i);
+      
+      fprintf(stderr, "Reading overlay subtitle from stream %d...", i+1);
+      ovl = gavl_video_frame_create(video_format);
+      if(bgav_read_subtitle_overlay(file, ovl, i))
         {
-        fprintf(stderr, "Reading overlay subtitle from stream %d...", i+1);
-        ovl = gavl_video_frame_create(video_format);
-        if(bgav_read_subtitle_overlay(file, ovl, i))
-          {
-          fprintf(stderr, "Done\nsrc_rect: ");
-          gavl_rectangle_i_dump(&ovl->src_rect);
-          fprintf(stderr, "\ndst_coords: %d,%d\n", ovl->dst_x, ovl->dst_y);
-          fprintf(stderr, "Time: %" PRId64 " -> %" PRId64 "\n",
-                  ovl->timestamp,
-                  ovl->timestamp+ovl->duration);
-          }
-        else
-          fprintf(stderr, "Failed\n");
-        gavl_video_frame_destroy(ovl);
+        fprintf(stderr, "Done\nsrc_rect: ");
+        gavl_rectangle_i_dump(&ovl->src_rect);
+        fprintf(stderr, "\ndst_coords: %d,%d\n", ovl->dst_x, ovl->dst_y);
+        fprintf(stderr, "Time: %" PRId64 " -> %" PRId64 "\n",
+                ovl->timestamp,
+                ovl->timestamp+ovl->duration);
         }
+      else
+        fprintf(stderr, "Failed\n");
+      gavl_video_frame_destroy(ovl);
       }
 #ifndef TRACK
     }

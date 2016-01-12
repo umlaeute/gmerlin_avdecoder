@@ -935,6 +935,15 @@ static void set_audio_from_esds(bgav_stream_t * s, qt_esds_t * esds)
       }
     }
 
+  /* Vorbis */
+  if((esds->objectTypeId == 0xdd) && (esds->streamType == 0x15) &&
+     (esds->decoderConfigLen > 8) && (s->fourcc == BGAV_MK_FOURCC('m','p','4','a')))
+    {
+    /* Vorbis */
+    fprintf(stderr, "Detected Vorbis in mp4\n");
+    }
+                                      
+  
   }
 
 static void process_packet_subtitle_qt(bgav_stream_t * s, bgav_packet_t * p)
