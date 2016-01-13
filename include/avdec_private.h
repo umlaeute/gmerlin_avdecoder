@@ -36,6 +36,9 @@
 
 #define BGAV_MK_FOURCC(a, b, c, d) ((a<<24)|(b<<16)|(c<<8)|d)
 
+#define BGAV_VORBIS BGAV_MK_FOURCC('V','B','I','S')
+
+
 // typedef struct bgav_edl_dec_s bgav_edl_dec_t;
 
 typedef struct bgav_demuxer_s         bgav_demuxer_t;

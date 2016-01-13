@@ -24,6 +24,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
+#include <limits.h>
 
 #include <avdec_private.h>
 #include <qt.h>
@@ -879,6 +880,57 @@ static int init_mp3on4(bgav_stream_t * s)
   return 1;
   }
 
+/* shamelessly stolen from ffmpeg (avpriv_split_xiph_headers) */
+
+static int split_xiph_headers(uint8_t *extradata, int extradata_size,
+                              int first_header_size, uint8_t *header_start[3],
+                              int header_len[3])
+  {
+  int i;
+  
+  if (extradata_size >= 6 && GAVL_PTR_2_16BE(extradata) == first_header_size)
+    {
+    int overall_len = 6;
+    for (i=0; i<3; i++)
+      {
+      header_len[i] = GAVL_PTR_2_16BE(extradata);
+      extradata += 2;
+      header_start[i] = extradata;
+      extradata += header_len[i];
+      if (overall_len > extradata_size - header_len[i])
+        return -1;
+      overall_len += header_len[i];
+      }
+    }
+  else if (extradata_size >= 3 && extradata_size < INT_MAX - 0x1ff && extradata[0] == 2)
+    {
+    int overall_len = 3;
+    extradata++;
+    for (i=0; i<2; i++, extradata++)
+      {
+      header_len[i] = 0;
+      for (; overall_len < extradata_size && *extradata==0xff; extradata++)
+        {
+        header_len[i] += 0xff;
+        overall_len   += 0xff + 1;
+        }
+      header_len[i] += *extradata;
+      overall_len   += *extradata;
+      if (overall_len > extradata_size)
+        return -1;
+      }
+    header_len[2] = extradata_size - overall_len;
+    header_start[0] = extradata;
+    header_start[1] = header_start[0] + header_len[0];
+    header_start[2] = header_start[1] + header_len[1];
+    }
+  else
+    {
+    return 0;
+    }
+  return 1;
+  }
+
 /* the audio fourcc mp4a doesn't necessarily mean, that we actually
    have AAC audio */
 
@@ -901,6 +953,9 @@ static void set_audio_from_esds(bgav_stream_t * s, qt_esds_t * esds)
   
   //  fprintf(stderr, "Object type ID: %d\n", esds->objectTypeId);
   //  bgav_qt_esds_dump(0, esds);
+
+  bgav_stream_set_extradata(s, esds->decoderConfig,
+                            esds->decoderConfigLen);
   
   for(i = 0; i < sizeof(audio_object_ids)/sizeof(audio_object_ids[0]); i++)
     {
@@ -939,8 +994,8 @@ static void set_audio_from_esds(bgav_stream_t * s, qt_esds_t * esds)
   if((esds->objectTypeId == 0xdd) && (esds->streamType == 0x15) &&
      (esds->decoderConfigLen > 8) && (s->fourcc == BGAV_MK_FOURCC('m','p','4','a')))
     {
-    /* Vorbis */
     fprintf(stderr, "Detected Vorbis in mp4\n");
+    s->fourcc = BGAV_VORBIS;
     }
                                       
   
@@ -1203,14 +1258,13 @@ static void init_audio(bgav_demuxer_context_t * ctx,
       
   if(desc->has_esds)
     {
-    bgav_stream_set_extradata(bg_as, desc->esds.decoderConfig,
-                              desc->esds.decoderConfigLen);
-        
     /* Check for mp3on4 */
     if((desc->esds.objectTypeId == 64) &&
        (desc->esds.decoderConfigLen >= 2) &&
-       (bg_as->ext_data[0] >> 3 == 29))
+       (desc->esds.decoderConfig[0] >> 3 == 29))
       {
+      bgav_stream_set_extradata(bg_as, desc->esds.decoderConfig,
+                                desc->esds.decoderConfigLen);
       if(!init_mp3on4(bg_as))
         {
         bgav_log(ctx->opt, BGAV_LOG_WARNING, LOG_DOMAIN,
@@ -1218,8 +1272,31 @@ static void init_audio(bgav_demuxer_context_t * ctx,
         bg_as->fourcc = 0;
         }
       }
+    /* Vorbis */
+    else if ((desc->esds.objectTypeId == 0xdd) && (desc->esds.streamType == 0x15) &&
+     (desc->esds.decoderConfigLen > 8) && (bg_as->fourcc == BGAV_MK_FOURCC('m','p','4','a')))
+      {
+      uint8_t *header_start[3];
+      int header_len[3];
+      int i;
+      
+      if(split_xiph_headers(desc->esds.decoderConfig,
+                            desc->esds.decoderConfigLen,
+                            30, header_start,
+                            header_len))
+        {
+        for(i = 0; i < 3; i++)
+          gavl_append_xiph_header(&bg_as->ext_data, &bg_as->ext_size,
+                                  header_start[i], header_len[i]);
+        bg_as->fourcc = BGAV_VORBIS;
+        }
+      else
+        bg_as->fourcc = 0;
+      }
     else
+      {
       set_audio_from_esds(bg_as, &desc->esds);
+      }
     }
   else if(bg_as->fourcc == BGAV_MK_FOURCC('l', 'p', 'c', 'm'))
     {

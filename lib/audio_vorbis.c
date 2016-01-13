@@ -32,8 +32,6 @@
 
 #include <stdio.h>
 
-#define BGAV_VORBIS BGAV_MK_FOURCC('V','B','I','S')
-
 #define LOG_DOMAIN "vorbis"
 
 // #define DUMP_OUTPUT
