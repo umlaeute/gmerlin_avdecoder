@@ -135,6 +135,20 @@ static int read_data(bgav_input_context_t* ctx,
     return bgav_http_read(p->h, buffer, len, block);
   }
 
+static void * memscan(void * mem_start, int size, void * key, int key_len)
+  {
+  void * mem = mem_start;
+
+
+  while(mem - mem_start < size - key_len)
+    {
+    if(!memcmp(mem, key, key_len))
+      return mem;
+    mem++;
+    }
+  return NULL;
+  }
+
 static int read_shoutcast_metadata(bgav_input_context_t* ctx, int block)
   {
   char * meta_buffer;
@@ -150,53 +164,44 @@ static int read_shoutcast_metadata(bgav_input_context_t* ctx, int block)
     return 0;
     }
   meta_bytes = icy_len * 16;
-
-  //  fprintf(stderr, "Got metadata %d bytes\n", meta_bytes);
+  
+  //  fprintf(stderr, "Got ICY metadata %d bytes\n", meta_bytes);
   
   if(meta_bytes)
     {
     meta_buffer = malloc(meta_bytes);
-        
+    
     /* Metadata block is read in blocking mode!! */
     
     if(read_data(ctx, (uint8_t*)meta_buffer, meta_bytes, 1) < meta_bytes)
       return 0;
 
-    //  gavl_hexdump((uint8_t*)meta_buffer, meta_bytes, 16);
+    gavl_hexdump((uint8_t*)meta_buffer, meta_bytes, 16);
     
     if(ctx->opt->metadata_change_callback && ctx->tt)
       {
-
-      pos = meta_buffer;
-      
-      while(strncmp(pos, "StreamTitle='", 13))
+      if(pos = memscan(meta_buffer, meta_bytes, "StreamTitle='", 13))
         {
-        pos = strchr(pos, ';');
-        pos++;
-        if(pos - meta_buffer >= meta_bytes)
-          {
-          pos = NULL;
-          break;
-          }
-        }
-      if(pos)
-        {
-        pos += 13;
+        pos+=13;
         end_pos = strchr(pos, ';');
-        while((end_pos > pos) && (*end_pos != '\''))
-          end_pos--;
+
+        if(end_pos)
+          end_pos--; // ; -> '
+        }
+
+      if(pos && end_pos)
+        {
+        gavl_metadata_set_nocpy(&ctx->tt->cur->metadata,
+                                GAVL_META_LABEL,
+                                bgav_convert_string(priv->charset_cnv ,
+                                                    pos, end_pos - pos,
+                                                    NULL));
         
-        if(end_pos > pos)
-          {
-          gavl_metadata_set_nocpy(&ctx->tt->cur->metadata,
-                                  GAVL_META_LABEL,
-                                  bgav_convert_string(priv->charset_cnv ,
-                                                      pos, end_pos - pos,
-                                                      NULL));
-          
-          ctx->opt->metadata_change_callback(ctx->opt->metadata_change_callback_data,
-                                             &ctx->tt->cur->metadata);
-          }
+        ctx->opt->metadata_change_callback(ctx->opt->metadata_change_callback_data,
+                                           &ctx->tt->cur->metadata);
+        
+        fprintf(stderr, "Got ICY metadata: %s\n",
+                gavl_metadata_get(&ctx->tt->cur->metadata, GAVL_META_LABEL));
         }
       }
     free(meta_buffer);

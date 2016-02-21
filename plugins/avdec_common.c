@@ -512,6 +512,11 @@ static void metadata_change_callback(void * priv,
     {
     gavl_metadata_copy(&avdec->current_track->metadata,
                        metadata);
+
+    fprintf(stderr, "Metadata callback %p %p\n",
+            avdec->bg_callbacks, avdec->bg_callbacks->metadata_changed);
+    
+
     if(avdec->bg_callbacks && avdec->bg_callbacks->metadata_changed)
       {
       avdec->bg_callbacks->metadata_changed(avdec->bg_callbacks->data,
