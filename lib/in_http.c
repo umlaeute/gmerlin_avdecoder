@@ -180,7 +180,7 @@ static int read_shoutcast_metadata(bgav_input_context_t* ctx, int block)
     
     if(ctx->opt->metadata_change_callback && ctx->tt)
       {
-      if(pos = memscan(meta_buffer, meta_bytes, "StreamTitle='", 13))
+      if((pos = memscan(meta_buffer, meta_bytes, "StreamTitle='", 13)))
         {
         pos+=13;
         end_pos = strchr(pos, ';');
