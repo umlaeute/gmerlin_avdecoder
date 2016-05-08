@@ -51,7 +51,7 @@ static bg_device_info_t * find_devices_dvb()
   bg_device_info_t * ret;
   bgav_device_info_t * dev;
   dev = bgav_find_devices_dvb();
-  ret = bg_avdec_get_devices(dev);
+  ret = bg_avdec_get_devices(dev, "dvb");
   bgav_device_info_destroy(dev);
   return ret;
   }
@@ -90,7 +90,6 @@ static const bg_parameter_info_t * get_parameters_dvb(void * priv)
   {
   return parameters;
   }
-
 
 static char const * const protocols = "dvb";
 

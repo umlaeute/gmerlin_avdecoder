@@ -173,6 +173,10 @@ void bg_avdec_destroy(void * priv)
 bg_track_info_t * bg_avdec_get_track_info(void * priv, int track)
   {
   avdec_priv * avdec = priv;
+  
+  if(track == -1)
+    return avdec->current_track;
+  
   if((track < 0) || (track >= avdec->num_tracks))
     return NULL;
   return &(avdec->track_info[track]);
@@ -382,10 +386,10 @@ int bg_avdec_init(avdec_priv * avdec)
       for(j = 0; j < avdec->track_info[i].num_audio_streams; j++)
         {
         gavl_audio_format_copy(&(avdec->track_info[i].audio_streams[j].format),
-                               bgav_get_audio_format(avdec->dec, j));
+                               bgav_get_audio_format_t(avdec->dec, i, j));
 
         gavl_metadata_copy(&(avdec->track_info[i].audio_streams[j].m),
-                           bgav_get_audio_metadata(avdec->dec, j));
+                           bgav_get_audio_metadata_t(avdec->dec, i, j));
         
         }
       }
@@ -398,10 +402,10 @@ int bg_avdec_init(avdec_priv * avdec)
       for(j = 0; j < avdec->track_info[i].num_video_streams; j++)
         {
         gavl_video_format_copy(&(avdec->track_info[i].video_streams[j].format),
-                               bgav_get_video_format(avdec->dec, j));
+                               bgav_get_video_format_t(avdec->dec, i, j));
 
         gavl_metadata_copy(&(avdec->track_info[i].video_streams[j].m),
-                           bgav_get_video_metadata(avdec->dec, j));
+                           bgav_get_video_metadata_t(avdec->dec, i, j));
         
         }
       }
@@ -415,7 +419,7 @@ int bg_avdec_init(avdec_priv * avdec)
         {
         int idx = j + avdec->track_info[i].num_overlay_streams;
         gavl_metadata_copy(&(avdec->track_info[i].text_streams[j].m),
-                           bgav_get_text_metadata(avdec->dec, idx));
+                           bgav_get_text_metadata_t(avdec->dec, i, idx));
         }
       }
     if(avdec->track_info[i].num_overlay_streams)
@@ -427,7 +431,7 @@ int bg_avdec_init(avdec_priv * avdec)
       for(j = 0; j < avdec->track_info[i].num_overlay_streams; j++)
         {
         gavl_metadata_copy(&(avdec->track_info[i].overlay_streams[j].m),
-                           bgav_get_overlay_metadata(avdec->dec, j));
+                           bgav_get_overlay_metadata_t(avdec->dec, i, j));
         }
       }
     
@@ -563,19 +567,23 @@ void bg_avdec_set_callbacks(void * priv,
     }
   }
 
-bg_device_info_t * bg_avdec_get_devices(bgav_device_info_t * info)
+bg_device_info_t * bg_avdec_get_devices(bgav_device_info_t * info, const char * protocol)
   {
   int i = 0;
   bg_device_info_t * ret = NULL;
-
+  char * tmp_string;
+  
   if(!info)
     return ret;
   
   while(info[i].device)
     {
+    tmp_string = bg_sprintf("%s://%s", protocol, info[i].device);
+    
     ret = bg_device_info_append(ret,
-                                info[i].device,
+                                tmp_string,
                                 info[i].name);
+    free(tmp_string);
     i++;
     }
   return ret;

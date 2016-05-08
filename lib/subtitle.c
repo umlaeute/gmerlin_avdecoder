@@ -407,9 +407,21 @@ bgav_get_text_metadata(bgav_t * b, int stream)
   }
 
 const bgav_metadata_t *
+bgav_get_text_metadata_t(bgav_t * b, int track, int stream)
+  {
+  return &b->tt->tracks[track].text_streams[stream].m;
+  }
+
+const bgav_metadata_t *
 bgav_get_overlay_metadata(bgav_t * b, int stream)
   {
   return &b->tt->cur->overlay_streams[stream].m;
+  }
+
+const bgav_metadata_t *
+bgav_get_overlay_metadata_t(bgav_t * b, int track, int stream)
+  {
+  return &b->tt->tracks[track].overlay_streams[stream].m;
   }
 
 gavl_packet_source_t *

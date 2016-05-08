@@ -130,6 +130,6 @@ int bg_avdec_read_video_packet(void * priv, int stream, gavl_packet_t * p);
 
 
 
-bg_device_info_t * bg_avdec_get_devices(bgav_device_info_t *);
+bg_device_info_t * bg_avdec_get_devices(bgav_device_info_t *, const char * protocols);
 
 #include "options.h"

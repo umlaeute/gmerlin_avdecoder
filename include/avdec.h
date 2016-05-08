@@ -1379,7 +1379,7 @@ BGAV_PUBLIC
 int bgav_get_audio_bitrate(bgav_t * bgav, int stream);
 
 /** \ingroup streams
- *  \brief Get the metadata of an audio stream
+ *  \brief Get the metadata of an audio stream of the current track
  *  \param bgav A decoder instance
  *  \param stream Audio stream index (starting with 0)
  *  \returns The metadata for the stream
@@ -1388,6 +1388,17 @@ int bgav_get_audio_bitrate(bgav_t * bgav, int stream);
 BGAV_PUBLIC
 const bgav_metadata_t *
 bgav_get_audio_metadata(bgav_t * bgav, int stream);
+
+/** \ingroup streams
+ *  \brief Get the metadata of an audio stream
+ *  \param bgav A decoder instance
+ *  \param t Track index (starting with 0)
+ *  \param s Audio stream index (starting with 0)
+ *  \returns The metadata for the stream
+ */
+
+BGAV_PUBLIC
+const bgav_metadata_t * bgav_get_audio_metadata_t(bgav_t * b, int t, int s);
   
 /** \ingroup streams
  *  \brief Get the language of a subtitle stream
@@ -1411,7 +1422,7 @@ const bgav_metadata_t *
 bgav_get_subtitle_metadata(bgav_t * bgav, int stream);
 
 /** \ingroup streams
- *  \brief Get the metadata of a text stream
+ *  \brief Get the metadata of a text stream of the current track
  *  \param bgav A decoder instance
  *  \param stream Subtitle stream index (starting with 0)
  *  \returns The metadata for the stream
@@ -1422,7 +1433,19 @@ const bgav_metadata_t *
 bgav_get_text_metadata(bgav_t * b, int stream);
 
 /** \ingroup streams
- *  \brief Get the metadata of an overlay stream
+ *  \brief Get the metadata of a text stream
+ *  \param bgav A decoder instance
+ *  \param track Track index (starting with 0)
+ *  \param stream Subtitle stream index (starting with 0)
+ *  \returns The metadata for the stream
+ */
+
+BGAV_PUBLIC
+const bgav_metadata_t *
+bgav_get_text_metadata_t(bgav_t * b, int track, int stream);
+  
+/** \ingroup streams
+ *  \brief Get the metadata of an overlay stream of the current track
  *  \param bgav A decoder instance
  *  \param stream Subtitle stream index (starting with 0)
  *  \returns The metadata for the stream
@@ -1432,9 +1455,21 @@ BGAV_PUBLIC
 const bgav_metadata_t *
 bgav_get_overlay_metadata(bgav_t * b, int stream);
 
+/** \ingroup streams
+ *  \brief Get the metadata of an overlay stream
+ *  \param bgav A decoder instance
+ *  \param track Track index (starting with 0)
+ *  \param stream Subtitle stream index (starting with 0)
+ *  \returns The metadata for the stream
+ */
+  
+BGAV_PUBLIC
+const bgav_metadata_t *
+bgav_get_overlay_metadata_t(bgav_t * b, int track, int stream);
+  
   
 /** \ingroup streams
- *  \brief Get the metadata of a video stream
+ *  \brief Get the metadata of a video stream of the current track
  *  \param bgav A decoder instance
  *  \param stream Video stream index (starting with 0)
  *  \returns The metadata for the stream
@@ -1444,6 +1479,18 @@ BGAV_PUBLIC
 const bgav_metadata_t *
 bgav_get_video_metadata(bgav_t * bgav, int stream);
 
+/** \ingroup streams
+ *  \brief Get the metadata of a video stream
+ *  \param bgav A decoder instance
+ *  \param t Track index (starting with 0)
+ *  \param stream Video stream index (starting with 0)
+ *  \returns The metadata for the stream
+ */
+
+BGAV_PUBLIC
+const bgav_metadata_t *
+bgav_get_video_metadata_t(bgav_t * b, int t, int s);
+  
   
 /** \ingroup streams
  *  \brief Stream action
@@ -1708,7 +1755,7 @@ int bgav_start(bgav_t * bgav);
  */
 
 /** \ingroup stream_info
- *  \brief Get the format of an audio stream
+ *  \brief Get the format of an audio stream of the current track
  *  \param bgav A decoder instance
  *  \param stream Stream index (starting with 0)
  *  \returns The format
@@ -1721,6 +1768,22 @@ int bgav_start(bgav_t * bgav);
 BGAV_PUBLIC
 const gavl_audio_format_t * bgav_get_audio_format(bgav_t * bgav, int stream);
 
+/** \ingroup stream_info
+ *  \brief Get the format of an audio stream
+ *  \param bgav A decoder instance
+ *  \param t Track index (starting with 0)
+ *  \param s Stream index (starting with 0)
+ *  \returns The format
+ *
+ *  Note, that you can trust the return value of this function only, if you enabled
+ *  the stream (see \ref bgav_set_audio_stream) and started the decoders
+ *  (see \ref bgav_start).
+ */
+
+
+ BGAV_PUBLIC
+ const gavl_audio_format_t * bgav_get_audio_format_t(bgav_t *  bgav, int track, int stream);
+  
 /** \ingroup stream_info
  *  \brief Get the format of a video stream
  *  \param bgav A decoder instance
@@ -1740,6 +1803,26 @@ const gavl_audio_format_t * bgav_get_audio_format(bgav_t * bgav, int stream);
 BGAV_PUBLIC
 const gavl_video_format_t * bgav_get_video_format(bgav_t * bgav, int stream);
 
+/** \ingroup stream_info
+ *  \brief Get the format of a video stream
+ *  \param bgav A decoder instance
+ *  \param t Track index (starting with 0)
+ *  \param stream Stream index (starting with 0)
+ *  \returns The format
+ *
+ *  Note, that you can trust the return value of this function only, if
+ *  you enabled the stream (see \ref bgav_set_video_stream) and started
+ *  the decoders (see \ref bgav_start).
+ *
+ *  Special care has to be taken, if the video stream consists of (a)
+ *  still image(s). This is the case, when the framerate_mode member
+ *  of the format is \ref GAVL_FRAMERATE_STILL. See
+ *  \ref bgav_video_has_still.
+ */
+
+BGAV_PUBLIC
+const gavl_video_format_t * bgav_get_video_format_t(bgav_t * bgav, int t, int stream);
+  
 /** \ingroup stream_info
  *  \brief Get the format of an overlay stream
  *  \param bgav A decoder instance

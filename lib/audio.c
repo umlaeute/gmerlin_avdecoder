@@ -39,6 +39,11 @@ const gavl_audio_format_t * bgav_get_audio_format(bgav_t *  bgav, int stream)
   return &bgav->tt->cur->audio_streams[stream].data.audio.format;
   }
 
+const gavl_audio_format_t * bgav_get_audio_format_t(bgav_t *  bgav, int track, int stream)
+  {
+  return &bgav->tt->tracks[track].audio_streams[stream].data.audio.format;
+  }
+
 int bgav_set_audio_stream(bgav_t * b, int stream, bgav_stream_action_t action)
   {
   if((stream >= b->tt->cur->num_audio_streams) || (stream < 0))
@@ -240,6 +245,12 @@ const bgav_metadata_t *
 bgav_get_audio_metadata(bgav_t * b, int s)
   {
   return &b->tt->cur->audio_streams[s].m;
+  }
+
+const bgav_metadata_t *
+bgav_get_audio_metadata_t(bgav_t * b, int track, int s)
+  {
+  return &b->tt->tracks[track].audio_streams[s].m;
   }
 
 

@@ -42,10 +42,21 @@ const gavl_video_format_t * bgav_get_video_format(bgav_t * bgav, int stream)
   return &bgav->tt->cur->video_streams[stream].data.video.format;
   }
 
+const gavl_video_format_t * bgav_get_video_format_t(bgav_t * bgav, int t, int stream)
+  {
+  return &bgav->tt->tracks[t].video_streams[stream].data.video.format;
+  }
+
 const bgav_metadata_t *
 bgav_get_video_metadata(bgav_t * b, int s)
   {
   return &b->tt->cur->video_streams[s].m;
+  }
+
+const bgav_metadata_t *
+bgav_get_video_metadata_t(bgav_t * b, int t, int s)
+  {
+  return &b->tt->tracks[t].video_streams[s].m;
   }
 
 int bgav_set_video_stream(bgav_t * b, int stream, bgav_stream_action_t action)
