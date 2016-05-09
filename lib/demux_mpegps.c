@@ -34,6 +34,8 @@
 // #define DUMP_PACK_HEADER
 // #define DUMP_PES_HEADER
 
+/* Number of sectors to read at once when searching backwards */
+#define SCAN_SECTORS 16
 
 /* LPCM stuff */
 
@@ -327,48 +329,55 @@ static void init_sector_mode(bgav_demuxer_context_t * ctx)
     return;
 
 #ifdef DUMP_PACK_HEADER
-  bgav_pack_header_dump(ret);
+  bgav_pack_header_dump(&priv->pack_header);
 #endif
 
-  
-  //  pack_header_dump(&priv->pack_header);
+  /* If we already have the duration, stop here. */
+  if(ctx->tt->cur->duration != GAVL_TIME_UNDEFINED)
+    {
+    priv->goto_sector(ctx, 0);
+    bgav_input_reopen_memory(priv->input_mem, NULL, 0);
+      return;
+    }
 
+  
   if(priv->goto_sector)
     {
+    int i;
+    
+    scr_end = -1;
     scr_start = priv->pack_header.scr;
-    
-    
-    /* If we already have the duration, stop here. */
-    
-    if(ctx->tt->cur->duration != GAVL_TIME_UNDEFINED)
+
+    /* Read final sectors */    
+    while(priv->total_sectors > 0)
       {
-      priv->goto_sector(ctx, 0);
-      bgav_input_reopen_memory(priv->input_mem, NULL, 0);
-      return;
-      }
-    
-    while(1)
-      {
-      priv->goto_sector(ctx, priv->total_sectors - 1);
-      if(!priv->read_sector(ctx))
+      //  SCAN_SECTORS
+
+      priv->goto_sector(ctx, priv->total_sectors - SCAN_SECTORS - 1);
+
+      for(i = 0; i < SCAN_SECTORS; i++)
         {
-        priv->total_sectors--;
-        continue;
+        if(!priv->read_sector(ctx))
+          {
+          priv->total_sectors -= SCAN_SECTORS;
+          continue;
+          }
+        
+        if(!bgav_input_get_32_be(priv->input_mem, &start_code))
+          return;
+        if(start_code == START_CODE_PACK_HEADER)
+          {
+          if(!bgav_pack_header_read(priv->input_mem, &priv->pack_header))
+            return;
+          scr_end = priv->pack_header.scr;
+          }
         }
-      if(!bgav_input_get_32_be(priv->input_mem, &start_code))
-        return;
-      if(start_code == START_CODE_PACK_HEADER)
+      
+      if(scr_end > 0)
         break;
-      priv->total_sectors--;
+      else
+        priv->total_sectors -= SCAN_SECTORS;
       }
-    
-    if(!bgav_pack_header_read(priv->input_mem, &priv->pack_header))
-      {
-      return;
-      }
-    //  pack_header_dump(&priv->pack_header);
-    scr_end = priv->pack_header.scr;
-    
     
     ctx->tt->cur->duration =
       ((int64_t)(scr_end - scr_start) * GAVL_TIME_SCALE) / 90000;
@@ -1076,6 +1085,7 @@ static int open_mpegps(bgav_demuxer_context_t * ctx)
 
   if(!init_cdxa(ctx))
     {
+    /* Check for VCD input module */
     if(ctx->input->sector_size)
       {
       priv->sector_size        = ctx->input->sector_size;

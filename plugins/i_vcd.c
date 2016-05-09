@@ -63,7 +63,7 @@ static bg_device_info_t * find_devices_vcd()
   bg_device_info_t * ret;
   bgav_device_info_t * dev;
   dev = bgav_find_devices_vcd();
-  ret = bg_avdec_get_devices(dev, "vcd");
+  ret = bg_avdec_get_devices(dev);
   bgav_device_info_destroy(dev);
   return ret;
   }

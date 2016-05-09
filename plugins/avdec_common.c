@@ -567,23 +567,18 @@ void bg_avdec_set_callbacks(void * priv,
     }
   }
 
-bg_device_info_t * bg_avdec_get_devices(bgav_device_info_t * info, const char * protocol)
+bg_device_info_t * bg_avdec_get_devices(bgav_device_info_t * info)
   {
   int i = 0;
   bg_device_info_t * ret = NULL;
-  char * tmp_string;
-  
   if(!info)
     return ret;
   
   while(info[i].device)
     {
-    tmp_string = bg_sprintf("%s://%s", protocol, info[i].device);
-    
     ret = bg_device_info_append(ret,
-                                tmp_string,
+                                info[i].device,
                                 info[i].name);
-    free(tmp_string);
     i++;
     }
   return ret;

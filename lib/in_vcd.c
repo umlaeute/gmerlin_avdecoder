@@ -61,12 +61,6 @@ typedef struct
     uint32_t end_sector;
     int mode; /* A TRACK_* define from above */
     } * tracks;
-#ifndef SECTOR_ACCESS
-  uint8_t sector[2352];
-
-  uint8_t * buffer;
-  uint8_t * buffer_ptr;
-#endif
   
   int num_video_tracks;
     
@@ -89,10 +83,6 @@ static int select_track_vcd(bgav_input_context_t * ctx, int track)
   ctx->total_sectors = priv->tracks[priv->current_track].end_sector -
     priv->tracks[priv->current_track].start_sector + 1;
   ctx->sector_position = 0;
-#ifndef SECTOR_ACCESS  
-  /* Data should be read after next call */
-  priv->buffer_ptr = priv->buffer + SECTOR_SIZE;
-#endif
   return 1;
   }
 
@@ -221,7 +211,9 @@ static void toc_2_tt(bgav_input_context_t * ctx)
       }
     else
       {
-      
+      gavl_metadata_set_nocpy(&track->metadata, GAVL_META_LABEL,
+                              bgav_sprintf("VCD Track %d", i));
+      track->duration = GAVL_TIME_UNDEFINED;
       }
     index++;
     }
@@ -240,10 +232,6 @@ static int open_vcd(bgav_input_context_t * ctx, const char * url, char ** r)
   
   ctx->priv = priv;
 
-#ifndef SECTOR_ACCESS
-  priv->buffer = priv->sector + 8;
-  priv->buffer_ptr = priv->buffer + SECTOR_SIZE;
-#endif
 
   pos = strrchr(url, '.');
   if(pos && !strcasecmp(pos, ".cue"))
@@ -319,6 +307,9 @@ static int read_sector(bgav_input_context_t * ctx, uint8_t * data)
 
   //  do
   //    {
+
+  //  fprintf(stderr, "Read vcd sector %d\n", priv->next_sector);
+
   if(priv->next_sector > priv->tracks[priv->current_track].end_sector)
     return 0;
 
@@ -329,68 +320,11 @@ static int read_sector(bgav_input_context_t * ctx, uint8_t * data)
   priv->next_sector++;
 
   priv->last_sector = priv->next_sector - 1;
-#ifndef SECTOR_ACCESS
-  priv->buffer_ptr = priv->buffer;
-#endif
-  //  gavl_hexdump(priv->buffer_ptr, 32, 16);
+  
+  //  gavl_hexdump(data, 16, 16);
   return 1;
   }
 
-#ifndef SECTOR_ACCESS
-static int read_vcd(bgav_input_context_t* ctx,
-                    uint8_t * buffer, int len)
-  {
-  int bytes_read = 0;
-  int bytes_to_copy;
-    
-  vcd_priv * priv;
-  priv = ctx->priv;
-
-  while(bytes_read < len)
-    {
-    if(priv->buffer_ptr - priv->buffer >= SECTOR_SIZE)
-      {
-      if(!read_sector(ctx, priv->sector))
-        return bytes_read;
-      }
-
-    if(len - bytes_read < SECTOR_SIZE - (priv->buffer_ptr - priv->buffer))
-      bytes_to_copy = len - bytes_read;
-    else
-      bytes_to_copy = SECTOR_SIZE - (priv->buffer_ptr - priv->buffer);
-
-    memcpy(buffer + bytes_read, priv->buffer_ptr, bytes_to_copy);
-    priv->buffer_ptr += bytes_to_copy;
-    bytes_read += bytes_to_copy;
-    }
-  return bytes_read;
-  }
-
-static int64_t seek_byte_vcd(bgav_input_context_t * ctx,
-                             int64_t pos, int whence)
-  {
-  vcd_priv * priv;
-  int sector;
-  int sector_offset;
-  priv = ctx->priv;
-  sector =
-    priv->tracks[priv->current_track].start_sector + 
-    ctx->position / SECTOR_SIZE;
-
-  sector_offset = ctx->position % SECTOR_SIZE;
-  if(sector == priv->last_sector)
-    priv->buffer_ptr = priv->buffer + sector_offset;
-  else
-    {
-    priv->next_sector = sector;
-    read_sector(ctx, priv->sector);
-    priv->buffer_ptr = priv->buffer + sector_offset;
-    }
-  return ctx->position;
-  }
-#endif // Sector access
-
-#ifdef SECTOR_ACCESS
 static int64_t seek_sector_vcd(bgav_input_context_t * ctx,
                                int64_t sector)
   {
@@ -400,10 +334,6 @@ static int64_t seek_sector_vcd(bgav_input_context_t * ctx,
   priv->next_sector = sector + priv->tracks[priv->current_track].start_sector;
   return priv->next_sector;
   }
-
-#endif
-
-
 
 static void    close_vcd(bgav_input_context_t * ctx)
   {
@@ -421,13 +351,8 @@ const bgav_input_t bgav_input_vcd =
   {
     .name =          "vcd",
     .open =          open_vcd,
-#ifdef SECTOR_ACCESS
     .read_sector =   read_sector,
     .seek_sector =   seek_sector_vcd,
-#else
-    .read =          read_vcd,
-    .seek_byte =     seek_byte_vcd,
-#endif
     .close =         close_vcd,
     .select_track =  select_track_vcd,
   };
@@ -463,9 +388,9 @@ static char * get_device_name(CdIo_t * cdio,
 int bgav_check_device_vcd(const char * device, char ** name)
   {
   CdIo_t * cdio;
-  cdio_drive_read_cap_t  read_cap;
-  cdio_drive_write_cap_t write_cap;
-  cdio_drive_misc_cap_t  misc_cap;
+  cdio_drive_read_cap_t  read_cap = 0;
+  cdio_drive_write_cap_t write_cap = 0;
+  cdio_drive_misc_cap_t  misc_cap = 0;
 
   cdio = cdio_open (device, DRIVER_DEVICE);
   if(!cdio)
