@@ -335,11 +335,11 @@ static void init_sector_mode(bgav_demuxer_context_t * ctx)
   /* If we already have the duration, stop here. */
   if(ctx->tt->cur->duration != GAVL_TIME_UNDEFINED)
     {
-    priv->goto_sector(ctx, 0);
+    if(priv->goto_sector)
+      priv->goto_sector(ctx, 0);
     bgav_input_reopen_memory(priv->input_mem, NULL, 0);
-      return;
+    return;
     }
-
   
   if(priv->goto_sector)
     {
