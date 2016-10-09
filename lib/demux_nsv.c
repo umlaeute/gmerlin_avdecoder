@@ -494,7 +494,7 @@ static int open_nsv(bgav_demuxer_context_t * ctx)
                         p->fh.metadata.title);
     if(p->fh.metadata.url)
       gavl_metadata_set(&ctx->tt->cur->metadata,
-                        GAVL_META_URL,
+                        GAVL_META_RELURL,
                         p->fh.metadata.url);
     if(p->fh.metadata.creator)
       gavl_metadata_set(&ctx->tt->cur->metadata,

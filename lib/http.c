@@ -658,7 +658,7 @@ void bgav_http_set_metadata(bgav_http_t * h, gavl_metadata_t * m)
   set_metadata_string(h->header,
                       comment_vars, m, GAVL_META_COMMENT);
   set_metadata_string(h->header,
-                      url_vars, m, GAVL_META_URL);
+                      url_vars, m, GAVL_META_RELURL);
   
   if((var = bgav_http_header_get_var(h->header, "icy-br")))
     bitrate = atoi(var);
