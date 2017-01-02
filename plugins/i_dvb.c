@@ -79,9 +79,9 @@ static const bg_parameter_info_t parameters[] =
       .name =        "read_timeout",
       .long_name =   TRS("Read timeout (milliseconds)"),
       .type =        BG_PARAMETER_INT,
-      .val_default = { .val_i = 100 },
-      .val_min =     { .val_i = 0 },
-      .val_max =     { .val_i = 2000000 },
+      .val_default = GAVL_VALUE_INIT_INT(100),
+      .val_min =     GAVL_VALUE_INIT_INT(0),
+      .val_max =     GAVL_VALUE_INIT_INT(2000000),
     },
     { /* End of parameters */ }
   };

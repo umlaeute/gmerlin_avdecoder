@@ -70,7 +70,7 @@ static const bg_parameter_info_t parameters[] =
       .name =       "dvd_chapters_as_tracks",
       .long_name =  TRS("Handle chapters as tracks"),
       .type =       BG_PARAMETER_CHECKBUTTON,
-      .val_default = { .val_i = 1 },
+      .val_default = GAVL_VALUE_INIT_INT(1),
       .gettext_domain =    PACKAGE,
       .gettext_directory = LOCALE_DIR,
     },
