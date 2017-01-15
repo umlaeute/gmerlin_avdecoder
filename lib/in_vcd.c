@@ -199,19 +199,19 @@ static void toc_2_tt(bgav_input_context_t * ctx)
     stream->timescale = 90000;
     if(priv->tracks[i].mode == TRACK_SVCD)
       {
-      gavl_dictionary_set_string_nocpy(&track->metadata, GAVL_META_LABEL,
+      gavl_dictionary_set_string_nocopy(&track->metadata, GAVL_META_LABEL,
                               bgav_sprintf("SVCD Track %d", i));
       track->duration = GAVL_TIME_UNDEFINED;
       }
     else if(priv->tracks[i].mode == TRACK_CVD)
       {
-      gavl_dictionary_set_string_nocpy(&track->metadata, GAVL_META_LABEL,
+      gavl_dictionary_set_string_nocopy(&track->metadata, GAVL_META_LABEL,
                               bgav_sprintf("CVD Track %d", i));
       track->duration = GAVL_TIME_UNDEFINED;
       }
     else
       {
-      gavl_dictionary_set_string_nocpy(&track->metadata, GAVL_META_LABEL,
+      gavl_dictionary_set_string_nocopy(&track->metadata, GAVL_META_LABEL,
                               bgav_sprintf("VCD Track %d", i));
       track->duration = GAVL_TIME_UNDEFINED;
       }

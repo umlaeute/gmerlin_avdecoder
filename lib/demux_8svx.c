@@ -124,19 +124,19 @@ static int read_meta_data(bgav_demuxer_context_t * ctx, chunk_header_t * ret)
   switch(ret->fourcc)
     {
     case ID_NAME:
-      gavl_dictionary_set_string_nocpy(&ctx->tt->cur->metadata,
+      gavl_dictionary_set_string_nocopy(&ctx->tt->cur->metadata,
                               GAVL_META_TITLE, buffer);
       break;
     case ID_COPY:
-      gavl_dictionary_set_string_nocpy(&ctx->tt->cur->metadata,
+      gavl_dictionary_set_string_nocopy(&ctx->tt->cur->metadata,
                               GAVL_META_COPYRIGHT, buffer);
       break;
     case ID_AUTH:
-      gavl_dictionary_set_string_nocpy(&ctx->tt->cur->metadata,
+      gavl_dictionary_set_string_nocopy(&ctx->tt->cur->metadata,
                               GAVL_META_AUTHOR, buffer);
       break;
     case ID_ANNO:
-      gavl_dictionary_set_string_nocpy(&ctx->tt->cur->metadata,
+      gavl_dictionary_set_string_nocopy(&ctx->tt->cur->metadata,
                               GAVL_META_COMMENT, buffer);
       break;
     }

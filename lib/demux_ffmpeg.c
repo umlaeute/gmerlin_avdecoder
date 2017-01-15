@@ -789,7 +789,7 @@ static int open_ffmpeg(bgav_demuxer_context_t * ctx)
     gavl_dictionary_set_string_int(&ctx->tt->cur->metadata, GAVL_META_TRACKNUMBER, avfc->track);
 #endif
 
-  gavl_dictionary_set_string_nocpy(&ctx->tt->cur->metadata,
+  gavl_dictionary_set_string_nocopy(&ctx->tt->cur->metadata,
                           GAVL_META_FORMAT,
                           bgav_sprintf(TRD("%s (via ffmpeg)"),
                                        priv->avfc->iformat->long_name));

@@ -169,7 +169,7 @@ static bgav_track_table_t * parse_m3u(bgav_input_context_t * input)
       {
       if(!t)
         t = bgav_track_table_append_track(tt);
-      gavl_dictionary_set_string_nocpy(&t->metadata, GAVL_META_REFURL, 
+      gavl_dictionary_set_string_nocopy(&t->metadata, GAVL_META_REFURL, 
                               bgav_input_absolute_url(input, pos));
       t = NULL;
       }

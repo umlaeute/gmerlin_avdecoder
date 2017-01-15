@@ -703,8 +703,6 @@ struct bgav_track_s
   bgav_stream_t * text_streams;
   bgav_stream_t * overlay_streams;
   
-  gavl_chapter_list_t * chapter_list;
-  
   void * priv; /* For storing private data */  
 
   int flags;

@@ -536,30 +536,33 @@ static int init_subtitle(bgav_demuxer_context_t * ctx,
   return 1;
   }
 
-static gavl_chapter_list_t * create_chapter_list(bgav_mkv_chapters_t * chap)
+static void create_chapter_list(bgav_mkv_chapters_t * chap,
+                                gavl_dictionary_t * m)
   {
   int i;
+  const char * label;
+
+  gavl_dictionary_t * ret;
   /* We support only the first (and only?) EditionEntry */
-  gavl_chapter_list_t * ret = NULL;
-
+  
   if(!chap->num_editions || !chap->editions[0].num_atoms)
-    return NULL;
+    return;
 
-  ret = gavl_chapter_list_create(chap->editions[0].num_atoms);
-  ret->timescale = GAVL_TIME_SCALE;
+  ret = gavl_dictionary_add_chapter_list(m, GAVL_TIME_SCALE);
   
   for(i = 0; i < chap->editions[0].num_atoms; i++)
     {
     // No ns precision
-    ret->chapters[i].time = chap->editions[0].atoms[i].ChapterTimeStart / 1000; 
-
-    /* Take first language */
+    // Take first language
     if(chap->editions[0].atoms[i].num_displays)
-      ret->chapters[i].name =
-        gavl_strdup(chap->editions[0].atoms[i].displays[0].ChapString);
+      label = chap->editions[0].atoms[i].displays[0].ChapString;
+    else
+      label = NULL;
+    
+    gavl_chapter_list_insert(ret, i,
+                             chap->editions[0].atoms[i].ChapterTimeStart / 1000,
+                             label);
     }
-  
-  return ret;
   }
 
 #define SET_TAG_STRING(name, gavl_name) \
@@ -769,7 +772,7 @@ static int open_matroska(bgav_demuxer_context_t * ctx)
     }
 
   /* Look for chapters */
-  ctx->tt->cur->chapter_list = create_chapter_list(&p->chapters);
+  create_chapter_list(&p->chapters, &ctx->tt->cur->metadata);
 
   /* Metadata */
   init_metadata(p->tags, p->num_tags,

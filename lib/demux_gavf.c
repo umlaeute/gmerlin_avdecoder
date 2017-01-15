@@ -132,7 +132,6 @@ static void metadata_callback(void * data,const gavl_dictionary_t * m)
 
 static int open_gavf(bgav_demuxer_context_t * ctx)
   {
-  const gavl_chapter_list_t * cl;
   gavf_options_t * opt;
   uint32_t flags = 0;
   gavf_demuxer_t * priv = calloc(1, sizeof(*priv));
@@ -172,16 +171,14 @@ static int open_gavf(bgav_demuxer_context_t * ctx)
 
   ph = gavf_get_program_header(priv->dec);
   
-  if(gavl_dictionary_get_string_long(&ph->m, GAVL_META_APPROX_DURATION, &duration))
+  if(gavl_dictionary_get_long(&ph->m, GAVL_META_APPROX_DURATION, &duration))
     {
     ctx->tt->cur->duration = duration;
-
+    
     if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
       ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
     }
-  cl = gavf_get_chapter_list(priv->dec);
-  ctx->tt->cur->chapter_list = gavl_chapter_list_copy(cl);
-
+  
   gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "GAVF");
 

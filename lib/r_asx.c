@@ -93,7 +93,7 @@ static void get_url(bgav_yml_node_t * n, bgav_track_table_t * tt,
     if(!sc(n->name, "Title") && n->children)
       {
       if(title)
-        gavl_dictionary_set_string_nocpy(&ret->metadata,
+        gavl_dictionary_set_string_nocopy(&ret->metadata,
                                 GAVL_META_LABEL,
                                 bgav_sprintf("%s (%s)",
                                              title, n->children->str));
@@ -113,7 +113,7 @@ static void get_url(bgav_yml_node_t * n, bgav_track_table_t * tt,
 
   if(!gavl_dictionary_get_string(&ret->metadata, GAVL_META_LABEL))
     {
-    gavl_dictionary_set_string_nocpy(&ret->metadata,
+    gavl_dictionary_set_string_nocopy(&ret->metadata,
                             GAVL_META_LABEL,
                             bgav_sprintf("Stream %d (%s)",
                                          (*index)+1,

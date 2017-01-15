@@ -359,7 +359,6 @@ int bg_avdec_init(avdec_priv * avdec)
   {
   int i, j;
   const bgav_metadata_t * m;
-  const gavl_chapter_list_t * cl;
   gavl_time_t duration;
   
   avdec->num_tracks = bgav_num_tracks(avdec->dec);
@@ -373,9 +372,9 @@ int bg_avdec_init(avdec_priv * avdec)
     avdec->track_info[i].num_overlay_streams = bgav_num_overlay_streams(avdec->dec, i);
 
     if(bgav_can_seek(avdec->dec))
-      avdec->track_info[i].flags |= BG_TRACK_SEEKABLE;
+      gavl_dictionary_set_int(&avdec->track_info[i].metadata, GAVL_META_CAN_SEEK, 1);
     if(bgav_can_pause(avdec->dec))
-      avdec->track_info[i].flags |= BG_TRACK_PAUSABLE;
+      gavl_dictionary_set_int(&avdec->track_info[i].metadata, GAVL_META_CAN_PAUSE, 1);
     
     if(avdec->track_info[i].num_audio_streams)
       {
@@ -447,15 +446,6 @@ int bg_avdec_init(avdec_priv * avdec)
     
     gavl_dictionary_copy(&avdec->track_info[i].metadata, m);
 
-    /* Get chapters */
-
-    cl = bgav_get_chapter_list(avdec->dec, i);
-    if(cl && cl->num_chapters)
-      {
-      avdec->track_info[i].chapter_list =
-        gavl_chapter_list_copy(cl);
-      bg_chapter_list_set_default_names(avdec->track_info[i].chapter_list);
-      }
     }
   return 1;
   }

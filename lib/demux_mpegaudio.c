@@ -431,7 +431,7 @@ static bgav_track_table_t * albw_2_track(bgav_demuxer_context_t* ctx,
 
     end_pos = strrchr(albw->tracks[i].filename, '.');
     if(end_pos)
-      gavl_dictionary_set_string_nocpy(&ret->tracks[i].metadata, GAVL_META_LABEL,
+      gavl_dictionary_set_string_nocopy(&ret->tracks[i].metadata, GAVL_META_LABEL,
                               gavl_strndup(albw->tracks[i].filename, end_pos));
     
     gavl_dictionary_free(&track_metadata);

@@ -1574,7 +1574,7 @@ static int open_ogg(bgav_demuxer_context_t * ctx)
           name = bgav_sprintf("%s", title);
         else
           name = bgav_sprintf("Track %d", i+1);
-        gavl_dictionary_set_string_nocpy(&ctx->tt->tracks[i].metadata, GAVL_META_LABEL, name);
+        gavl_dictionary_set_string_nocopy(&ctx->tt->tracks[i].metadata, GAVL_META_LABEL, name);
         }
       }
     }
@@ -1699,7 +1699,7 @@ static void metadata_changed(bgav_demuxer_context_t * ctx)
       {
       name = get_name(&ctx->tt->cur->metadata);
       if(name)
-        gavl_dictionary_set_string_nocpy(&ctx->tt->cur->metadata, GAVL_META_LABEL, name);
+        gavl_dictionary_set_string_nocopy(&ctx->tt->cur->metadata, GAVL_META_LABEL, name);
       }
     ctx->opt->metadata_change_callback(ctx->opt->metadata_change_callback_data,
                                        &ctx->tt->cur->metadata);

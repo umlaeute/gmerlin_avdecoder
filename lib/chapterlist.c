@@ -25,9 +25,12 @@
 
 const gavl_chapter_list_t * bgav_get_chapter_list(bgav_t * bgav, int track)
   {
-  if(track >= bgav->tt->num_tracks || track < 0)
+  const gavl_chapter_list_t * ret;
+  
+  if((track >= bgav->tt->num_tracks) || (track < 0) ||
+     !(ret = gavl_dictionary_get_chapter_list(&bgav->tt->tracks[track].metadata)))
     return NULL;
-  return bgav->tt->tracks[track].chapter_list;
+  return ret;
   }
 
 int bgav_get_num_chapters(bgav_t * bgav, int track, int * timescale)
@@ -39,8 +42,8 @@ int bgav_get_num_chapters(bgav_t * bgav, int track, int * timescale)
     *timescale = 0;
     return 0;
     }
-  *timescale = list->timescale;
-  return list->num_chapters;
+  *timescale = gavl_chapter_list_get_timescale(list);
+  return gavl_chapter_list_get_num(list);
   }
 
 const char *
@@ -48,16 +51,18 @@ bgav_get_chapter_name(bgav_t * bgav, int track, int chapter)
   {
   const gavl_chapter_list_t * list;
   list = bgav_get_chapter_list(bgav, track);
-  if(!list || (chapter < 0) || (chapter >= list->num_chapters))
+  
+  if(!list)
     return NULL;
-  return list->chapters[chapter].name;
+  return gavl_chapter_list_get_label(list, chapter);
   }
 
 int64_t bgav_get_chapter_time(bgav_t * bgav, int track, int chapter)
   {
   const gavl_chapter_list_t * list;
   list = bgav_get_chapter_list(bgav, track);
-  if(!list || (chapter < 0) || (chapter >= list->num_chapters))
+  if(!list)
     return 0;
-  return list->chapters[chapter].time;
+  
+  return gavl_chapter_list_get_time(list, chapter);
   }

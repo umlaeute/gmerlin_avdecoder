@@ -292,6 +292,7 @@ static int setup_track(bgav_input_context_t * ctx,
   char language_2cc[3];
   dvd_t * dvd = ctx->priv;
   int cell_offset;
+  gavl_dictionary_t * cl;
   
   ttsrpt = dvd->vmg_ifo->tt_srpt;
 
@@ -314,10 +315,10 @@ static int setup_track(bgav_input_context_t * ctx,
   vts_ptt_srpt = dvd->vts_ifo->vts_ptt_srpt;
 
   if(ttsrpt->title[title].nr_of_angles > 1)
-    gavl_dictionary_set_string_nocpy(&new_track->metadata, GAVL_META_LABEL,
+    gavl_dictionary_set_string_nocopy(&new_track->metadata, GAVL_META_LABEL,
                             bgav_sprintf("Title %02d Angle %d", title+1, angle+1));
   else
-    gavl_dictionary_set_string_nocpy(&new_track->metadata, GAVL_META_LABEL,
+    gavl_dictionary_set_string_nocopy(&new_track->metadata, GAVL_META_LABEL,
                             bgav_sprintf("Title %02d", title+1));
     
   /* Set up chapters */
@@ -389,16 +390,13 @@ static int setup_track(bgav_input_context_t * ctx,
     track_priv->chapters[track_priv->num_chapters-1].end_cell;
   
   /* Get duration */
-  new_track->chapter_list =
-    gavl_chapter_list_create(track_priv->num_chapters);
-  new_track->chapter_list->timescale = GAVL_TIME_SCALE;
+  cl = gavl_dictionary_add_chapter_list(&new_track->metadata, GAVL_TIME_SCALE);
+  
   new_track->duration = 0;
+  
   for(i = 0; i < track_priv->num_chapters; i++)
     {
-    if(i)
-      new_track->chapter_list->chapters[i].time =
-        new_track->chapter_list->chapters[i-1].time +
-        track_priv->chapters[i-1].duration;
+    gavl_chapter_list_insert(cl, i, new_track->duration, NULL);
     new_track->duration += track_priv->chapters[i].duration;
     }
 
@@ -522,27 +520,27 @@ static int setup_track(bgav_input_context_t * ctx,
     switch(audio_attr->code_extension)
       {
       case 0:
-        gavl_dictionary_set_string_nocpy(&s->m, GAVL_META_LABEL,
+        gavl_dictionary_set_string_nocopy(&s->m, GAVL_META_LABEL,
                                 bgav_sprintf("Unspecified (%s, %dch)",
                                              audio_codec, audio_attr->channels+1));
         break;
       case 1:
-        gavl_dictionary_set_string_nocpy(&s->m, GAVL_META_LABEL,
+        gavl_dictionary_set_string_nocopy(&s->m, GAVL_META_LABEL,
                                 bgav_sprintf("Audio stream (%s, %dch)",
                                              audio_codec, audio_attr->channels+1));
         break;
       case 2:
-        gavl_dictionary_set_string_nocpy(&s->m, GAVL_META_LABEL,
+        gavl_dictionary_set_string_nocopy(&s->m, GAVL_META_LABEL,
                                 bgav_sprintf("Audio for visually impaired (%s, %dch)",
                                              audio_codec, audio_attr->channels+1));
         break;
       case 3:
-        gavl_dictionary_set_string_nocpy(&s->m, GAVL_META_LABEL,
+        gavl_dictionary_set_string_nocopy(&s->m, GAVL_META_LABEL,
                                 bgav_sprintf("Director's comments 1 (%s, %dch)",
                                              audio_codec, audio_attr->channels+1));
         break;
       case 4:
-        gavl_dictionary_set_string_nocpy(&s->m, GAVL_META_LABEL,
+        gavl_dictionary_set_string_nocopy(&s->m, GAVL_META_LABEL,
                                 bgav_sprintf("Director's comments 2 (%s, %dch)",
                                              audio_codec, audio_attr->channels+1));
         break;

@@ -410,7 +410,7 @@ static int read_metadata(bgav_demuxer_context_t * ctx)
     {
     if(bgav_input_read_data(ctx->input, (uint8_t*)str, len1) < len1)
       goto fail;
-    gavl_dictionary_set_string_nocpy(&ctx->tt->cur->metadata,
+    gavl_dictionary_set_string_nocopy(&ctx->tt->cur->metadata,
                             GAVL_META_TITLE, bgav_convert_string(cnv, str, len1,
                                                                  NULL));
     }
@@ -421,7 +421,7 @@ static int read_metadata(bgav_demuxer_context_t * ctx)
     {
     if(bgav_input_read_data(ctx->input, (uint8_t*)str, len2) < len2)
       goto fail;
-    gavl_dictionary_set_string_nocpy(&ctx->tt->cur->metadata,
+    gavl_dictionary_set_string_nocopy(&ctx->tt->cur->metadata,
                             GAVL_META_AUTHOR, bgav_convert_string(cnv, str, len2,
                                                                   NULL));
     }
@@ -432,7 +432,7 @@ static int read_metadata(bgav_demuxer_context_t * ctx)
     {
     if(bgav_input_read_data(ctx->input, (uint8_t*)str, len3) < len3)
       goto fail;
-    gavl_dictionary_set_string_nocpy(&ctx->tt->cur->metadata,
+    gavl_dictionary_set_string_nocopy(&ctx->tt->cur->metadata,
                             GAVL_META_COPYRIGHT, bgav_convert_string(cnv, str, len3,
                                                                      NULL));
     }
@@ -443,7 +443,7 @@ static int read_metadata(bgav_demuxer_context_t * ctx)
     {
     if(bgav_input_read_data(ctx->input, (uint8_t*)str, len4) < len4)
       goto fail;
-    gavl_dictionary_set_string_nocpy(&ctx->tt->cur->metadata,
+    gavl_dictionary_set_string_nocopy(&ctx->tt->cur->metadata,
                             GAVL_META_COMMENT, bgav_convert_string(cnv, str, len4,
                                                                    NULL));
     }

@@ -146,7 +146,7 @@ static int get_format(bgav_stream_t * s)
     version_string = "1";
     }
   
-  gavl_dictionary_set_string_nocpy(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string_nocopy(&s->m, GAVL_META_FORMAT,
                           bgav_sprintf("MPEG-%s layer %d",
                                        version_string, h.layer));
   

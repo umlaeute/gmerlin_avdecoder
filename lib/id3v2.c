@@ -762,7 +762,7 @@ void bgav_id3v2_2_metadata(bgav_id3v2_tag_t * t, gavl_dictionary_t*m)
   frame = bgav_id3v2_find_frame(t, comment_tags);
 
   if(frame)
-    gavl_dictionary_set_string_nocpy(m, GAVL_META_COMMENT, get_comment(t->opt, frame));
+    gavl_dictionary_set_string_nocopy(m, GAVL_META_COMMENT, get_comment(t->opt, frame));
   
   }
 

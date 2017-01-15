@@ -422,9 +422,6 @@ void bgav_track_dump(bgav_t * b, bgav_track_t * t)
   bgav_diprintf(2, "Metadata\n");
   gavl_dictionary_dump(&t->metadata, 4);
 
-  if(t->chapter_list)
-    gavl_chapter_list_dump(t->chapter_list);
-  
   for(i = 0; i < t->num_audio_streams; i++)
     {
     bgav_stream_dump(&t->audio_streams[i]);
@@ -453,8 +450,6 @@ void bgav_track_free(bgav_track_t * t)
   int i;
   
   gavl_dictionary_free(&t->metadata);
-  if(t->chapter_list)
-    gavl_chapter_list_destroy(t->chapter_list);
   
   if(t->audio_streams)
     {

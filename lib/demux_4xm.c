@@ -315,7 +315,7 @@ static int open_4xm(bgav_demuxer_context_t * ctx)
                       free(tmp_string);
                       return 0;
                       }
-                    gavl_dictionary_set_string_nocpy(&ctx->tt->cur->metadata,
+                    gavl_dictionary_set_string_nocopy(&ctx->tt->cur->metadata,
                                             GAVL_META_COMMENT, tmp_string);
                     }
                     break;

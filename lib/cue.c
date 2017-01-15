@@ -315,21 +315,21 @@ gavl_edl_t * bgav_cue_get_edl(bgav_cue_t * cue,
       pos += 6;
       pos = skip_space(pos);
       if(pos)
-        gavl_dictionary_set_string_nocpy(&m, GAVL_META_GENRE, get_string(pos));
+        gavl_dictionary_set_string_nocopy(&m, GAVL_META_GENRE, get_string(pos));
       }
     if(!strncasecmp(pos, "DATE ", 5))
       {
       pos += 5;
       pos = skip_space(pos);
       if(pos)
-        gavl_dictionary_set_string_nocpy(&m, GAVL_META_YEAR, get_string(pos));
+        gavl_dictionary_set_string_nocopy(&m, GAVL_META_YEAR, get_string(pos));
       }
     if(!strncasecmp(pos, "COMMENT ", 8))
       {
       pos += 8;
       pos = skip_space(pos);
       if(pos)
-        gavl_dictionary_set_string_nocpy(&m, GAVL_META_COMMENT, get_string(pos));
+        gavl_dictionary_set_string_nocopy(&m, GAVL_META_COMMENT, get_string(pos));
       }
     }
 

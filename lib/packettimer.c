@@ -136,7 +136,7 @@ static bgav_packet_t * remove_packet(bgav_packet_timer_t * pt)
  *  Duration from DTS
  */
 
-static int set_duration_from_dts(bgav_packet_timer_t * pt, int index)
+static int set_duration_from_dts(bgav_packet_timer_t * pt, uint32_t index)
   {
   if(index >= pt->num_packets)
     {

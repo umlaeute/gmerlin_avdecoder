@@ -1122,7 +1122,7 @@ static int open_mpegps(bgav_demuxer_context_t * ctx)
   else
     priv->have_pts = 1;
 
-  gavl_dictionary_set_string_nocpy(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string_nocopy(&ctx->tt->cur->metadata, 
                           GAVL_META_FORMAT,
                           bgav_sprintf("MPEG-%d",
                                        priv->pack_header.version));

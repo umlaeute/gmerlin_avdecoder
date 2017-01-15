@@ -993,7 +993,7 @@ static int init_pcm(bgav_stream_t * s)
       else
         priv->decode_func = decode_s_24_be;
 
-      gavl_dictionary_set_string_nocpy(&s->m, GAVL_META_FORMAT,
+      gavl_dictionary_set_string_nocopy(&s->m, GAVL_META_FORMAT,
                               bgav_sprintf("PCM (%s endian)",
                                            ((s->data.audio.endianess == BGAV_ENDIANESS_LITTLE) ? "little" : "big" )));
       
@@ -1017,7 +1017,7 @@ static int init_pcm(bgav_stream_t * s)
         priv->decode_func = decode_s_32;
 #endif
         }
-      gavl_dictionary_set_string_nocpy(&s->m, GAVL_META_FORMAT,
+      gavl_dictionary_set_string_nocopy(&s->m, GAVL_META_FORMAT,
                               bgav_sprintf("PCM (%s endian)",
                                            ((s->data.audio.endianess == BGAV_ENDIANESS_LITTLE) ? "little" : "big" )));
       
@@ -1054,7 +1054,7 @@ static int init_pcm(bgav_stream_t * s)
         priv->decode_func = decode_float_32_be;
       s->data.audio.format.sample_format = GAVL_SAMPLE_FLOAT;
 
-      gavl_dictionary_set_string_nocpy(&s->m, GAVL_META_FORMAT,
+      gavl_dictionary_set_string_nocopy(&s->m, GAVL_META_FORMAT,
                               bgav_sprintf("PCM float (%s endian)",
                                            (s->data.audio.endianess == BGAV_ENDIANESS_LITTLE) ? "little" : "big" ));
       
@@ -1125,7 +1125,7 @@ static int init_pcm(bgav_stream_t * s)
               priv->decode_func = decode_float_32_be;
             s->data.audio.format.sample_format = GAVL_SAMPLE_FLOAT;
 
-            gavl_dictionary_set_string_nocpy(&s->m, GAVL_META_FORMAT,
+            gavl_dictionary_set_string_nocopy(&s->m, GAVL_META_FORMAT,
                                     bgav_sprintf("PCM float (%s endian)",
                                                  (!(formatSpecificFlags &
                                                     kAudioFormatFlagIsBigEndian) ?
@@ -1140,7 +1140,7 @@ static int init_pcm(bgav_stream_t * s)
               priv->decode_func = decode_float_64_be;
             s->data.audio.format.sample_format = GAVL_SAMPLE_DOUBLE;
 
-            gavl_dictionary_set_string_nocpy(&s->m, GAVL_META_FORMAT,
+            gavl_dictionary_set_string_nocopy(&s->m, GAVL_META_FORMAT,
                                     bgav_sprintf("PCM float (%s endian)",
                                                  (!(formatSpecificFlags &
                                                     kAudioFormatFlagIsBigEndian) ?
@@ -1167,7 +1167,7 @@ static int init_pcm(bgav_stream_t * s)
             priv->block_align = s->data.audio.format.num_channels * 2;
             s->data.audio.format.sample_format = GAVL_SAMPLE_S16;
 
-            gavl_dictionary_set_string_nocpy(&s->m, GAVL_META_FORMAT,
+            gavl_dictionary_set_string_nocopy(&s->m, GAVL_META_FORMAT,
                                     bgav_sprintf("PCM (%s endian)",
                                                  (!(formatSpecificFlags &
                                                     kAudioFormatFlagIsBigEndian) ?
@@ -1186,7 +1186,7 @@ static int init_pcm(bgav_stream_t * s)
             priv->block_align = s->data.audio.format.num_channels * 3;
             s->data.audio.format.sample_format = GAVL_SAMPLE_S32;
 
-            gavl_dictionary_set_string_nocpy(&s->m, GAVL_META_FORMAT,
+            gavl_dictionary_set_string_nocopy(&s->m, GAVL_META_FORMAT,
                                     bgav_sprintf("PCM (%s endian)",
                                                  (!(formatSpecificFlags &
                                                     kAudioFormatFlagIsBigEndian) ?
@@ -1205,7 +1205,7 @@ static int init_pcm(bgav_stream_t * s)
             priv->block_align = s->data.audio.format.num_channels * 4;
             s->data.audio.format.sample_format = GAVL_SAMPLE_S32;
 
-            gavl_dictionary_set_string_nocpy(&s->m, GAVL_META_FORMAT,
+            gavl_dictionary_set_string_nocopy(&s->m, GAVL_META_FORMAT,
                                     bgav_sprintf("PCM (%s endian)",
                                                  (!(formatSpecificFlags &
                                                     kAudioFormatFlagIsBigEndian) ?

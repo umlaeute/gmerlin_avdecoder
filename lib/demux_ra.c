@@ -163,7 +163,7 @@ static int open_ra(bgav_demuxer_context_t * ctx)
   len = audio_header[offset];
   if(len && ((offset+len+2) < hdr_size))
     {
-    gavl_dictionary_set_string_nocpy(&track->metadata,
+    gavl_dictionary_set_string_nocopy(&track->metadata,
                             GAVL_META_TITLE,
                             bgav_convert_string(charset_cnv,
                                                 (char*)(audio_header +offset+1), len,
@@ -177,7 +177,7 @@ static int open_ra(bgav_demuxer_context_t * ctx)
   len = audio_header[offset];
   if(len && ((offset+len+1) < hdr_size))
     {
-    gavl_dictionary_set_string_nocpy(&track->metadata,
+    gavl_dictionary_set_string_nocopy(&track->metadata,
                             GAVL_META_AUTHOR,
                             bgav_convert_string(charset_cnv,
                                                 (char*)(audio_header +offset+1), len,
@@ -191,7 +191,7 @@ static int open_ra(bgav_demuxer_context_t * ctx)
   len = audio_header[offset];
   if(len && ((offset+len+1) <= hdr_size))
     {
-    gavl_dictionary_set_string_nocpy(&track->metadata,
+    gavl_dictionary_set_string_nocopy(&track->metadata,
                             GAVL_META_COPYRIGHT,
                             bgav_convert_string(charset_cnv,
                                                 (char*)(audio_header +offset+1), len,

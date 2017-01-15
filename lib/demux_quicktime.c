@@ -131,11 +131,11 @@ static void bgav_qt_moof_to_superindex(bgav_demuxer_context_t * ctx,
   int i, j, k;
 
   int64_t offset;
-  uint32_t size; //
-  int stream_id; //
+  uint32_t size = 0; //
+  int stream_id = -1; //
   int64_t timestamp;
   int keyframe;
-  int duration; //
+  int duration = 0; //
   bgav_stream_t * s;
   qt_priv_t * priv = ctx->priv;
   bgav_track_t * t = ctx->tt->cur;
@@ -776,7 +776,7 @@ static void build_index(bgav_demuxer_context_t * ctx)
     if(moov->udta.have_ilst)                                            \
       gavl_dictionary_set_string(&ctx->tt->cur->metadata, gavl_name, moov->udta.src); \
     else                                                                \
-      gavl_dictionary_set_string_nocpy(&ctx->tt->cur->metadata, gavl_name, \
+      gavl_dictionary_set_string_nocopy(&ctx->tt->cur->metadata, gavl_name, \
                               bgav_convert_string(cnv, moov->udta.src, -1, NULL)); \
     }
 
@@ -1092,6 +1092,9 @@ static void setup_chapter_track(bgav_demuxer_context_t * ctx, qt_trak_t * trak)
   uint32_t len;
   bgav_charset_converter_t * cnv;
   const char * charset;
+  int64_t time;
+  char * label = NULL;
+  gavl_dictionary_t * cl;
   
   if(!(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE))
     {
@@ -1099,7 +1102,7 @@ static void setup_chapter_track(bgav_demuxer_context_t * ctx, qt_trak_t * trak)
              "Chapters detected but stream is not seekable");
     return;
     }
-  if(ctx->tt->cur->chapter_list)
+  if(gavl_dictionary_get_chapter_list(&ctx->tt->cur->metadata))
     {
     bgav_log(ctx->opt, BGAV_LOG_WARNING, LOG_DOMAIN,
              "More than one chapter track, choosing first");
@@ -1133,9 +1136,8 @@ static void setup_chapter_track(bgav_demuxer_context_t * ctx, qt_trak_t * trak)
     }
   
   total_chapters = bgav_qt_trak_samples(trak);
-  ctx->tt->cur->chapter_list =
-    gavl_chapter_list_create(total_chapters);
-  ctx->tt->cur->chapter_list->timescale = trak->mdia.mdhd.time_scale;
+
+  cl = gavl_dictionary_add_chapter_list(&ctx->tt->cur->metadata, trak->mdia.mdhd.time_scale);
   
   chunk_index = 0;
   stts_index = 0;
@@ -1147,8 +1149,8 @@ static void setup_chapter_track(bgav_demuxer_context_t * ctx, qt_trak_t * trak)
   
   for(i = 0; i < total_chapters; i++)
     {
-    ctx->tt->cur->chapter_list->chapters[i].time = tics;
-
+    time = tics;
+    
     /* Increase tics */
     tics += stts->entries[stts_index].duration;
     stts_count++;
@@ -1175,11 +1177,15 @@ static void setup_chapter_track(bgav_demuxer_context_t * ctx, qt_trak_t * trak)
 
     len = BGAV_PTR_2_16BE(buffer);
     if(len)
-      {
-      ctx->tt->cur->chapter_list->chapters[i].name =
-        bgav_convert_string(cnv, (char*)(buffer+2), len, NULL);
-      }
+      label = bgav_convert_string(cnv, (char*)(buffer+2), len, NULL);
+    else
+      label = NULL;
 
+    gavl_chapter_list_insert(cl, i, time, label);
+
+    if(label)
+      free(label);
+    
     /* Increase file position */
     if(i < total_chapters - 1)
       {
@@ -1739,7 +1745,7 @@ static int handle_rmra(bgav_demuxer_context_t * ctx)
     if(priv->moov.rmra.rmda[i].rdrf.fourcc == BGAV_MK_FOURCC('u','r','l',' '))
       {
       t = bgav_track_table_append_track(ctx->tt);
-      gavl_dictionary_set_string_nocpy(&t->metadata, GAVL_META_REFURL,
+      gavl_dictionary_set_string_nocopy(&t->metadata, GAVL_META_REFURL,
                               bgav_input_absolute_url(ctx->input,
                                                       (char*)priv->moov.rmra.rmda[i].rdrf.data_ref));
       

@@ -191,7 +191,7 @@ static int read_shoutcast_metadata(bgav_input_context_t* ctx, int block)
 
       if(pos && end_pos)
         {
-        gavl_dictionary_set_string_nocpy(&ctx->tt->cur->metadata,
+        gavl_dictionary_set_string_nocopy(&ctx->tt->cur->metadata,
                                 GAVL_META_LABEL,
                                 bgav_convert_string(priv->charset_cnv ,
                                                     pos, end_pos - pos,

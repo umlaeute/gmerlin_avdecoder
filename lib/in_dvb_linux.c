@@ -1099,7 +1099,7 @@ static void check_eit(bgav_input_context_t* ctx)
             
             if(ctx->opt->metadata_change_callback)
               {
-              gavl_dictionary_set_string_nocpy(m, GAVL_META_TITLE, 
+              gavl_dictionary_set_string_nocopy(m, GAVL_META_TITLE, 
                                       decode_eit_string(ctx->opt, pos, tmp));
               }
             pos += tmp;
@@ -1108,7 +1108,7 @@ static void check_eit(bgav_input_context_t* ctx)
             
             if(ctx->opt->metadata_change_callback)
               {
-              gavl_dictionary_set_string_nocpy(m, GAVL_META_COMMENT, 
+              gavl_dictionary_set_string_nocopy(m, GAVL_META_COMMENT, 
                                       decode_eit_string(ctx->opt,
                                                         pos, tmp));
               }

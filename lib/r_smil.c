@@ -110,10 +110,10 @@ static void get_url(bgav_yml_node_t * n, bgav_track_t * ret,
   if(!strstr(location, "://") && url_base)
     {
     if(url_base[strlen(url_base)-1] == '/')
-      gavl_dictionary_set_string_nocpy(&ret->metadata, GAVL_META_REFURL,
+      gavl_dictionary_set_string_nocopy(&ret->metadata, GAVL_META_REFURL,
                               bgav_sprintf("%s%s", url_base, location));
     else
-      gavl_dictionary_set_string_nocpy(&ret->metadata, GAVL_META_REFURL,
+      gavl_dictionary_set_string_nocopy(&ret->metadata, GAVL_META_REFURL,
                               bgav_sprintf("%s/%s", url_base, location));
     }
   else
@@ -122,10 +122,10 @@ static void get_url(bgav_yml_node_t * n, bgav_track_t * ret,
   /* Set name */
 
   if(title)
-    gavl_dictionary_set_string_nocpy(&ret->metadata, GAVL_META_LABEL,
+    gavl_dictionary_set_string_nocopy(&ret->metadata, GAVL_META_LABEL,
                             bgav_sprintf("%s Stream %d", title, (*index)+1));
   else
-    gavl_dictionary_set_string_nocpy(&ret->metadata, GAVL_META_LABEL,
+    gavl_dictionary_set_string_nocopy(&ret->metadata, GAVL_META_LABEL,
                             bgav_sprintf("%s Stream %d", location, (*index)+1));
 
 
