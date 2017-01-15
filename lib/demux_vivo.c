@@ -487,16 +487,16 @@ static int open_vivo(bgav_demuxer_context_t * ctx)
     video_stream->data.video.format.image_height * 3;
   /* Set up metadata */
 
-  gavl_metadata_set(&ctx->tt->cur->metadata,
+  gavl_dictionary_set_string(&ctx->tt->cur->metadata,
                     GAVL_META_TITLE, priv->header.title);
-  gavl_metadata_set(&ctx->tt->cur->metadata,
+  gavl_dictionary_set_string(&ctx->tt->cur->metadata,
                     GAVL_META_AUTHOR, priv->header.author);
-  gavl_metadata_set(&ctx->tt->cur->metadata,
+  gavl_dictionary_set_string(&ctx->tt->cur->metadata,
                     GAVL_META_COPYRIGHT, priv->header.copyright);
-  gavl_metadata_set(&ctx->tt->cur->metadata,
+  gavl_dictionary_set_string(&ctx->tt->cur->metadata,
                     GAVL_META_SOFTWARE, priv->header.producer);
 
-  gavl_metadata_set(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "Vivo");
 
   ctx->tt->cur->duration = (GAVL_TIME_SCALE * (int64_t)(priv->header.duration)) / 1000;

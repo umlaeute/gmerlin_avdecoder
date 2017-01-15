@@ -33,5 +33,5 @@ void bg_avdec_codec_destroy(void *);
 void bg_avdec_codec_reset(void*);
 int64_t bg_avdec_codec_skip(void*, int64_t t);
 
-void bg_avdec_codec_set_parameter(void *, const char * name, const bg_parameter_value_t * val);
+void bg_avdec_codec_set_parameter(void *, const char * name, const gavl_value_t * val);
 

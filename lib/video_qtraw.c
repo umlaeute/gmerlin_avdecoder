@@ -247,9 +247,9 @@ static int init_qtraw(bgav_stream_t * s)
         }
       s->data.video.format.pixelformat = GAVL_RGB_24;
 
-      gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+      gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                         "Quickime raw palette");
-      gavl_metadata_set_int(&s->m, GAVL_META_VIDEO_BPP, 1);
+      gavl_dictionary_set_string_int(&s->m, GAVL_META_VIDEO_BPP, 1);
       
       break;
     case 2:
@@ -265,9 +265,9 @@ static int init_qtraw(bgav_stream_t * s)
         }
       s->data.video.format.pixelformat = GAVL_RGB_24;
 
-      gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+      gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                         "Quickime raw palette");
-      gavl_metadata_set_int(&s->m, GAVL_META_VIDEO_BPP, 2);
+      gavl_dictionary_set_string_int(&s->m, GAVL_META_VIDEO_BPP, 2);
 
       break;
     case 4:
@@ -283,9 +283,9 @@ static int init_qtraw(bgav_stream_t * s)
         }
       s->data.video.format.pixelformat = GAVL_RGB_24;
 
-      gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+      gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                         "Quickime raw palette");
-      gavl_metadata_set_int(&s->m, GAVL_META_VIDEO_BPP, 4);
+      gavl_dictionary_set_string_int(&s->m, GAVL_META_VIDEO_BPP, 4);
       break;
     case 8:
       /* 8 bpp palette */
@@ -300,9 +300,9 @@ static int init_qtraw(bgav_stream_t * s)
         }
       s->data.video.format.pixelformat = GAVL_RGB_24;
 
-      gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+      gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                         "Quickime raw palette");
-      gavl_metadata_set_int(&s->m, GAVL_META_VIDEO_BPP, 8);
+      gavl_dictionary_set_string_int(&s->m, GAVL_META_VIDEO_BPP, 8);
       break;
     case 16:
       /* RGB565 */
@@ -310,9 +310,9 @@ static int init_qtraw(bgav_stream_t * s)
       priv->scanline_func = scanline_raw_16;
       s->data.video.format.pixelformat = GAVL_RGB_15;
 
-      gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+      gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                         "Quickime raw RGB");
-      gavl_metadata_set_int(&s->m, GAVL_META_VIDEO_BPP, 16);
+      gavl_dictionary_set_string_int(&s->m, GAVL_META_VIDEO_BPP, 16);
       break;
     case 24:
       /* 24 RGB */
@@ -320,9 +320,9 @@ static int init_qtraw(bgav_stream_t * s)
       priv->scanline_func = scanline_raw_24;
       s->data.video.format.pixelformat = GAVL_RGB_24;
       
-      gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+      gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                         "Quickime raw RGB");
-      gavl_metadata_set_int(&s->m, GAVL_META_VIDEO_BPP, 24);
+      gavl_dictionary_set_string_int(&s->m, GAVL_META_VIDEO_BPP, 24);
       break;
     case 32:
       /* 32 ARGB */
@@ -330,9 +330,9 @@ static int init_qtraw(bgav_stream_t * s)
       priv->scanline_func = scanline_raw_32;
       s->data.video.format.pixelformat = GAVL_RGBA_32;
 
-      gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+      gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                         "Quickime raw RGBA");
-      gavl_metadata_set_int(&s->m, GAVL_META_VIDEO_BPP, 32);
+      gavl_dictionary_set_string_int(&s->m, GAVL_META_VIDEO_BPP, 32);
       break;
     case 34:
       /* 2 bit gray */
@@ -340,9 +340,9 @@ static int init_qtraw(bgav_stream_t * s)
       priv->scanline_func = scanline_raw_2_gray;
       s->data.video.format.pixelformat = GAVL_RGB_24;
 
-      gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+      gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                         "Quickime raw gray");
-      gavl_metadata_set_int(&s->m, GAVL_META_VIDEO_BPP, 2);
+      gavl_dictionary_set_string_int(&s->m, GAVL_META_VIDEO_BPP, 2);
       break;
     case 36:
       /* 4 bit gray */
@@ -350,9 +350,9 @@ static int init_qtraw(bgav_stream_t * s)
       priv->scanline_func = scanline_raw_4_gray;
       s->data.video.format.pixelformat = GAVL_RGB_24;
 
-      gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+      gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                         "Quickime raw gray");
-      gavl_metadata_set_int(&s->m, GAVL_META_VIDEO_BPP, 4);
+      gavl_dictionary_set_string_int(&s->m, GAVL_META_VIDEO_BPP, 4);
 
       break;
     case 40:
@@ -360,9 +360,9 @@ static int init_qtraw(bgav_stream_t * s)
       priv->bytes_per_line = width;
       priv->scanline_func = scanline_raw_8_gray;
       s->data.video.format.pixelformat = GAVL_RGB_24;
-      gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+      gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                         "Quickime raw gray");
-      gavl_metadata_set_int(&s->m, GAVL_META_VIDEO_BPP, 8);
+      gavl_dictionary_set_string_int(&s->m, GAVL_META_VIDEO_BPP, 8);
       break;
     }
   if(priv->bytes_per_line & 1)

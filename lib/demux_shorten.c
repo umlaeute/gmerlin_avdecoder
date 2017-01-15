@@ -41,7 +41,7 @@ static int open_shorten(bgav_demuxer_context_t * ctx)
   s->fourcc = BGAV_MK_FOURCC('.','s','h','n');
   s->stream_id = 0;
 
-  gavl_metadata_set(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "Shorten");
   return 1;
   }

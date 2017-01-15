@@ -236,7 +236,7 @@ static int open_voc(bgav_demuxer_context_t * ctx)
         break;
       }
     }
-  gavl_metadata_set(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "VOC");
 
   return 1;

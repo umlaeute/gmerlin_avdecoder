@@ -59,13 +59,13 @@ static bgav_track_table_t * parse_rtsptext(bgav_input_context_t * input)
   
   if(*pos != '\0')
     {
-    gavl_metadata_set(&ret->tracks[0].metadata, GAVL_META_REFURL, pos);
+    gavl_dictionary_set_string(&ret->tracks[0].metadata, GAVL_META_REFURL, pos);
     }
   else
     {
     if(!bgav_input_read_line(input, &buffer, &buffer_alloc, 0, NULL))
       return 0;
-    gavl_metadata_set(&ret->tracks[0].metadata, GAVL_META_REFURL, buffer);
+    gavl_dictionary_set_string(&ret->tracks[0].metadata, GAVL_META_REFURL, buffer);
     }
   
   if(buffer)

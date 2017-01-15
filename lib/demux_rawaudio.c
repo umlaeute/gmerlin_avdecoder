@@ -35,7 +35,7 @@ static int probe_rawaudio(bgav_input_context_t * input)
   {
   const char * var;
   
-  if(!(var = gavl_metadata_get(&input->metadata, GAVL_META_MIMETYPE)))
+  if(!(var = gavl_dictionary_get_string(&input->metadata, GAVL_META_MIMETYPE)))
     return 0;
 
   if((!strncasecmp(var, "audio/L16", 9) ||
@@ -51,7 +51,7 @@ static int open_rawaudio(bgav_demuxer_context_t * ctx)
   const char * mimetype;
   const char * var;
   
-  if(!(mimetype = gavl_metadata_get(&ctx->input->metadata, GAVL_META_MIMETYPE)))
+  if(!(mimetype = gavl_dictionary_get_string(&ctx->input->metadata, GAVL_META_MIMETYPE)))
     return 0;
   
   /* Add stream */
@@ -126,7 +126,7 @@ static int open_rawaudio(bgav_demuxer_context_t * ctx)
       break;
     }
 
-  gavl_metadata_set(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "LPCM");
   
   

@@ -77,4 +77,4 @@
 
 void
 bg_avdec_option_set_parameter(bgav_options_t * opt, const char * name,
-                              const bg_parameter_value_t * val);
+                              const gavl_value_t * val);

@@ -220,7 +220,7 @@ const bgav_demuxer_t * bgav_demuxer_probe(bgav_input_context_t * input)
       return &bgav_demuxer_ffmpeg;
     }
 #endif
-  mimetype = gavl_metadata_get(&input->metadata, GAVL_META_MIMETYPE);
+  mimetype = gavl_dictionary_get_string(&input->metadata, GAVL_META_MIMETYPE);
   //  uint8_t header[32];
   if(mimetype)
     {

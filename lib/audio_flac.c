@@ -280,9 +280,9 @@ static int init_flac(bgav_stream_t * s)
   frame_format.samples_per_frame = MAX_FRAME_SAMPLES;
   priv->frame = gavl_audio_frame_create(&frame_format);
 
-  gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                     "FLAC");
-  gavl_metadata_set_int(&s->m, GAVL_META_BITRATE,
+  gavl_dictionary_set_string_int(&s->m, GAVL_META_BITRATE,
                         GAVL_BITRATE_LOSSLESS);
   return 1;
   }

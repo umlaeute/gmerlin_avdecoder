@@ -36,7 +36,7 @@ static int probe_m3u(bgav_input_context_t * input)
   int result = 0;
   
   /* Most likely, we get this via http, so we can check the mimetype */
-  if((mimetype = gavl_metadata_get(&input->metadata, GAVL_META_MIMETYPE)))
+  if((mimetype = gavl_dictionary_get_string(&input->metadata, GAVL_META_MIMETYPE)))
     {
     if(strcmp(mimetype, "audio/x-pn-realaudio-plugin") &&
        strcmp(mimetype, "video/x-pn-realvideo-plugin") &&
@@ -132,7 +132,7 @@ static bgav_track_table_t * parse_m3u(bgav_input_context_t * input)
         while(attrs[idx])
           {
           if(!strncasecmp(attrs[idx], "BANDWIDTH=", 10))
-            gavl_metadata_set(&t->metadata, GAVL_META_BITRATE, attrs[idx] + 10);
+            gavl_dictionary_set_string(&t->metadata, GAVL_META_BITRATE, attrs[idx] + 10);
           idx++;
           }
         
@@ -154,14 +154,14 @@ static bgav_track_table_t * parse_m3u(bgav_input_context_t * input)
 
           duration = gavl_seconds_to_time(strtod(pos, NULL));
           if(duration > 0)
-            gavl_metadata_set_long(&t->metadata, GAVL_META_APPROX_DURATION, duration);
+            gavl_dictionary_set_string_long(&t->metadata, GAVL_META_APPROX_DURATION, duration);
           comma++;
 
           while(isspace(*comma) && (*comma != '\0'))
             comma++;
 
           if(*comma != '\0')
-            gavl_metadata_set(&t->metadata, GAVL_META_LABEL, comma);
+            gavl_dictionary_set_string(&t->metadata, GAVL_META_LABEL, comma);
           }
         }
       }
@@ -169,7 +169,7 @@ static bgav_track_table_t * parse_m3u(bgav_input_context_t * input)
       {
       if(!t)
         t = bgav_track_table_append_track(tt);
-      gavl_metadata_set_nocpy(&t->metadata, GAVL_META_REFURL, 
+      gavl_dictionary_set_string_nocpy(&t->metadata, GAVL_META_REFURL, 
                               bgav_input_absolute_url(input, pos));
       t = NULL;
       }

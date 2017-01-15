@@ -121,20 +121,20 @@ static int open_image(bgav_demuxer_context_t * ctx)
   if(is_png(probe_data))
     {
     s->fourcc = BGAV_MK_FOURCC('p', 'n', 'g', ' ');
-    gavl_metadata_set(&ctx->tt->cur->metadata, GAVL_META_FORMAT, "PNG image");
-    gavl_metadata_set(&ctx->tt->cur->metadata, GAVL_META_MIMETYPE, "image/png");
+    gavl_dictionary_set_string(&ctx->tt->cur->metadata, GAVL_META_FORMAT, "PNG image");
+    gavl_dictionary_set_string(&ctx->tt->cur->metadata, GAVL_META_MIMETYPE, "image/png");
     }
   else if(is_tiff(probe_data))
     {
     s->fourcc = BGAV_MK_FOURCC('t', 'i', 'f', 'f');
-    gavl_metadata_set(&ctx->tt->cur->metadata, GAVL_META_FORMAT, "TIFF image");
-    gavl_metadata_set(&ctx->tt->cur->metadata, GAVL_META_MIMETYPE, "image/tiff");
+    gavl_dictionary_set_string(&ctx->tt->cur->metadata, GAVL_META_FORMAT, "TIFF image");
+    gavl_dictionary_set_string(&ctx->tt->cur->metadata, GAVL_META_MIMETYPE, "image/tiff");
     }
   else if(is_jpeg(probe_data))
     {
     s->fourcc = BGAV_MK_FOURCC('j', 'p', 'e', 'g');    
-    gavl_metadata_set(&ctx->tt->cur->metadata, GAVL_META_FORMAT, "JPEG image");
-    gavl_metadata_set(&ctx->tt->cur->metadata, GAVL_META_MIMETYPE, "image/jpeg");
+    gavl_dictionary_set_string(&ctx->tt->cur->metadata, GAVL_META_FORMAT, "JPEG image");
+    gavl_dictionary_set_string(&ctx->tt->cur->metadata, GAVL_META_MIMETYPE, "image/jpeg");
     }
 
   s->data.video.format.timescale = 1000; // Actually arbitrary since we only have pts = 0

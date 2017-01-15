@@ -45,7 +45,7 @@ connect_decode_audio(void * priv,
                      gavl_packet_source_t * src,
                      const gavl_compression_info_t * ci,
                      const gavl_audio_format_t * fmt,
-                     gavl_metadata_t * m)
+                     gavl_dictionary_t * m)
   {
   bg_avdec_codec_t * c = priv;
   return bgav_stream_decoder_connect_audio(c->dec, src, ci,

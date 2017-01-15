@@ -172,7 +172,7 @@ static int open_wve(bgav_demuxer_context_t * ctx)
   if(header_size > ctx->input->position)
     bgav_input_skip(ctx->input, header_size - ctx->input->position);
 
-  gavl_metadata_set(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "Electronicarts WVE");
   
   return 1;

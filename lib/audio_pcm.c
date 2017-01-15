@@ -823,13 +823,13 @@ static int init_pcm(bgav_stream_t * s)
     case BGAV_MK_FOURCC('a', 'i', 'f', 'f'):
       if(s->data.audio.bits_per_sample <= 8)
         {
-        gavl_metadata_set(&s->m, GAVL_META_FORMAT, "PCM");
+        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "PCM");
         s->data.audio.format.sample_format = GAVL_SAMPLE_S8;
         priv->decode_func = decode_8;
         }
       else if(s->data.audio.bits_per_sample <= 16)
         {
-        gavl_metadata_set(&s->m, GAVL_META_FORMAT, "PCM (big endian)");
+        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "PCM (big endian)");
         s->data.audio.format.sample_format = GAVL_SAMPLE_S16;
 #ifndef WORDS_BIGENDIAN
         priv->decode_func = decode_s_16_swap;
@@ -839,13 +839,13 @@ static int init_pcm(bgav_stream_t * s)
         }
       else if(s->data.audio.bits_per_sample <= 24)
         {
-        gavl_metadata_set(&s->m, GAVL_META_FORMAT, "PCM (big endian)");
+        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "PCM (big endian)");
         s->data.audio.format.sample_format = GAVL_SAMPLE_S32;
         priv->decode_func = decode_s_24_be;
         }
       else if(s->data.audio.bits_per_sample <= 32)
         {
-        gavl_metadata_set(&s->m, GAVL_META_FORMAT, "PCM (big endian)");
+        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "PCM (big endian)");
         s->data.audio.format.sample_format = GAVL_SAMPLE_S32;
 #ifndef WORDS_BIGENDIAN
         priv->decode_func = decode_s_32_swap;
@@ -866,13 +866,13 @@ static int init_pcm(bgav_stream_t * s)
     case BGAV_MK_FOURCC('P','C','M',' '):
       if(s->data.audio.bits_per_sample <= 8)
         {
-        gavl_metadata_set(&s->m, GAVL_META_FORMAT, "PCM");
+        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "PCM");
         s->data.audio.format.sample_format = GAVL_SAMPLE_U8;
         priv->decode_func = decode_8;
         }
       else if(s->data.audio.bits_per_sample <= 16)
         {
-        gavl_metadata_set(&s->m, GAVL_META_FORMAT, "PCM (little endian)");
+        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "PCM (little endian)");
 
         if(s->fourcc == BGAV_MK_FOURCC('P','C','M',' '))
           s->data.audio.format.sample_format = GAVL_SAMPLE_U16;
@@ -886,13 +886,13 @@ static int init_pcm(bgav_stream_t * s)
         }
       else if(s->data.audio.bits_per_sample <= 24)
         {
-        gavl_metadata_set(&s->m, GAVL_META_FORMAT, "PCM (little endian)");
+        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "PCM (little endian)");
         s->data.audio.format.sample_format = GAVL_SAMPLE_S32;
         priv->decode_func = decode_s_24_le;
         }
       else if(s->data.audio.bits_per_sample <= 32)
         {
-        gavl_metadata_set(&s->m, GAVL_META_FORMAT, "PCM (little endian)");
+        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "PCM (little endian)");
         s->data.audio.format.sample_format = GAVL_SAMPLE_S32;
 #ifndef WORDS_BIGENDIAN
         priv->decode_func = decode_s_32;
@@ -907,7 +907,7 @@ static int init_pcm(bgav_stream_t * s)
       switch(s->data.audio.bits_per_sample)
         {
         case 8:
-          gavl_metadata_set(&s->m, GAVL_META_FORMAT, "PCM");
+          gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "PCM");
           if(s->fourcc == BGAV_MK_FOURCC('s', 'o', 'w', 't'))
             s->data.audio.format.sample_format = GAVL_SAMPLE_S8;
           else
@@ -915,7 +915,7 @@ static int init_pcm(bgav_stream_t * s)
           priv->decode_func = decode_8;
           break;
         case 16:
-          gavl_metadata_set(&s->m, GAVL_META_FORMAT, "PCM (little endian)");
+          gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "PCM (little endian)");
           s->data.audio.format.sample_format = GAVL_SAMPLE_S16;
 #ifndef WORDS_BIGENDIAN
           priv->decode_func = decode_s_16;
@@ -924,12 +924,12 @@ static int init_pcm(bgav_stream_t * s)
 #endif
           break;
         case 24:
-          gavl_metadata_set(&s->m, GAVL_META_FORMAT, "PCM (little endian)");
+          gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "PCM (little endian)");
           s->data.audio.format.sample_format = GAVL_SAMPLE_S32;
           priv->decode_func = decode_s_24_le;
           break;
         case 32:
-          gavl_metadata_set(&s->m, GAVL_META_FORMAT, "PCM (little endian)");
+          gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "PCM (little endian)");
           s->data.audio.format.sample_format = GAVL_SAMPLE_S32;
 #ifndef WORDS_BIGENDIAN
           priv->decode_func = decode_s_32;
@@ -983,7 +983,7 @@ static int init_pcm(bgav_stream_t * s)
                    s->data.audio.bits_per_sample);
           return 0;
         }
-      gavl_metadata_set(&s->m, GAVL_META_FORMAT, "LPCM");
+      gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "LPCM");
       
       break;
       /* Quicktime 24/32 bit, can be either big or little endian */
@@ -993,7 +993,7 @@ static int init_pcm(bgav_stream_t * s)
       else
         priv->decode_func = decode_s_24_be;
 
-      gavl_metadata_set_nocpy(&s->m, GAVL_META_FORMAT,
+      gavl_dictionary_set_string_nocpy(&s->m, GAVL_META_FORMAT,
                               bgav_sprintf("PCM (%s endian)",
                                            ((s->data.audio.endianess == BGAV_ENDIANESS_LITTLE) ? "little" : "big" )));
       
@@ -1017,7 +1017,7 @@ static int init_pcm(bgav_stream_t * s)
         priv->decode_func = decode_s_32;
 #endif
         }
-      gavl_metadata_set_nocpy(&s->m, GAVL_META_FORMAT,
+      gavl_dictionary_set_string_nocpy(&s->m, GAVL_META_FORMAT,
                               bgav_sprintf("PCM (%s endian)",
                                            ((s->data.audio.endianess == BGAV_ENDIANESS_LITTLE) ? "little" : "big" )));
       
@@ -1032,14 +1032,14 @@ static int init_pcm(bgav_stream_t * s)
           priv->decode_func = decode_float_32_le;
           s->data.audio.format.sample_format = GAVL_SAMPLE_FLOAT;
 
-          gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+          gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                             "PCM float (little endian)");
 
           break;
         case 64:
           priv->decode_func = decode_float_64_le;
           s->data.audio.format.sample_format = GAVL_SAMPLE_DOUBLE;
-          gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+          gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                             "PCM float (little endian)");
           break;
         default:
@@ -1054,7 +1054,7 @@ static int init_pcm(bgav_stream_t * s)
         priv->decode_func = decode_float_32_be;
       s->data.audio.format.sample_format = GAVL_SAMPLE_FLOAT;
 
-      gavl_metadata_set_nocpy(&s->m, GAVL_META_FORMAT,
+      gavl_dictionary_set_string_nocpy(&s->m, GAVL_META_FORMAT,
                               bgav_sprintf("PCM float (%s endian)",
                                            (s->data.audio.endianess == BGAV_ENDIANESS_LITTLE) ? "little" : "big" ));
       
@@ -1064,13 +1064,13 @@ static int init_pcm(bgav_stream_t * s)
       if(s->data.audio.endianess == BGAV_ENDIANESS_LITTLE)
         {
         priv->decode_func = decode_float_64_le;
-        gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                           "PCM float (little endian)");
         }
       else
         {
         priv->decode_func = decode_float_64_be;
-        gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                           "PCM float (big endian)");
         }
       s->data.audio.format.sample_format = GAVL_SAMPLE_DOUBLE;
@@ -1080,7 +1080,7 @@ static int init_pcm(bgav_stream_t * s)
     case BGAV_MK_FOURCC('U', 'L', 'A', 'W'):
     case BGAV_WAVID_2_FOURCC(0x07):
       priv->decode_func = decode_ulaw;
-      gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+      gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                         "u-Law 2:1");
       s->data.audio.format.sample_format = GAVL_SAMPLE_S16;
       priv->block_align = s->data.audio.format.num_channels;
@@ -1089,7 +1089,7 @@ static int init_pcm(bgav_stream_t * s)
     case BGAV_MK_FOURCC('A', 'L', 'A', 'W'):
     case BGAV_WAVID_2_FOURCC(0x06):
       priv->decode_func = decode_alaw;
-      gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+      gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                         "a-Law 2:1");
       s->data.audio.format.sample_format = GAVL_SAMPLE_S16;
       priv->block_align = s->data.audio.format.num_channels;
@@ -1125,7 +1125,7 @@ static int init_pcm(bgav_stream_t * s)
               priv->decode_func = decode_float_32_be;
             s->data.audio.format.sample_format = GAVL_SAMPLE_FLOAT;
 
-            gavl_metadata_set_nocpy(&s->m, GAVL_META_FORMAT,
+            gavl_dictionary_set_string_nocpy(&s->m, GAVL_META_FORMAT,
                                     bgav_sprintf("PCM float (%s endian)",
                                                  (!(formatSpecificFlags &
                                                     kAudioFormatFlagIsBigEndian) ?
@@ -1140,7 +1140,7 @@ static int init_pcm(bgav_stream_t * s)
               priv->decode_func = decode_float_64_be;
             s->data.audio.format.sample_format = GAVL_SAMPLE_DOUBLE;
 
-            gavl_metadata_set_nocpy(&s->m, GAVL_META_FORMAT,
+            gavl_dictionary_set_string_nocpy(&s->m, GAVL_META_FORMAT,
                                     bgav_sprintf("PCM float (%s endian)",
                                                  (!(formatSpecificFlags &
                                                     kAudioFormatFlagIsBigEndian) ?
@@ -1167,7 +1167,7 @@ static int init_pcm(bgav_stream_t * s)
             priv->block_align = s->data.audio.format.num_channels * 2;
             s->data.audio.format.sample_format = GAVL_SAMPLE_S16;
 
-            gavl_metadata_set_nocpy(&s->m, GAVL_META_FORMAT,
+            gavl_dictionary_set_string_nocpy(&s->m, GAVL_META_FORMAT,
                                     bgav_sprintf("PCM (%s endian)",
                                                  (!(formatSpecificFlags &
                                                     kAudioFormatFlagIsBigEndian) ?
@@ -1186,7 +1186,7 @@ static int init_pcm(bgav_stream_t * s)
             priv->block_align = s->data.audio.format.num_channels * 3;
             s->data.audio.format.sample_format = GAVL_SAMPLE_S32;
 
-            gavl_metadata_set_nocpy(&s->m, GAVL_META_FORMAT,
+            gavl_dictionary_set_string_nocpy(&s->m, GAVL_META_FORMAT,
                                     bgav_sprintf("PCM (%s endian)",
                                                  (!(formatSpecificFlags &
                                                     kAudioFormatFlagIsBigEndian) ?
@@ -1205,7 +1205,7 @@ static int init_pcm(bgav_stream_t * s)
             priv->block_align = s->data.audio.format.num_channels * 4;
             s->data.audio.format.sample_format = GAVL_SAMPLE_S32;
 
-            gavl_metadata_set_nocpy(&s->m, GAVL_META_FORMAT,
+            gavl_dictionary_set_string_nocpy(&s->m, GAVL_META_FORMAT,
                                     bgav_sprintf("PCM (%s endian)",
                                                  (!(formatSpecificFlags &
                                                     kAudioFormatFlagIsBigEndian) ?

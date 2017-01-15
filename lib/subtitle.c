@@ -86,7 +86,7 @@ int bgav_subtitle_is_text(bgav_t * b, int stream)
 const char * bgav_get_subtitle_language(bgav_t * b, int stream)
   {
   bgav_stream_t * s = bgav_track_get_subtitle_stream(b->tt->cur, stream);
-  return gavl_metadata_get(&s->m, GAVL_META_LANGUAGE);
+  return gavl_dictionary_get_string(&s->m, GAVL_META_LANGUAGE);
   }
 
 /* LEGACY */
@@ -390,7 +390,7 @@ int bgav_subtitle_skipto(bgav_stream_t * s, int64_t * time, int scale)
 const char * bgav_get_subtitle_info(bgav_t * b, int stream)
   {
   bgav_stream_t * s = bgav_track_get_subtitle_stream(b->tt->cur, stream);
-  return gavl_metadata_get(&s->m, GAVL_META_LABEL);
+  return gavl_dictionary_get_string(&s->m, GAVL_META_LABEL);
   }
 
 const bgav_metadata_t *

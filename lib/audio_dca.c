@@ -142,7 +142,7 @@ static gavl_source_status_t decode_frame_dts(bgav_stream_t * s)
   
       priv->frame = gavl_audio_frame_create(&s->data.audio.format);
 
-      gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+      gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                         "DTS");
       }
     

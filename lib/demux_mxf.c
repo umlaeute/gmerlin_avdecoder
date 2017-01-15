@@ -669,7 +669,7 @@ static int open_mxf(bgav_demuxer_context_t * ctx)
       }
     }
 
-  gavl_metadata_set(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "MXF");
 
   

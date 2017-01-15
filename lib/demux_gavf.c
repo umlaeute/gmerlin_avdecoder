@@ -76,7 +76,7 @@ static int init_track(bgav_track_t * track,
   
   ph = gavf_get_program_header(dec);
   
-  gavl_metadata_copy(&track->metadata, &ph->m);
+  gavl_dictionary_copy(&track->metadata, &ph->m);
   
   for(i = 0; i < ph->num_streams; i++)
     {
@@ -122,7 +122,7 @@ static int init_track(bgav_track_t * track,
   return 1;
   }
 
-static void metadata_callback(void * data,const gavl_metadata_t * m)
+static void metadata_callback(void * data,const gavl_dictionary_t * m)
   {
   bgav_demuxer_context_t * ctx = data;
 
@@ -172,7 +172,7 @@ static int open_gavf(bgav_demuxer_context_t * ctx)
 
   ph = gavf_get_program_header(priv->dec);
   
-  if(gavl_metadata_get_long(&ph->m, GAVL_META_APPROX_DURATION, &duration))
+  if(gavl_dictionary_get_string_long(&ph->m, GAVL_META_APPROX_DURATION, &duration))
     {
     ctx->tt->cur->duration = duration;
 
@@ -182,7 +182,7 @@ static int open_gavf(bgav_demuxer_context_t * ctx)
   cl = gavf_get_chapter_list(priv->dec);
   ctx->tt->cur->chapter_list = gavl_chapter_list_copy(cl);
 
-  gavl_metadata_set(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "GAVF");
 
   

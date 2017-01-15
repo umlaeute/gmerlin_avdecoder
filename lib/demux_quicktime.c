@@ -45,7 +45,7 @@ static void set_mdat(bgav_input_context_t * input,
   mdat->size  = h->size - (input->position - h->start_position);
   }
 
-static void time_to_metadata(gavl_metadata_t * m,
+static void time_to_metadata(gavl_dictionary_t * m,
                              const char * key,
                              uint64_t t)
   {
@@ -58,7 +58,7 @@ static void time_to_metadata(gavl_metadata_t * m,
   tm.tm_mon++;
   tm.tm_year+=1900;
 
-  gavl_metadata_set_date_time(m,
+  gavl_dictionary_set_string_date_time(m,
                               key,
                               tm.tm_year,
                               tm.tm_mon,
@@ -257,7 +257,7 @@ static void stream_init(bgav_stream_t * bgav_s, qt_trak_t * trak,
   
   /* Set encoding software */
   if(trak->mdia.hdlr.component_name)
-    gavl_metadata_set(&bgav_s->m, GAVL_META_SOFTWARE,
+    gavl_dictionary_set_string(&bgav_s->m, GAVL_META_SOFTWARE,
                       trak->mdia.hdlr.component_name);
 
   time_to_metadata(&bgav_s->m,
@@ -771,20 +771,20 @@ static void build_index(bgav_demuxer_context_t * ctx)
   }
 
 #define SET_UDTA_STRING(gavl_name, src) \
-  if(!gavl_metadata_get(&ctx->tt->cur->metadata, gavl_name) && moov->udta.src) \
+  if(!gavl_dictionary_get_string(&ctx->tt->cur->metadata, gavl_name) && moov->udta.src) \
     {                                                                   \
     if(moov->udta.have_ilst)                                            \
-      gavl_metadata_set(&ctx->tt->cur->metadata, gavl_name, moov->udta.src); \
+      gavl_dictionary_set_string(&ctx->tt->cur->metadata, gavl_name, moov->udta.src); \
     else                                                                \
-      gavl_metadata_set_nocpy(&ctx->tt->cur->metadata, gavl_name, \
+      gavl_dictionary_set_string_nocpy(&ctx->tt->cur->metadata, gavl_name, \
                               bgav_convert_string(cnv, moov->udta.src, -1, NULL)); \
     }
 
 #define SET_UDTA_INT(gavl_name, src) \
-  if(!gavl_metadata_get(&ctx->tt->cur->metadata, gavl_name) && moov->udta.src && \
+  if(!gavl_dictionary_get_string(&ctx->tt->cur->metadata, gavl_name) && moov->udta.src && \
      isdigit(*(moov->udta.src)))                                        \
     { \
-    gavl_metadata_set_int(&ctx->tt->cur->metadata, gavl_name, atoi(moov->udta.src)); \
+    gavl_dictionary_set_string_int(&ctx->tt->cur->metadata, gavl_name, atoi(moov->udta.src)); \
     }
 
 static void set_metadata(bgav_demuxer_context_t * ctx)
@@ -811,10 +811,10 @@ static void set_metadata(bgav_demuxer_context_t * ctx)
   SET_UDTA_STRING(GAVL_META_COMMENT,   inf);
   SET_UDTA_STRING(GAVL_META_AUTHOR,    aut);
   
-  if(!gavl_metadata_get(&ctx->tt->cur->metadata, GAVL_META_TRACKNUMBER)
+  if(!gavl_dictionary_get_string(&ctx->tt->cur->metadata, GAVL_META_TRACKNUMBER)
      && moov->udta.trkn)
     {
-    gavl_metadata_set_int(&ctx->tt->cur->metadata, GAVL_META_TRACKNUMBER,
+    gavl_dictionary_set_string_int(&ctx->tt->cur->metadata, GAVL_META_TRACKNUMBER,
                           moov->udta.trkn);
     }
 
@@ -829,7 +829,7 @@ static void set_metadata(bgav_demuxer_context_t * ctx)
   if(cnv)
     bgav_charset_converter_destroy(cnv);
 
-  //  gavl_metadata_dump(&ctx->tt->cur->metadata);
+  //  gavl_dictionary_dump(&ctx->tt->cur->metadata);
   }
 
 /*
@@ -1226,7 +1226,7 @@ static void init_audio(bgav_demuxer_context_t * ctx,
   bgav_qt_mdhd_get_language(&trak->mdia.mdhd,
                             language);
 
-  gavl_metadata_set(&bg_as->m, GAVL_META_LANGUAGE, language);
+  gavl_dictionary_set_string(&bg_as->m, GAVL_META_LANGUAGE, language);
   
   desc = &stsd->entries[0].desc;
 
@@ -1592,14 +1592,14 @@ static void quicktime_init(bgav_demuxer_context_t * ctx)
         if(trak_has_edl(trak))
           priv->has_edl = 1;
         
-        gavl_metadata_set(&bg_ss->m, GAVL_META_FORMAT,
+        gavl_dictionary_set_string(&bg_ss->m, GAVL_META_FORMAT,
                           "Quicktime subtitles");
         bg_ss->fourcc = stsd->entries[0].desc.fourcc;
         
         bgav_qt_mdhd_get_language(&trak->mdia.mdhd,
                                   language);
         
-        gavl_metadata_set(&bg_ss->m, GAVL_META_LANGUAGE,
+        gavl_dictionary_set_string(&bg_ss->m, GAVL_META_LANGUAGE,
                           language);
         
         
@@ -1626,13 +1626,13 @@ static void quicktime_init(bgav_demuxer_context_t * ctx)
         if(trak_has_edl(trak))
           priv->has_edl = 1;
         
-        gavl_metadata_set(&bg_ss->m, GAVL_META_FORMAT,
+        gavl_dictionary_set_string(&bg_ss->m, GAVL_META_FORMAT,
                           "3gpp subtitles");
 
         bg_ss->fourcc = stsd->entries[0].desc.fourcc;
         bgav_qt_mdhd_get_language(&trak->mdia.mdhd,
                                   language);
-        gavl_metadata_set(&bg_ss->m, GAVL_META_LANGUAGE,
+        gavl_dictionary_set_string(&bg_ss->m, GAVL_META_LANGUAGE,
                           language);
                 
         bg_ss->timescale = trak->mdia.mdhd.time_scale;
@@ -1673,7 +1673,7 @@ static void quicktime_init(bgav_demuxer_context_t * ctx)
         }
       bg_ss = bgav_track_add_overlay_stream(track, ctx->opt);
 
-      gavl_metadata_set(&bg_ss->m, GAVL_META_FORMAT, "DVD subtitles");
+      gavl_dictionary_set_string(&bg_ss->m, GAVL_META_FORMAT, "DVD subtitles");
       bg_ss->fourcc = stsd->entries[0].desc.fourcc;
       
       if(trak_has_edl(trak))
@@ -1739,7 +1739,7 @@ static int handle_rmra(bgav_demuxer_context_t * ctx)
     if(priv->moov.rmra.rmda[i].rdrf.fourcc == BGAV_MK_FOURCC('u','r','l',' '))
       {
       t = bgav_track_table_append_track(ctx->tt);
-      gavl_metadata_set_nocpy(&t->metadata, GAVL_META_REFURL,
+      gavl_dictionary_set_string_nocpy(&t->metadata, GAVL_META_REFURL,
                               bgav_input_absolute_url(ctx->input,
                                                       (char*)priv->moov.rmra.rmda[i].rdrf.data_ref));
       
@@ -2140,27 +2140,27 @@ static int open_quicktime(bgav_demuxer_context_t * ctx)
   switch(priv->ftyp_fourcc)
     {
     case BGAV_MK_FOURCC('M','4','A',' '):
-      gavl_metadata_set(&ctx->tt->cur->metadata, 
+      gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                         GAVL_META_FORMAT, "MPEG-4 audio (m4a)");
       break;
     case BGAV_MK_FOURCC('m','p','4','1'):
     case BGAV_MK_FOURCC('m','p','4','2'):
     case BGAV_MK_FOURCC('i','s','o','m'):
     case BGAV_MK_FOURCC('M','4','V',' '):
-      gavl_metadata_set(&ctx->tt->cur->metadata, 
+      gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                         GAVL_META_FORMAT, "MPEG-4 video (mp4)");
-      gavl_metadata_set(&ctx->tt->cur->metadata, 
+      gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                         GAVL_META_MIMETYPE, "video/mp4");
       break;
     case 0:
     case BGAV_MK_FOURCC('q','t',' ',' '):
-      gavl_metadata_set(&ctx->tt->cur->metadata, 
+      gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                         GAVL_META_FORMAT, "Quicktime");
-      gavl_metadata_set(&ctx->tt->cur->metadata, 
+      gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                         GAVL_META_MIMETYPE, "video/quicktime");
       break;
     default:
-      gavl_metadata_set(&ctx->tt->cur->metadata, 
+      gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                         GAVL_META_FORMAT, "Quicktime/mp4/m4a");
       break;
     

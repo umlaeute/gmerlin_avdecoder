@@ -443,7 +443,7 @@ static int open_gxf(bgav_demuxer_context_t * ctx)
     track_desc_length -= parse_track(ctx->input, ctx->tt->cur,
                                      ctx->opt);
     }
-  gavl_metadata_set(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "GXF");
 
   /* Skip remaining stuff of the map packet */

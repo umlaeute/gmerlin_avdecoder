@@ -109,7 +109,7 @@ void bgav_track_table_merge_metadata(bgav_track_table_t*t,
   int i;
   for(i = 0; i < t->num_tracks; i++)
     {
-    gavl_metadata_merge2(&t->tracks[i].metadata, m);
+    gavl_dictionary_merge2(&t->tracks[i].metadata, m);
     }
   }
 

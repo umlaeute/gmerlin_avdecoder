@@ -111,7 +111,7 @@ typedef struct
 
   int keyframe_granule_shift;
 
-  gavl_metadata_t metadata;
+  gavl_dictionary_t metadata;
 
   int64_t frame_counter;
 
@@ -286,7 +286,7 @@ static void dump_ogg(bgav_demuxer_context_t * ctx)
       bgav_dprintf( "  Last granulepos: %" PRId64 "\n",
               stream_priv->last_granulepos);
       bgav_dprintf( "  Metadata:\n");
-      gavl_metadata_dump(&stream_priv->metadata);
+      gavl_dictionary_dump(&stream_priv->metadata);
       }
     for(j = 0; j < track->num_video_streams; j++)
       {
@@ -297,7 +297,7 @@ static void dump_ogg(bgav_demuxer_context_t * ctx)
       bgav_dprintf( "  Last granulepos: %" PRId64 "\n",
               stream_priv->last_granulepos);
       bgav_dprintf( "  Metadata:\n");
-      gavl_metadata_dump(&stream_priv->metadata);
+      gavl_dictionary_dump(&stream_priv->metadata);
       }
     for(j = 0; j < track->num_subtitle_streams; j++)
       {
@@ -310,7 +310,7 @@ static void dump_ogg(bgav_demuxer_context_t * ctx)
       bgav_dprintf( "  Serialno: %d\n", s->stream_id);
       bgav_dprintf( "  Language: %s\n", s->language);
       bgav_dprintf( "  Metadata:\n");
-      gavl_metadata_dump(&stream_priv->metadata);
+      gavl_dictionary_dump(&stream_priv->metadata);
       }
     
     }
@@ -337,7 +337,7 @@ static void parse_vorbis_comment(bgav_stream_t * s, uint8_t * data,
   if(!bgav_vorbis_comment_read(&vc, input_mem))
     return;
 
-  gavl_metadata_free(&stream_priv->metadata);
+  gavl_dictionary_free(&stream_priv->metadata);
   
   bgav_vorbis_comment_2_metadata(&vc, &stream_priv->metadata);
 
@@ -346,10 +346,10 @@ static void parse_vorbis_comment(bgav_stream_t * s, uint8_t * data,
     {
     language = bgav_lang_from_name(field);
     if(language)
-      gavl_metadata_set(&s->m, GAVL_META_LANGUAGE, language);
+      gavl_dictionary_set_string(&s->m, GAVL_META_LANGUAGE, language);
     }
   
-  gavl_metadata_set(&s->m, GAVL_META_SOFTWARE, vc.vendor);
+  gavl_dictionary_set_string(&s->m, GAVL_META_SOFTWARE, vc.vendor);
   bgav_vorbis_comment_free(&vc);
   bgav_input_destroy(input_mem);
   }
@@ -518,7 +518,7 @@ static void cleanup_stream_ogg(bgav_stream_t * s)
   if(stream_priv)
     {
     ogg_stream_clear(&stream_priv->os);
-    gavl_metadata_free(&stream_priv->metadata);
+    gavl_dictionary_free(&stream_priv->metadata);
     free(stream_priv);
     }
   }
@@ -873,7 +873,7 @@ static int setup_track(bgav_demuxer_context_t * ctx, bgav_track_t * track,
         
         s->timescale = 10000000 / ogm_header.time_unit;
 
-        gavl_metadata_set(&s->m, GAVL_META_FORMAT, "OGM subtitles");
+        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "OGM subtitles");
         ogg_stream->header_packets_needed = 2;
         ogg_stream->header_packets_read = 1;
         priv->is_ogm = 1;
@@ -1379,17 +1379,17 @@ static void get_metadata(bgav_track_t * track)
   {
   stream_priv_t * stream_priv;
   int i;
-  gavl_metadata_free(&track->metadata);
+  gavl_dictionary_free(&track->metadata);
 
   for(i = 0; i < track->num_audio_streams; i++)
     {
     stream_priv = track->audio_streams[i].priv;
-    gavl_metadata_merge2(&track->metadata, &stream_priv->metadata);
+    gavl_dictionary_merge2(&track->metadata, &stream_priv->metadata);
     }
   for(i = 0; i < track->num_video_streams; i++)
     {
     stream_priv = track->video_streams[i].priv;
-    gavl_metadata_merge2(&track->metadata, &stream_priv->metadata);
+    gavl_dictionary_merge2(&track->metadata, &stream_priv->metadata);
     }
   /* Get mime type. */
   if(!track->num_video_streams && (track->num_audio_streams == 1))
@@ -1397,21 +1397,21 @@ static void get_metadata(bgav_track_t * track)
     switch(track->audio_streams[0].fourcc)
       {
       case FOURCC_VORBIS:
-        gavl_metadata_set(&track->metadata, GAVL_META_MIMETYPE, "audio/ogg");
+        gavl_dictionary_set_string(&track->metadata, GAVL_META_MIMETYPE, "audio/ogg");
         break;
       case FOURCC_OPUS:
-        gavl_metadata_set(&track->metadata, GAVL_META_MIMETYPE, "audio/opus");
+        gavl_dictionary_set_string(&track->metadata, GAVL_META_MIMETYPE, "audio/opus");
         break;
       case FOURCC_SPEEX:
-        gavl_metadata_set(&track->metadata, GAVL_META_MIMETYPE, "audio/x-speex");
+        gavl_dictionary_set_string(&track->metadata, GAVL_META_MIMETYPE, "audio/x-speex");
         break;
       }   
     }
   else if(track->num_video_streams > 0)
-      gavl_metadata_set(&track->metadata, GAVL_META_MIMETYPE, "video/ogg");
+      gavl_dictionary_set_string(&track->metadata, GAVL_META_MIMETYPE, "video/ogg");
 
 
-  gavl_metadata_set(&track->metadata, GAVL_META_FORMAT, "Ogg");
+  gavl_dictionary_set_string(&track->metadata, GAVL_META_FORMAT, "Ogg");
   }
 
 static int open_ogg(bgav_demuxer_context_t * ctx)
@@ -1563,8 +1563,8 @@ static int open_ogg(bgav_demuxer_context_t * ctx)
         const char * artist;
         const char * title;
         
-        artist = gavl_metadata_get(&ctx->tt->tracks[i].metadata, GAVL_META_ARTIST);
-        title = gavl_metadata_get(&ctx->tt->tracks[i].metadata, GAVL_META_TITLE);
+        artist = gavl_dictionary_get_string(&ctx->tt->tracks[i].metadata, GAVL_META_ARTIST);
+        title = gavl_dictionary_get_string(&ctx->tt->tracks[i].metadata, GAVL_META_TITLE);
         
         if(artist && title)
           name = bgav_sprintf("%s - %s",
@@ -1574,16 +1574,16 @@ static int open_ogg(bgav_demuxer_context_t * ctx)
           name = bgav_sprintf("%s", title);
         else
           name = bgav_sprintf("Track %d", i+1);
-        gavl_metadata_set_nocpy(&ctx->tt->tracks[i].metadata, GAVL_META_LABEL, name);
+        gavl_dictionary_set_string_nocpy(&ctx->tt->tracks[i].metadata, GAVL_META_LABEL, name);
         }
       }
     }
   else /* Streaming case */
     {
     const char * title =
-      gavl_metadata_get(&ctx->tt->tracks[0].metadata, GAVL_META_TITLE);
+      gavl_dictionary_get_string(&ctx->tt->tracks[0].metadata, GAVL_META_TITLE);
     if(title)
-      gavl_metadata_set(&ctx->tt->tracks[0].metadata, GAVL_META_LABEL, title);
+      gavl_dictionary_set_string(&ctx->tt->tracks[0].metadata, GAVL_META_LABEL, title);
     get_metadata(&ctx->tt->tracks[0]);
 
     /* Set end position to -1 */
@@ -1670,13 +1670,13 @@ static int new_streaming_track(bgav_demuxer_context_t * ctx)
   return 1;
   }
 
-static char * get_name(gavl_metadata_t * m)
+static char * get_name(gavl_dictionary_t * m)
   {
   const char * artist;
   const char * title;
 
-  artist = gavl_metadata_get(m, GAVL_META_ARTIST);
-  title = gavl_metadata_get(m, GAVL_META_TITLE);
+  artist = gavl_dictionary_get_string(m, GAVL_META_ARTIST);
+  title = gavl_dictionary_get_string(m, GAVL_META_TITLE);
   
   if(artist && title)
     return bgav_sprintf("%s - %s", artist, title);
@@ -1693,13 +1693,13 @@ static void metadata_changed(bgav_demuxer_context_t * ctx)
   if(ctx->opt->metadata_change_callback)
     {
     get_metadata(ctx->tt->cur);
-    gavl_metadata_merge2(&ctx->tt->cur->metadata, &ctx->input->metadata);
+    gavl_dictionary_merge2(&ctx->tt->cur->metadata, &ctx->input->metadata);
 
-    if(!gavl_metadata_get(&ctx->tt->cur->metadata, GAVL_META_LABEL))
+    if(!gavl_dictionary_get_string(&ctx->tt->cur->metadata, GAVL_META_LABEL))
       {
       name = get_name(&ctx->tt->cur->metadata);
       if(name)
-        gavl_metadata_set_nocpy(&ctx->tt->cur->metadata, GAVL_META_LABEL, name);
+        gavl_dictionary_set_string_nocpy(&ctx->tt->cur->metadata, GAVL_META_LABEL, name);
       }
     ctx->opt->metadata_change_callback(ctx->opt->metadata_change_callback_data,
                                        &ctx->tt->cur->metadata);

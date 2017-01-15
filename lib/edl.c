@@ -132,7 +132,7 @@ static gavl_edl_track_t * copy_tracks(const gavl_edl_track_t * src, int len)
     if(src[i].metadata)
       {
       ret[i].metadata = calloc(1, sizeof(*ret[i].metadata));
-      gavl_metadata_copy(ret[i].metadata,
+      gavl_dictionary_copy(ret[i].metadata,
                          src[i].metadata);
       }
     
@@ -193,7 +193,7 @@ static void free_tracks(gavl_edl_track_t * s, int len)
     {
     if(s[i].metadata)
       {
-      gavl_metadata_free(s[i].metadata);
+      gavl_dictionary_free(s[i].metadata);
       free(s[i].metadata);
       }
     if(s[i].name)
@@ -249,7 +249,7 @@ static void dump_track(const gavl_edl_track_t * t)
   bgav_diprintf(2, "Track\n");
   bgav_diprintf(4, "Metadata\n");
   if(t->metadata)
-    gavl_metadata_dump(t->metadata, 6);
+    gavl_dictionary_dump(t->metadata, 6);
   
   bgav_diprintf(4, "Audio streams: %d\n", t->num_audio_streams);
   for(i = 0; i < t->num_audio_streams; i++)

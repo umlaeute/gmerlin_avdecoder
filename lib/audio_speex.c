@@ -105,7 +105,7 @@ static int init_speex(bgav_stream_t * s)
     speex_decoder_ctl(priv->dec_state, SPEEX_SET_HANDLER, &callback);
     }
 
-  gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                     "Speex");
   return 1;
   }

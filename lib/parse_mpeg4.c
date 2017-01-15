@@ -149,7 +149,7 @@ static int extract_user_data(bgav_video_parser_t * parser,
     char * vendor = malloc(vendor_len + 1);
     memcpy(vendor, priv->user_data, vendor_len);
     vendor[vendor_len] = '\0';
-    gavl_metadata_set_nocpy(&parser->s->m, GAVL_META_SOFTWARE,
+    gavl_dictionary_set_string_nocpy(&parser->s->m, GAVL_META_SOFTWARE,
                             vendor);
     }
   

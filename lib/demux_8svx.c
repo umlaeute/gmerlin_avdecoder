@@ -124,19 +124,19 @@ static int read_meta_data(bgav_demuxer_context_t * ctx, chunk_header_t * ret)
   switch(ret->fourcc)
     {
     case ID_NAME:
-      gavl_metadata_set_nocpy(&ctx->tt->cur->metadata,
+      gavl_dictionary_set_string_nocpy(&ctx->tt->cur->metadata,
                               GAVL_META_TITLE, buffer);
       break;
     case ID_COPY:
-      gavl_metadata_set_nocpy(&ctx->tt->cur->metadata,
+      gavl_dictionary_set_string_nocpy(&ctx->tt->cur->metadata,
                               GAVL_META_COPYRIGHT, buffer);
       break;
     case ID_AUTH:
-      gavl_metadata_set_nocpy(&ctx->tt->cur->metadata,
+      gavl_dictionary_set_string_nocpy(&ctx->tt->cur->metadata,
                               GAVL_META_AUTHOR, buffer);
       break;
     case ID_ANNO:
-      gavl_metadata_set_nocpy(&ctx->tt->cur->metadata,
+      gavl_dictionary_set_string_nocpy(&ctx->tt->cur->metadata,
                               GAVL_META_COMMENT, buffer);
       break;
     }
@@ -228,7 +228,7 @@ static int open_8svx(bgav_demuxer_context_t * ctx)
   if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
 
-  gavl_metadata_set(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "8SVX");
   ctx->index_mode = INDEX_MODE_PCM;
   return 1;

@@ -153,30 +153,30 @@ static gavl_source_status_t decode_frame_faad2(bgav_stream_t * s)
                                 &s->data.audio.format);
     }
   
-  if(!gavl_metadata_get(&s->m, GAVL_META_FORMAT))
+  if(!gavl_dictionary_get_string(&s->m, GAVL_META_FORMAT))
     {
     switch(frame_info.object_type)
       {
       case MAIN:
-        gavl_metadata_set(&s->m, GAVL_META_FORMAT, "AAC Main");
+        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "AAC Main");
         break;
       case LC:
-        gavl_metadata_set(&s->m, GAVL_META_FORMAT, "AAC LC");
+        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "AAC LC");
         break;
       case SSR:
-        gavl_metadata_set(&s->m, GAVL_META_FORMAT, "AAC SSR");
+        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "AAC SSR");
         break;
       case LTP:
-        gavl_metadata_set(&s->m, GAVL_META_FORMAT, "AAC LTP");
+        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "AAC LTP");
         break;
       case HE_AAC:
-        gavl_metadata_set(&s->m, GAVL_META_FORMAT, "HE-AAC");
+        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "HE-AAC");
         break;
       case ER_LC:
       case ER_LTP:
       case LD:
       case DRM_ER_LC: /* special object type for DRM */
-        gavl_metadata_set(&s->m, GAVL_META_FORMAT, "MPEG_2/4 AAC");
+        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "MPEG_2/4 AAC");
         break;
       }
     }

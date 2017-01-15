@@ -75,7 +75,7 @@ int bgav_hls_detect(bgav_input_context_t * ctx)
   char * probe_buffer = NULL;
   int result = 0;
   
-  if(!(var = gavl_metadata_get(&ctx->metadata, GAVL_META_MIMETYPE)))
+  if(!(var = gavl_dictionary_get_string(&ctx->metadata, GAVL_META_MIMETYPE)))
     goto end;
   
   if(strncasecmp(var, "application/x-mpegurl", 21) && 
@@ -233,7 +233,7 @@ static void parse_urls(bgav_hls_t * h, const char * m3u8)
   dump_urls(h);
   }
 
-static void handle_id3(bgav_hls_t * h, gavl_metadata_t * m)
+static void handle_id3(bgav_hls_t * h, gavl_dictionary_t * m)
   {
   int len;
   uint8_t * buf;
@@ -274,8 +274,8 @@ static void handle_id3(bgav_hls_t * h, gavl_metadata_t * m)
 
 static int load_stream_url(bgav_hls_t * h, int idx)
   {
-  gavl_metadata_t m;
-  gavl_metadata_init(&m);
+  gavl_dictionary_t m;
+  gavl_dictionary_init(&m);
 
   bgav_log(h->ctx->opt, BGAV_LOG_DEBUG, LOG_DOMAIN, "Loading %s", h->urls[idx].url);
   
@@ -306,14 +306,14 @@ static int load_stream_url(bgav_hls_t * h, int idx)
   if(h->ctx->opt->metadata_change_callback && h->ctx->tt &&
      !gavl_metadata_equal(&h->ctx->tt->cur->metadata, &m))
     {
-    gavl_metadata_free(&h->ctx->tt->cur->metadata);
-    gavl_metadata_init(&h->ctx->tt->cur->metadata);
+    gavl_dictionary_free(&h->ctx->tt->cur->metadata);
+    gavl_dictionary_init(&h->ctx->tt->cur->metadata);
     memcpy(&h->ctx->tt->cur->metadata, &m, sizeof(m));
-    gavl_metadata_init(&m);
+    gavl_dictionary_init(&m);
     h->ctx->opt->metadata_change_callback(h->ctx->opt->metadata_change_callback_data,
                                        &h->ctx->tt->cur->metadata);
     }
-  gavl_metadata_free(&m);
+  gavl_dictionary_free(&m);
   return 1;
   }
 
@@ -358,8 +358,8 @@ bgav_hls_t * bgav_hls_create(bgav_input_context_t * ctx)
   if(!load_stream_url(ret, 0))
     goto fail;
   
-  gavl_metadata_free(&ret->ctx->metadata);
-  gavl_metadata_init(&ret->ctx->metadata);
+  gavl_dictionary_free(&ret->ctx->metadata);
+  gavl_dictionary_init(&ret->ctx->metadata);
   
   ret->ctx->total_bytes = 0;
   

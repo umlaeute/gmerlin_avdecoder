@@ -67,18 +67,18 @@ static bgav_track_table_t * parse_ref(bgav_input_context_t * input)
 
         t = bgav_track_table_append_track(ret);
         
-        gavl_metadata_set_nocpy(&t->metadata,
+        gavl_dictionary_set_string_nocpy(&t->metadata,
                                 GAVL_META_LABEL,
                                 bgav_sprintf("Stream %d (%s)",
                                              ret->num_tracks,
                                              pos));
         
         if(!strncasecmp(pos, "http://", 7))
-          gavl_metadata_set_nocpy(&t->metadata,
+          gavl_dictionary_set_string_nocpy(&t->metadata,
                                   GAVL_META_REFURL,
                                   bgav_sprintf("mmsh%s", pos+4));
         else
-          gavl_metadata_set(&t->metadata,
+          gavl_dictionary_set_string(&t->metadata,
                             GAVL_META_REFURL,
                             pos);
         }

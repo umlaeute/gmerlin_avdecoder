@@ -300,7 +300,7 @@ static int probe_nsv(bgav_input_context_t * input)
   const char * mimetype; 
   /* Check for video/nsv */
 
-  if((mimetype = gavl_metadata_get(&input->metadata, GAVL_META_MIMETYPE)) && 
+  if((mimetype = gavl_dictionary_get_string(&input->metadata, GAVL_META_MIMETYPE)) && 
      !strcmp(mimetype, "video/nsv"))
     return 1;
 
@@ -489,15 +489,15 @@ static int open_nsv(bgav_demuxer_context_t * ctx)
 
     /* Metadata */
     if(p->fh.metadata.title)
-      gavl_metadata_set(&ctx->tt->cur->metadata,
+      gavl_dictionary_set_string(&ctx->tt->cur->metadata,
                         GAVL_META_TITLE,
                         p->fh.metadata.title);
     if(p->fh.metadata.url)
-      gavl_metadata_set(&ctx->tt->cur->metadata,
+      gavl_dictionary_set_string(&ctx->tt->cur->metadata,
                         GAVL_META_RELURL,
                         p->fh.metadata.url);
     if(p->fh.metadata.creator)
-      gavl_metadata_set(&ctx->tt->cur->metadata,
+      gavl_dictionary_set_string(&ctx->tt->cur->metadata,
                         GAVL_META_AUTHOR,
                         p->fh.metadata.creator);
     
@@ -520,9 +520,9 @@ static int open_nsv(bgav_demuxer_context_t * ctx)
   ctx->data_start = ctx->input->position;
   ctx->flags |= BGAV_DEMUXER_HAS_DATA_START;
   
-  gavl_metadata_set(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "NSV");
-  gavl_metadata_set(&ctx->tt->cur->metadata,
+  gavl_dictionary_set_string(&ctx->tt->cur->metadata,
                     GAVL_META_MIMETYPE, "video/nsv");
 
   if(p->need_pcm_format)

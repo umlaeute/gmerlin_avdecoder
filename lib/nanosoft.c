@@ -616,8 +616,8 @@ void bgav_RIFFINFO_destroy(bgav_RIFFINFO_t * info)
 /* CS == copy_string */
 
 #define CS(meta, tag) \
-  if(!gavl_metadata_get(m, meta))               \
-    gavl_metadata_set(m, meta, info->tag);
+  if(!gavl_dictionary_get_string(m, meta))               \
+    gavl_dictionary_set_string(m, meta, info->tag);
 
 void bgav_RIFFINFO_get_metadata(bgav_RIFFINFO_t * info, bgav_metadata_t * m)
   {

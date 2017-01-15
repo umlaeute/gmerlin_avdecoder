@@ -314,10 +314,10 @@ static int setup_track(bgav_input_context_t * ctx,
   vts_ptt_srpt = dvd->vts_ifo->vts_ptt_srpt;
 
   if(ttsrpt->title[title].nr_of_angles > 1)
-    gavl_metadata_set_nocpy(&new_track->metadata, GAVL_META_LABEL,
+    gavl_dictionary_set_string_nocpy(&new_track->metadata, GAVL_META_LABEL,
                             bgav_sprintf("Title %02d Angle %d", title+1, angle+1));
   else
-    gavl_metadata_set_nocpy(&new_track->metadata, GAVL_META_LABEL,
+    gavl_dictionary_set_string_nocpy(&new_track->metadata, GAVL_META_LABEL,
                             bgav_sprintf("Title %02d", title+1));
     
   /* Set up chapters */
@@ -514,7 +514,7 @@ static int setup_track(bgav_input_context_t * ctx,
       language_2cc[2] = '\0';
       language_3cc = bgav_lang_from_twocc(language_2cc);
       if(language_3cc)
-        gavl_metadata_set(&s->m, GAVL_META_LANGUAGE, language_3cc);
+        gavl_dictionary_set_string(&s->m, GAVL_META_LANGUAGE, language_3cc);
       }
 
     /* Set description */
@@ -522,27 +522,27 @@ static int setup_track(bgav_input_context_t * ctx,
     switch(audio_attr->code_extension)
       {
       case 0:
-        gavl_metadata_set_nocpy(&s->m, GAVL_META_LABEL,
+        gavl_dictionary_set_string_nocpy(&s->m, GAVL_META_LABEL,
                                 bgav_sprintf("Unspecified (%s, %dch)",
                                              audio_codec, audio_attr->channels+1));
         break;
       case 1:
-        gavl_metadata_set_nocpy(&s->m, GAVL_META_LABEL,
+        gavl_dictionary_set_string_nocpy(&s->m, GAVL_META_LABEL,
                                 bgav_sprintf("Audio stream (%s, %dch)",
                                              audio_codec, audio_attr->channels+1));
         break;
       case 2:
-        gavl_metadata_set_nocpy(&s->m, GAVL_META_LABEL,
+        gavl_dictionary_set_string_nocpy(&s->m, GAVL_META_LABEL,
                                 bgav_sprintf("Audio for visually impaired (%s, %dch)",
                                              audio_codec, audio_attr->channels+1));
         break;
       case 3:
-        gavl_metadata_set_nocpy(&s->m, GAVL_META_LABEL,
+        gavl_dictionary_set_string_nocpy(&s->m, GAVL_META_LABEL,
                                 bgav_sprintf("Director's comments 1 (%s, %dch)",
                                              audio_codec, audio_attr->channels+1));
         break;
       case 4:
-        gavl_metadata_set_nocpy(&s->m, GAVL_META_LABEL,
+        gavl_dictionary_set_string_nocpy(&s->m, GAVL_META_LABEL,
                                 bgav_sprintf("Director's comments 2 (%s, %dch)",
                                              audio_codec, audio_attr->channels+1));
         break;
@@ -593,7 +593,7 @@ static int setup_track(bgav_input_context_t * ctx,
       language_2cc[2] = '\0';
       language_3cc = bgav_lang_from_twocc(language_2cc);
       if(language_3cc)
-        gavl_metadata_set(&s->m, GAVL_META_LANGUAGE,
+        gavl_dictionary_set_string(&s->m, GAVL_META_LANGUAGE,
                           language_3cc);
       }
 
@@ -603,33 +603,33 @@ static int setup_track(bgav_input_context_t * ctx,
         //        printf("Not specified ");
         break;
       case 1:
-        gavl_metadata_set(&s->m, GAVL_META_LABEL,
+        gavl_dictionary_set_string(&s->m, GAVL_META_LABEL,
                           "Caption");
         //        printf("Caption with normal size character ");
         break;
       case 2:
-        gavl_metadata_set(&s->m, GAVL_META_LABEL,
+        gavl_dictionary_set_string(&s->m, GAVL_META_LABEL,
                           "Caption, big");
         break;
       case 3:
-        gavl_metadata_set(&s->m, GAVL_META_LABEL,
+        gavl_dictionary_set_string(&s->m, GAVL_META_LABEL,
                           "Caption for children");
         break;
       case 4:
         //        printf("reserved ");
         break;
       case 5:
-        gavl_metadata_set(&s->m, GAVL_META_LABEL,
+        gavl_dictionary_set_string(&s->m, GAVL_META_LABEL,
                           "Closed caption");
         //        printf("Closed Caption with normal size character ");
         break;
       case 6:
-        gavl_metadata_set(&s->m, GAVL_META_LABEL,
+        gavl_dictionary_set_string(&s->m, GAVL_META_LABEL,
                           "Closed caption, big");
         //        printf("Closed Caption with bigger size character ");
         break;
       case 7:
-        gavl_metadata_set(&s->m, GAVL_META_LABEL,
+        gavl_dictionary_set_string(&s->m, GAVL_META_LABEL,
                           "Closed caption for children");
         //        printf("Closed Caption for children ");
         break;
@@ -637,7 +637,7 @@ static int setup_track(bgav_input_context_t * ctx,
         //        printf("reserved ");
         break;
       case 9:
-        gavl_metadata_set(&s->m, GAVL_META_LABEL,
+        gavl_dictionary_set_string(&s->m, GAVL_META_LABEL,
                           "Forced caption");
         break;
       case 10:
@@ -650,15 +650,15 @@ static int setup_track(bgav_input_context_t * ctx,
         //        printf("reserved ");
         break;
       case 13:
-        gavl_metadata_set(&s->m, GAVL_META_LABEL,
+        gavl_dictionary_set_string(&s->m, GAVL_META_LABEL,
                           "Directors comments");
         break;
       case 14:
-        gavl_metadata_set(&s->m, GAVL_META_LABEL,
+        gavl_dictionary_set_string(&s->m, GAVL_META_LABEL,
                           "Directors comments, big");
         break;
       case 15:
-        gavl_metadata_set(&s->m, GAVL_META_LABEL,
+        gavl_dictionary_set_string(&s->m, GAVL_META_LABEL,
                           "Directors comments for children");
         break;
       default:

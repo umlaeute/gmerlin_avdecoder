@@ -67,7 +67,7 @@ static int open_adif(bgav_demuxer_context_t * ctx)
   aac_priv_t * priv;
   bgav_stream_t * s;
   bgav_id3v1_tag_t * id3v1 = NULL;
-  gavl_metadata_t id3v1_metadata, id3v2_metadata;
+  gavl_dictionary_t id3v1_metadata, id3v2_metadata;
   //  const char * title;
   
   uint8_t buf[ADIF_SIZE];
@@ -106,10 +106,10 @@ static int open_adif(bgav_demuxer_context_t * ctx)
     bgav_id3v2_2_metadata(ctx->input->id3v2, &id3v2_metadata);
     //    bgav_metadata_dump(&id3v2_metadata);
 
-    gavl_metadata_merge(&ctx->tt->cur->metadata,
+    gavl_dictionary_merge(&ctx->tt->cur->metadata,
                         &id3v2_metadata, &id3v1_metadata);
-    gavl_metadata_free(&id3v1_metadata);
-    gavl_metadata_free(&id3v2_metadata);
+    gavl_dictionary_free(&id3v1_metadata);
+    gavl_dictionary_free(&id3v2_metadata);
     }
   else if(ctx->input->id3v2)
     bgav_id3v2_2_metadata(ctx->input->id3v2,
@@ -159,7 +159,7 @@ static int open_adif(bgav_demuxer_context_t * ctx)
 
 #if 0 // Name is moved to metadata 
   if(!ctx->tt->tracks[0].name &&
-     (title = gavl_metadata_get(&ctx->input->metadata, GAVL_META_TITLE)))
+     (title = gavl_dictionary_get_string(&ctx->input->metadata, GAVL_META_TITLE)))
     ctx->tt->tracks[0].name =  gavl_strdup(title);
 #endif
   //  ctx->stream_description = bgav_sprintf("AAC");

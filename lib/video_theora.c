@@ -180,7 +180,7 @@ static int init_theora(bgav_stream_t * s)
   //  if(!priv->offset_x && !priv->offset_y)
   s->vframe = priv->frame;
   
-  gavl_metadata_set_nocpy(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string_nocpy(&s->m, GAVL_META_FORMAT,
                            bgav_sprintf("Theora (Version %d.%d.%d)",
                                         priv->ti.version_major,
                                         priv->ti.version_minor,

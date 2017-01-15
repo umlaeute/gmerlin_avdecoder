@@ -887,8 +887,8 @@ static int open_rtsp(bgav_input_context_t * ctx, const char * url, char ** r)
   bgav_sdp_dump(sdp);
   
   /* Set up input metadata from sdp */
-  gavl_metadata_set(&ctx->metadata, GAVL_META_TITLE, sdp->session_name);
-  gavl_metadata_set(&ctx->metadata, GAVL_META_COMMENT, sdp->session_description);
+  gavl_dictionary_set_string(&ctx->metadata, GAVL_META_TITLE, sdp->session_name);
+  gavl_dictionary_set_string(&ctx->metadata, GAVL_META_COMMENT, sdp->session_description);
     
   switch(priv->type)
     {

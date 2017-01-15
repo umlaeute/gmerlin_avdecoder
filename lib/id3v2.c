@@ -688,7 +688,7 @@ static char * get_comment(const bgav_options_t * opt,
   return ret;
   }
 
-void bgav_id3v2_2_metadata(bgav_id3v2_tag_t * t, gavl_metadata_t*m)
+void bgav_id3v2_2_metadata(bgav_id3v2_tag_t * t, gavl_dictionary_t*m)
   {
   int i_tmp;
   bgav_id3v2_frame_t * frame;
@@ -697,49 +697,49 @@ void bgav_id3v2_2_metadata(bgav_id3v2_tag_t * t, gavl_metadata_t*m)
 
   frame = bgav_id3v2_find_frame(t, title_tags);
   if(frame && frame->strings)
-    gavl_metadata_set(m, GAVL_META_TITLE, frame->strings[0]);
+    gavl_dictionary_set_string(m, GAVL_META_TITLE, frame->strings[0]);
 
   /* Album */
     
   frame = bgav_id3v2_find_frame(t, album_tags);
   if(frame && frame->strings)
-    gavl_metadata_set(m, GAVL_META_ALBUM, frame->strings[0]);
+    gavl_dictionary_set_string(m, GAVL_META_ALBUM, frame->strings[0]);
 
   /* Copyright */
     
   frame = bgav_id3v2_find_frame(t, copyright_tags);
   if(frame && frame->strings)
-    gavl_metadata_set(m, GAVL_META_COPYRIGHT, frame->strings[0]);
+    gavl_dictionary_set_string(m, GAVL_META_COPYRIGHT, frame->strings[0]);
 
   /* Artist */
 
   frame = bgav_id3v2_find_frame(t, artist_tags);
   if(frame && frame->strings)
-    gavl_metadata_set(m, GAVL_META_ARTIST, frame->strings[0]);
+    gavl_dictionary_set_string(m, GAVL_META_ARTIST, frame->strings[0]);
 
   /* Albumartist */
 
   frame = bgav_id3v2_find_frame(t, albumartist_tags);
   if(frame && frame->strings)
-    gavl_metadata_set(m, GAVL_META_ALBUMARTIST, frame->strings[0]);
+    gavl_dictionary_set_string(m, GAVL_META_ALBUMARTIST, frame->strings[0]);
   
   /* Author */
 
   frame = bgav_id3v2_find_frame(t, author_tags);
   if(frame && frame->strings)
-    gavl_metadata_set(m, GAVL_META_AUTHOR, frame->strings[0]);
+    gavl_dictionary_set_string(m, GAVL_META_AUTHOR, frame->strings[0]);
   
   /* Year */
   
   frame = bgav_id3v2_find_frame(t, year_tags);
   if(frame && frame->strings)
-    gavl_metadata_set(m, GAVL_META_YEAR, frame->strings[0]);
+    gavl_dictionary_set_string(m, GAVL_META_YEAR, frame->strings[0]);
 
   /* Track */
 
   frame = bgav_id3v2_find_frame(t, track_tags);
   if(frame && frame->strings)
-    gavl_metadata_set_int(m, GAVL_META_TRACKNUMBER, atoi(frame->strings[0]));
+    gavl_dictionary_set_string_int(m, GAVL_META_TRACKNUMBER, atoi(frame->strings[0]));
   
   /* Genre */
   
@@ -749,11 +749,11 @@ void bgav_id3v2_2_metadata(bgav_id3v2_tag_t * t, gavl_metadata_t*m)
     if((frame->strings[0][0] == '(') && isdigit(frame->strings[0][1]))
       {
       i_tmp = atoi(&frame->strings[0][1]);
-      gavl_metadata_set(m, GAVL_META_GENRE, bgav_id3v1_get_genre(i_tmp));
+      gavl_dictionary_set_string(m, GAVL_META_GENRE, bgav_id3v1_get_genre(i_tmp));
       }
     else
       {
-      gavl_metadata_set(m, GAVL_META_GENRE, frame->strings[0]);
+      gavl_dictionary_set_string(m, GAVL_META_GENRE, frame->strings[0]);
       }
     }
 
@@ -762,7 +762,7 @@ void bgav_id3v2_2_metadata(bgav_id3v2_tag_t * t, gavl_metadata_t*m)
   frame = bgav_id3v2_find_frame(t, comment_tags);
 
   if(frame)
-    gavl_metadata_set_nocpy(m, GAVL_META_COMMENT, get_comment(t->opt, frame));
+    gavl_dictionary_set_string_nocpy(m, GAVL_META_COMMENT, get_comment(t->opt, frame));
   
   }
 

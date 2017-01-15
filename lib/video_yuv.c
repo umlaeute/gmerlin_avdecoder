@@ -87,7 +87,7 @@ static int init_yuv2(bgav_stream_t * s)
   
   init_common(s);
 
-  gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                     "Full scale YUV 4:2:2 packed (yuv2)");
 
   priv = s->decoder_priv;
@@ -169,7 +169,7 @@ static int init_v408(bgav_stream_t * s)
   
   init_common(s);
 
-  gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                     "YUVA 4:4:4:4 (v408)");
 
   priv = s->decoder_priv;
@@ -200,7 +200,7 @@ static int init_2vuy(bgav_stream_t * s)
   
   init_common(s);
   
-  gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                     "YUV 4:2:2 packed (2vuy)");
   
   priv = s->decoder_priv;
@@ -230,7 +230,7 @@ static int init_VYUY(bgav_stream_t * s)
   
   init_common(s);
 
-  gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                     "YUV 4:2:2 packed (VYUY)");
   
   priv = s->decoder_priv;
@@ -260,7 +260,7 @@ static int init_yv12(bgav_stream_t * s)
   
   init_common(s);
 
-  gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                     "YUV 4:2:0 planar (yv12)");
 
   priv = s->decoder_priv;
@@ -293,7 +293,7 @@ static int init_YV12(bgav_stream_t * s)
   
   init_common(s);
 
-  gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                     "YUV 4:2:0 planar (YV12)");
 
   priv = s->decoder_priv;
@@ -327,7 +327,7 @@ static int init_YVU9(bgav_stream_t * s)
   
   init_common(s);
 
-  gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                     "YVU9");
   
   priv = s->decoder_priv;
@@ -383,7 +383,7 @@ static int init_v308(bgav_stream_t * s)
   
   init_common(s);
 
-  gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                     "YUV 4:4:4 packed (v308)");
 
   priv = s->decoder_priv;
@@ -437,7 +437,7 @@ static int init_v410(bgav_stream_t * s)
   
   init_common(s);
   
-  gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                     "YUV 4:4:4 packed (v410)");
 
   priv = s->decoder_priv;
@@ -527,7 +527,7 @@ static int init_v210(bgav_stream_t * s)
   
   init_common(s);
 
-  gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                     "YUV 4:2:2 packed (v210)");
 
   priv = s->decoder_priv;
@@ -588,7 +588,7 @@ static int init_yuv4(bgav_stream_t * s)
   
   init_common(s);
 
-  gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                     "YUV 4:2:0 packed (yuv4)");
   s->ci.flags &= ~GAVL_COMPRESSION_HAS_P_FRAMES;
   

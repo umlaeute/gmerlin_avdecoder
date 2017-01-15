@@ -91,4 +91,4 @@ int bgav_http_read(bgav_http_t * h, uint8_t * data, int len, int block);
 int64_t bgav_http_total_bytes(bgav_http_t * h);
 int bgav_http_can_seek(bgav_http_t * h);
 
-void bgav_http_set_metadata(bgav_http_t * h, gavl_metadata_t * m);
+void bgav_http_set_metadata(bgav_http_t * h, gavl_dictionary_t * m);

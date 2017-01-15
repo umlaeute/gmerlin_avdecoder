@@ -494,7 +494,7 @@ struct bgav_stream_s
   bgav_packet_t * packet;
   int             packet_seq;
   
-  gavl_metadata_t m;
+  gavl_dictionary_t m;
   
   /*
    *  Sometimes, the bitrates important for codecs 
@@ -633,7 +633,7 @@ void bgav_stream_set_from_gavl(bgav_stream_t * s,
                                const gavl_compression_info_t * ci,
                                const gavl_audio_format_t * afmt,
                                const gavl_video_format_t * vfmt,
-                               const gavl_metadata_t * m);
+                               const gavl_dictionary_t * m);
 
 int bgav_streams_foreach(bgav_stream_t * s, int num,
                          int (*action)(void * priv, bgav_stream_t * s), void * priv);

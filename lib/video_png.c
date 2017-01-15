@@ -92,7 +92,7 @@ static int init_png(bgav_stream_t * s)
   s->decoder_priv = priv;
   
   priv->png_reader = bgav_png_reader_create(s->data.video.depth);
-  gavl_metadata_set(&s->m, GAVL_META_FORMAT, "PNG");
+  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "PNG");
   return 1;
   }
 

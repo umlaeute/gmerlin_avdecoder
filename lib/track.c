@@ -178,7 +178,7 @@ bgav_track_attach_subtitle_reader(bgav_track_t * t,
     r->reader->setup_stream(ret);
   
   if(r->info)
-    gavl_metadata_set(&ret->m, GAVL_META_LABEL, r->info);
+    gavl_dictionary_set_string(&ret->m, GAVL_META_LABEL, r->info);
   return ret;
   }
 
@@ -420,7 +420,7 @@ void bgav_track_dump(bgav_t * b, bgav_track_t * t)
     bgav_dprintf( "Not specified (maybe live)\n");
 
   bgav_diprintf(2, "Metadata\n");
-  gavl_metadata_dump(&t->metadata, 4);
+  gavl_dictionary_dump(&t->metadata, 4);
 
   if(t->chapter_list)
     gavl_chapter_list_dump(t->chapter_list);
@@ -452,7 +452,7 @@ void bgav_track_free(bgav_track_t * t)
   {
   int i;
   
-  gavl_metadata_free(&t->metadata);
+  gavl_dictionary_free(&t->metadata);
   if(t->chapter_list)
     gavl_chapter_list_destroy(t->chapter_list);
   

@@ -258,7 +258,7 @@ static int init_tiff(bgav_stream_t * s)
   else
     s->data.video.format.pixelformat = GAVL_RGB_24;
 
-  gavl_metadata_set(&s->m, GAVL_META_FORMAT, "TIFF");
+  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "TIFF");
   return 1;
   }
 

@@ -28,56 +28,56 @@
 
 const char * bgav_metadata_get_author(const bgav_metadata_t*m)
   {
-  return gavl_metadata_get(m, GAVL_META_AUTHOR);
+  return gavl_dictionary_get_string(m, GAVL_META_AUTHOR);
   }
 
 const char * bgav_metadata_get_title(const bgav_metadata_t*m)
   {
-  return gavl_metadata_get(m, GAVL_META_TITLE);
+  return gavl_dictionary_get_string(m, GAVL_META_TITLE);
   }
 
 const char * bgav_metadata_get_comment(const bgav_metadata_t*m)
   {
-  return gavl_metadata_get(m, GAVL_META_COMMENT);
+  return gavl_dictionary_get_string(m, GAVL_META_COMMENT);
   }
 
 const char * bgav_metadata_get_copyright(const bgav_metadata_t*m)
   {
-  return gavl_metadata_get(m, GAVL_META_COPYRIGHT);
+  return gavl_dictionary_get_string(m, GAVL_META_COPYRIGHT);
   }
 
 const char * bgav_metadata_get_album(const bgav_metadata_t*m)
   {
-  return gavl_metadata_get(m, GAVL_META_ALBUM);
+  return gavl_dictionary_get_string(m, GAVL_META_ALBUM);
   }
 
 const char * bgav_metadata_get_artist(const bgav_metadata_t*m)
   {
-  return gavl_metadata_get(m, GAVL_META_ARTIST);
+  return gavl_dictionary_get_string(m, GAVL_META_ARTIST);
   }
 
 const char * bgav_metadata_get_albumartist(const bgav_metadata_t*m)
   {
-  return gavl_metadata_get(m, GAVL_META_ALBUMARTIST);
+  return gavl_dictionary_get_string(m, GAVL_META_ALBUMARTIST);
   }
 
 const char * bgav_metadata_get_genre(const bgav_metadata_t*m)
   {
-  return gavl_metadata_get(m, GAVL_META_GENRE);
+  return gavl_dictionary_get_string(m, GAVL_META_GENRE);
   }
 
 const char * bgav_metadata_get_date(const bgav_metadata_t*m)
   {
-  const char * ret = gavl_metadata_get(m, GAVL_META_DATE);
+  const char * ret = gavl_dictionary_get_string(m, GAVL_META_DATE);
   if(!ret)
-    ret = gavl_metadata_get(m, GAVL_META_YEAR);
+    ret = gavl_dictionary_get_string(m, GAVL_META_YEAR);
   return ret;
   }
 
 int bgav_metadata_get_track(const bgav_metadata_t*m)
   {
   int ret;
-  if(gavl_metadata_get_int(m, GAVL_META_TRACKNUMBER, &ret))
+  if(gavl_dictionary_get_string_int(m, GAVL_META_TRACKNUMBER, &ret))
     return ret;
   return 0;
   }

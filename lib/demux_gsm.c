@@ -74,7 +74,7 @@ static int open_gsm(bgav_demuxer_context_t * ctx)
       ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
     }
 
-  gavl_metadata_set(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "GSM");
 
   ctx->data_start = ctx->input->position;

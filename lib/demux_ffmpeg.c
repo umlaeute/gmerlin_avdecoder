@@ -753,13 +753,13 @@ static int open_ffmpeg(bgav_demuxer_context_t * ctx)
   tag = av_metadata_get(avfc->metadata, ffmpeg_name, NULL, \
                         AV_METADATA_IGNORE_SUFFIX); \
   if(tag) \
-    gavl_metadata_set(&ctx->tt->cur->metadata, gavl_name, tag->value);
+    gavl_dictionary_set_string(&ctx->tt->cur->metadata, gavl_name, tag->value);
 
 #define GET_METADATA_INT(gavl_name, ffmpeg_name) \
   tag = av_metadata_get(avfc->metadata, ffmpeg_name, NULL, \
                         AV_METADATA_IGNORE_SUFFIX); \
   if(tag) \
-    gavl_metadata_set_int(&ctx->tt->cur->metadata, gavl_name, atoi(tag->value));
+    gavl_dictionary_set_string_int(&ctx->tt->cur->metadata, gavl_name, atoi(tag->value));
 
   
   if(avfc->metadata)
@@ -776,20 +776,20 @@ static int open_ffmpeg(bgav_demuxer_context_t * ctx)
   
   /* Metadata */
   if(avfc->title[0])
-    gavl_metadata_set(&ctx->tt->cur->metadata, GAVL_META_TITLE, avfc->title);
+    gavl_dictionary_set_string(&ctx->tt->cur->metadata, GAVL_META_TITLE, avfc->title);
   if(avfc->author[0])
-    gavl_metadata_set(&ctx->tt->cur->metadata, GAVL_META_AUTHOR, avfc->author);
+    gavl_dictionary_set_string(&ctx->tt->cur->metadata, GAVL_META_AUTHOR, avfc->author);
   if(avfc->copyright[0])
-    gavl_metadata_set(&ctx->tt->cur->metadata, GAVL_META_COPYRIGHT, avfc->copyright);
+    gavl_dictionary_set_string(&ctx->tt->cur->metadata, GAVL_META_COPYRIGHT, avfc->copyright);
   if(avfc->album[0])
-    gavl_metadata_set(&ctx->tt->cur->metadata, GAVL_META_ALBUM, avfc->album);
+    gavl_dictionary_set_string(&ctx->tt->cur->metadata, GAVL_META_ALBUM, avfc->album);
   if(avfc->genre[0])
-    gavl_metadata_set(&ctx->tt->cur->metadata, GAVL_META_GENRE, avfc->genre);
+    gavl_dictionary_set_string(&ctx->tt->cur->metadata, GAVL_META_GENRE, avfc->genre);
   if(avfc->track)
-    gavl_metadata_set_int(&ctx->tt->cur->metadata, GAVL_META_TRACKNUMBER, avfc->track);
+    gavl_dictionary_set_string_int(&ctx->tt->cur->metadata, GAVL_META_TRACKNUMBER, avfc->track);
 #endif
 
-  gavl_metadata_set_nocpy(&ctx->tt->cur->metadata,
+  gavl_dictionary_set_string_nocpy(&ctx->tt->cur->metadata,
                           GAVL_META_FORMAT,
                           bgav_sprintf(TRD("%s (via ffmpeg)"),
                                        priv->avfc->iformat->long_name));

@@ -551,7 +551,7 @@ static int init_mpeg2(bgav_stream_t*s)
   priv->frame->strides[2] = priv->info->sequence->chroma_width;
 
 
-  gavl_metadata_set_nocpy(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string_nocpy(&s->m, GAVL_META_FORMAT,
                           bgav_sprintf("MPEG-%d",
                                        (priv->info->sequence->flags & SEQ_FLAG_MPEG2) ? 2 : 1));
 

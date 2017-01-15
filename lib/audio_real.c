@@ -308,11 +308,11 @@ static int init_real(bgav_stream_t * s)
   prop = priv->raGetFlavorProperty(priv->real_handle, s->subformat, 0, &len);
   
   if(prop)
-    gavl_metadata_set_nocpy(&s->m, GAVL_META_FORMAT,
+    gavl_dictionary_set_string_nocpy(&s->m, GAVL_META_FORMAT,
                             bgav_sprintf("%s (Flavor: %s)",
                                          info->format_name, (char*)prop));
   else
-    gavl_metadata_set_nocpy(&s->m, GAVL_META_FORMAT,
+    gavl_dictionary_set_string_nocpy(&s->m, GAVL_META_FORMAT,
                             bgav_sprintf("%s", info->format_name));
   
   //  prop = priv->raGetFlavorProperty(priv->real_handle, s->subformat, 1, &len);

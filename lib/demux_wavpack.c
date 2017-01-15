@@ -161,7 +161,7 @@ static int open_wavpack(bgav_demuxer_context_t * ctx)
   s->fourcc = BGAV_MK_FOURCC('w','v','p','k');
   s->data.audio.bits_per_sample = ((h.flags & 3) + 1) << 3;
 
-  gavl_metadata_set(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "Wavpack");
   ctx->tt->cur->duration =
     gavl_time_unscale(s->data.audio.format.samplerate, h.total_samples);

@@ -98,7 +98,7 @@ static int open_a52(bgav_demuxer_context_t * ctx)
     (s->container_bitrate / 8);
   ctx->index_mode = INDEX_MODE_SIMPLE;
 
-  gavl_metadata_set(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "AC3");
   return 1;
   

@@ -286,7 +286,7 @@ static int open_sphere(bgav_demuxer_context_t * ctx)
 
   bgav_input_skip(ctx->input, HEADERSIZE - ctx->input->position);
   
-  gavl_metadata_set(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "NIST SPHERE");
   
   ctx->index_mode = INDEX_MODE_PCM;

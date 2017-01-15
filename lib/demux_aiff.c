@@ -353,22 +353,22 @@ static int open_aiff(bgav_demuxer_context_t * ctx)
         break;
       case BGAV_MK_FOURCC('N','A','M','E'):
         tmp_string = read_meta_string(ctx->input, &ch);
-        gavl_metadata_set_nocpy(&ctx->tt->cur->metadata,
+        gavl_dictionary_set_string_nocpy(&ctx->tt->cur->metadata,
                                 GAVL_META_TITLE, tmp_string);
         break;
       case BGAV_MK_FOURCC('A','U','T','H'):
         tmp_string = read_meta_string(ctx->input, &ch);
-        gavl_metadata_set_nocpy(&ctx->tt->cur->metadata,
+        gavl_dictionary_set_string_nocpy(&ctx->tt->cur->metadata,
                                 GAVL_META_AUTHOR, tmp_string);
         break;
       case BGAV_MK_FOURCC('(','c',')',' '):
         tmp_string = read_meta_string(ctx->input, &ch);
-        gavl_metadata_set_nocpy(&ctx->tt->cur->metadata,
+        gavl_dictionary_set_string_nocpy(&ctx->tt->cur->metadata,
                                 GAVL_META_COPYRIGHT, tmp_string);
         break;
       case BGAV_MK_FOURCC('A','N','N','O'):
         tmp_string = read_meta_string(ctx->input, &ch);
-        gavl_metadata_set_nocpy(&ctx->tt->cur->metadata,
+        gavl_dictionary_set_string_nocpy(&ctx->tt->cur->metadata,
                                 GAVL_META_COMMENT, tmp_string);
         break;
       case BGAV_MK_FOURCC('S','S','N','D'):
@@ -394,10 +394,10 @@ static int open_aiff(bgav_demuxer_context_t * ctx)
     ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
 
   if(priv->is_aifc)
-    gavl_metadata_set(&ctx->tt->cur->metadata, 
+    gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                       GAVL_META_FORMAT, "AIFF-C");
   else
-    gavl_metadata_set(&ctx->tt->cur->metadata, 
+    gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                       GAVL_META_FORMAT, "AIFF");
   ctx->index_mode = INDEX_MODE_PCM;
   return 1;

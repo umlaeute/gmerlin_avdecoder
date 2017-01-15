@@ -226,7 +226,7 @@ static int open_y4m(bgav_demuxer_context_t * ctx)
   
   s->fourcc = BGAV_MK_FOURCC('y','4','m',' ');
   
-  gavl_metadata_set(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "yuv4mpeg");
   
   ctx->index_mode = INDEX_MODE_SIMPLE;

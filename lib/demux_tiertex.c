@@ -182,7 +182,7 @@ static int open_tiertex(bgav_demuxer_context_t * ctx)
     }
   priv->num_frame_buffers = i;
 
-  gavl_metadata_set(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "Tiertex SEQ");
 
   ctx->data_start = ctx->input->position;

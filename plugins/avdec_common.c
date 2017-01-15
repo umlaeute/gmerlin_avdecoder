@@ -297,7 +297,7 @@ int bg_avdec_start(void * priv)
     gavl_video_format_copy(&(avdec->current_track->video_streams[i].format),
                            bgav_get_video_format(avdec->dec, i));
 
-    gavl_metadata_merge2(&avdec->current_track->video_streams[i].m,
+    gavl_dictionary_merge2(&avdec->current_track->video_streams[i].m,
                        bgav_get_video_metadata(avdec->dec, i));
     
     avdec->current_track->video_streams[i].duration =
@@ -312,7 +312,7 @@ int bg_avdec_start(void * priv)
     gavl_audio_format_copy(&(avdec->current_track->audio_streams[i].format),
                            bgav_get_audio_format(avdec->dec, i));
 
-    gavl_metadata_merge2(&avdec->current_track->audio_streams[i].m,
+    gavl_dictionary_merge2(&avdec->current_track->audio_streams[i].m,
                          bgav_get_audio_metadata(avdec->dec, i));
     
     avdec->current_track->audio_streams[i].duration =
@@ -324,7 +324,7 @@ int bg_avdec_start(void * priv)
 
   for(i = 0; i < avdec->current_track->num_text_streams; i++)
     {
-    gavl_metadata_merge2(&avdec->current_track->text_streams[i].m,
+    gavl_dictionary_merge2(&avdec->current_track->text_streams[i].m,
                          bgav_get_text_metadata(avdec->dec, i));
     
     avdec->current_track->text_streams[i].duration =
@@ -336,7 +336,7 @@ int bg_avdec_start(void * priv)
 
   for(i = 0; i < avdec->current_track->num_overlay_streams; i++)
     {
-    gavl_metadata_merge2(&avdec->current_track->overlay_streams[i].m,
+    gavl_dictionary_merge2(&avdec->current_track->overlay_streams[i].m,
                          bgav_get_overlay_metadata(avdec->dec, i));
     
     avdec->current_track->overlay_streams[i].duration =
@@ -388,7 +388,7 @@ int bg_avdec_init(avdec_priv * avdec)
         gavl_audio_format_copy(&(avdec->track_info[i].audio_streams[j].format),
                                bgav_get_audio_format_t(avdec->dec, i, j));
 
-        gavl_metadata_copy(&(avdec->track_info[i].audio_streams[j].m),
+        gavl_dictionary_copy(&(avdec->track_info[i].audio_streams[j].m),
                            bgav_get_audio_metadata_t(avdec->dec, i, j));
         
         }
@@ -404,7 +404,7 @@ int bg_avdec_init(avdec_priv * avdec)
         gavl_video_format_copy(&(avdec->track_info[i].video_streams[j].format),
                                bgav_get_video_format_t(avdec->dec, i, j));
 
-        gavl_metadata_copy(&(avdec->track_info[i].video_streams[j].m),
+        gavl_dictionary_copy(&(avdec->track_info[i].video_streams[j].m),
                            bgav_get_video_metadata_t(avdec->dec, i, j));
         
         }
@@ -418,7 +418,7 @@ int bg_avdec_init(avdec_priv * avdec)
       for(j = 0; j < avdec->track_info[i].num_text_streams; j++)
         {
         int idx = j + avdec->track_info[i].num_overlay_streams;
-        gavl_metadata_copy(&(avdec->track_info[i].text_streams[j].m),
+        gavl_dictionary_copy(&(avdec->track_info[i].text_streams[j].m),
                            bgav_get_text_metadata_t(avdec->dec, i, idx));
         }
       }
@@ -430,7 +430,7 @@ int bg_avdec_init(avdec_priv * avdec)
 
       for(j = 0; j < avdec->track_info[i].num_overlay_streams; j++)
         {
-        gavl_metadata_copy(&(avdec->track_info[i].overlay_streams[j].m),
+        gavl_dictionary_copy(&(avdec->track_info[i].overlay_streams[j].m),
                            bgav_get_overlay_metadata_t(avdec->dec, i, j));
         }
       }
@@ -438,14 +438,14 @@ int bg_avdec_init(avdec_priv * avdec)
     duration = bgav_get_duration(avdec->dec, i);
 
     if(duration != GAVL_TIME_UNDEFINED)
-      gavl_metadata_set_long(&avdec->track_info[i].metadata,
+      gavl_dictionary_set_string_long(&avdec->track_info[i].metadata,
                              GAVL_META_APPROX_DURATION, duration);
         
     /* Get metadata */
     
     m = bgav_get_metadata(avdec->dec, i);
     
-    gavl_metadata_copy(&avdec->track_info[i].metadata, m);
+    gavl_dictionary_copy(&avdec->track_info[i].metadata, m);
 
     /* Get chapters */
 
@@ -462,7 +462,7 @@ int bg_avdec_init(avdec_priv * avdec)
 
 void
 bg_avdec_set_parameter(void * p, const char * name,
-                       const bg_parameter_value_t * val)
+                       const gavl_value_t * val)
   {
   avdec_priv * avdec = p;
   bg_avdec_option_set_parameter(avdec->opt, name, val);
@@ -505,7 +505,7 @@ gavl_frame_table_t * bg_avdec_get_frame_table(void * priv, int stream)
   }
 
 static void metadata_change_callback(void * priv,
-                                     const gavl_metadata_t * metadata)
+                                     const gavl_dictionary_t * metadata)
   {
   avdec_priv * avdec;
   avdec = priv;
@@ -514,7 +514,7 @@ static void metadata_change_callback(void * priv,
 
   if(avdec->current_track)
     {
-    gavl_metadata_copy(&avdec->current_track->metadata,
+    gavl_dictionary_copy(&avdec->current_track->metadata,
                        metadata);
 
     fprintf(stderr, "Metadata callback %p %p\n",

@@ -82,10 +82,10 @@ static int init_gsm(bgav_stream_t * s)
   priv->frame = gavl_audio_frame_create(&s->data.audio.format);
 
   if(priv->ms)
-    gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+    gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                       "MSGM");
   else
-    gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+    gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                       "GSM 6.10");
   return 1;
   }

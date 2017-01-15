@@ -506,7 +506,7 @@ int bgav_pmt_section_setup_track(pmt_section_t * pmts,
           language[2] = desc[4];
           language[3] = '\0';
           bgav_correct_language(language);
-          gavl_metadata_set(&s->m, GAVL_META_LANGUAGE,
+          gavl_dictionary_set_string(&s->m, GAVL_META_LANGUAGE,
                            language);
           }
         }

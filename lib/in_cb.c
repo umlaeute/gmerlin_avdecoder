@@ -97,7 +97,7 @@ bgav_input_open_callbacks(int (*read_callback)(void * priv, uint8_t * data, int 
   ret->priv = c;
   ret->filename = gavl_strdup(filename);
   if(mimetype)
-    gavl_metadata_set(&ret->metadata, GAVL_META_MIMETYPE, mimetype);
+    gavl_dictionary_set_string(&ret->metadata, GAVL_META_MIMETYPE, mimetype);
   ret->total_bytes = total_bytes;
   
   if(ret->filename)

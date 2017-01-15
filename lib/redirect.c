@@ -87,7 +87,7 @@ bgav_redirector_probe(bgav_input_context_t * input)
 int bgav_is_redirector(bgav_t * b)
   {
   if(b->tt && b->tt->num_tracks &&
-     gavl_metadata_get(&b->tt->tracks[0].metadata, GAVL_META_REFURL))
+     gavl_dictionary_get_string(&b->tt->tracks[0].metadata, GAVL_META_REFURL))
     return 1;
   return 0;
   }
@@ -107,7 +107,7 @@ const char * bgav_redirector_get_url(bgav_t * b, int index)
   if((index < 0) || (index >= b->tt->num_tracks))
     return NULL;
   
-  return gavl_metadata_get(&b->tt->tracks[index].metadata, GAVL_META_REFURL);
+  return gavl_dictionary_get_string(&b->tt->tracks[index].metadata, GAVL_META_REFURL);
   }
 
 const char * bgav_redirector_get_name(bgav_t * b, int index)
@@ -118,10 +118,10 @@ const char * bgav_redirector_get_name(bgav_t * b, int index)
   if((index < 0) || (index >= b->tt->num_tracks))
     return NULL;
   
-  return gavl_metadata_get(&b->tt->tracks[index].metadata, GAVL_META_LABEL);
+  return gavl_dictionary_get_string(&b->tt->tracks[index].metadata, GAVL_META_LABEL);
   }
 
-const gavl_metadata_t * bgav_redirector_get_metadata(bgav_t * b, int index)
+const gavl_dictionary_t * bgav_redirector_get_metadata(bgav_t * b, int index)
   {
   if(!bgav_is_redirector(b))
     return NULL;

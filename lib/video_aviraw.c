@@ -277,7 +277,7 @@ static int init_aviraw(bgav_stream_t * s)
     {
     priv->in_stride += (4 - (priv->in_stride % 4));
     }
-  gavl_metadata_set(&s->m, GAVL_META_FORMAT, "AVI raw");
+  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "AVI raw");
   return 1;
   }
 

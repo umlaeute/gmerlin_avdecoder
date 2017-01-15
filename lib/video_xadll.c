@@ -395,7 +395,7 @@ static int init_xadll(bgav_stream_t * s)
   s->decoder_priv = priv;
   s->data.video.format.pixelformat = GAVL_YUV_420_P;
 
-  gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                     "3ivx");
   free(codec_hdr.anim_hdr);
   

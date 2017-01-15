@@ -79,13 +79,13 @@ static int extract_header(bgav_video_parser_t * parser, bgav_packet_t * p,
     if(priv->sh.mpeg2)
       {
       parser->s->fourcc = BGAV_MK_FOURCC('m','p','v','2');
-      gavl_metadata_set_nocpy(&parser->s->m, GAVL_META_FORMAT,
+      gavl_dictionary_set_string_nocpy(&parser->s->m, GAVL_META_FORMAT,
                               bgav_sprintf("MPEG-2"));
       }
     else
       {
       parser->s->fourcc = BGAV_MK_FOURCC('m','p','v','1');
-      gavl_metadata_set_nocpy(&parser->s->m, GAVL_META_FORMAT,
+      gavl_dictionary_set_string_nocpy(&parser->s->m, GAVL_META_FORMAT,
                               bgav_sprintf("MPEG-1"));
       }
     }

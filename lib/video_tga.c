@@ -267,7 +267,7 @@ static int init_tga(bgav_stream_t * s)
   
   priv->do_init = 0;
   
-  gavl_metadata_set(&s->m, GAVL_META_FORMAT, "TGA");
+  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "TGA");
   return 1;
   }
 

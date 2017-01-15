@@ -121,44 +121,44 @@ void bgav_vorbis_comment_2_metadata(bgav_vorbis_comment_t * comment,
   int j;
 
   if((field = bgav_vorbis_comment_get_field(comment, artist_key)))
-    gavl_metadata_set(m, GAVL_META_ARTIST, field);
+    gavl_dictionary_set_string(m, GAVL_META_ARTIST, field);
 
   if((field = bgav_vorbis_comment_get_field(comment, author_key)))
-    gavl_metadata_set(m, GAVL_META_AUTHOR, field);
+    gavl_dictionary_set_string(m, GAVL_META_AUTHOR, field);
 
   if((field = bgav_vorbis_comment_get_field(comment, album_key)))
-    gavl_metadata_set(m, GAVL_META_ALBUM, field);
+    gavl_dictionary_set_string(m, GAVL_META_ALBUM, field);
 
   if((field = bgav_vorbis_comment_get_field(comment, title_key)))
-    gavl_metadata_set(m, GAVL_META_TITLE, field);
+    gavl_dictionary_set_string(m, GAVL_META_TITLE, field);
 
   if((field = bgav_vorbis_comment_get_field(comment, genre_key)))
-    gavl_metadata_set(m, GAVL_META_GENRE, field);
+    gavl_dictionary_set_string(m, GAVL_META_GENRE, field);
 
   if((field = bgav_vorbis_comment_get_field(comment, date_key)))
     {
     if(strlen(field) == 4)
-      gavl_metadata_set(m, GAVL_META_YEAR, field);
+      gavl_dictionary_set_string(m, GAVL_META_YEAR, field);
     else
-      gavl_metadata_set(m, GAVL_META_DATE, field);
+      gavl_dictionary_set_string(m, GAVL_META_DATE, field);
     
     }
 
   if((field = bgav_vorbis_comment_get_field(comment, copyright_key)))
-    gavl_metadata_set(m, GAVL_META_COPYRIGHT, field);
+    gavl_dictionary_set_string(m, GAVL_META_COPYRIGHT, field);
   if((field = bgav_vorbis_comment_get_field(comment, albumartist1_key)))
-    gavl_metadata_set(m, GAVL_META_ALBUMARTIST, field);
+    gavl_dictionary_set_string(m, GAVL_META_ALBUMARTIST, field);
   else if((field = bgav_vorbis_comment_get_field(comment, albumartist2_key)))
-    gavl_metadata_set(m, GAVL_META_ALBUMARTIST, field);
+    gavl_dictionary_set_string(m, GAVL_META_ALBUMARTIST, field);
   
   if((field = bgav_vorbis_comment_get_field(comment, track_number_key)))
-    gavl_metadata_set_int(m, GAVL_META_TRACKNUMBER, atoi(field));
+    gavl_dictionary_set_string_int(m, GAVL_META_TRACKNUMBER, atoi(field));
   
   for(j = 0; j < comment->num_user_comments; j++)
     {
     if(!strchr(comment->user_comments[j], '='))
       {
-      gavl_metadata_set(m, GAVL_META_COMMENT, comment->user_comments[j]);
+      gavl_dictionary_set_string(m, GAVL_META_COMMENT, comment->user_comments[j]);
       break;
       }
     }

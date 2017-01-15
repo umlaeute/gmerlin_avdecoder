@@ -170,18 +170,18 @@ int bgav_audio_start(bgav_stream_t * s)
     }
 
   if(s->data.audio.bits_per_sample)
-    gavl_metadata_set_int(&s->m, GAVL_META_AUDIO_BITS ,
+    gavl_dictionary_set_string_int(&s->m, GAVL_META_AUDIO_BITS ,
                           s->data.audio.bits_per_sample);
 
 
   //  if(s->container_bitrate == GAVL_BITRATE_VBR)
-  //    gavl_metadata_set(&s->m, GAVL_META_BITRATE,
+  //    gavl_dictionary_set_string(&s->m, GAVL_META_BITRATE,
   //                      "VBR");
   else if(s->codec_bitrate)
-    gavl_metadata_set_int(&s->m, GAVL_META_BITRATE,
+    gavl_dictionary_set_string_int(&s->m, GAVL_META_BITRATE,
                           s->codec_bitrate);
   else if(s->container_bitrate)
-    gavl_metadata_set_int(&s->m, GAVL_META_BITRATE,
+    gavl_dictionary_set_string_int(&s->m, GAVL_META_BITRATE,
                           s->container_bitrate);
 
   if(s->action == BGAV_STREAM_DECODE)
@@ -231,13 +231,13 @@ void bgav_audio_stop(bgav_stream_t * s)
 
 const char * bgav_get_audio_description(bgav_t * b, int s)
   {
-  return gavl_metadata_get(&b->tt->cur->audio_streams[s].m,
+  return gavl_dictionary_get_string(&b->tt->cur->audio_streams[s].m,
                            GAVL_META_FORMAT);
   }
 
 const char * bgav_get_audio_info(bgav_t * b, int s)
   {
-  return gavl_metadata_get(&b->tt->cur->audio_streams[s].m,
+  return gavl_dictionary_get_string(&b->tt->cur->audio_streams[s].m,
                            GAVL_META_LABEL);
   }
 
@@ -256,7 +256,7 @@ bgav_get_audio_metadata_t(bgav_t * b, int track, int s)
 
 const char * bgav_get_audio_language(bgav_t * b, int s)
   {
-  return gavl_metadata_get(&b->tt->cur->audio_streams[s].m,
+  return gavl_dictionary_get_string(&b->tt->cur->audio_streams[s].m,
                            GAVL_META_LANGUAGE);
   }
 

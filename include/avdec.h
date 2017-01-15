@@ -112,7 +112,7 @@ bgav_t * bgav_create();
  * This structure is returned by \ref bgav_get_metadata
  */
 
-typedef gavl_metadata_t bgav_metadata_t;
+typedef gavl_dictionary_t bgav_metadata_t;
 
 /** \ingroup metadata
  * \brief Get the author (or composer) of the track
@@ -1167,7 +1167,7 @@ const char * bgav_redirector_get_name(bgav_t * bgav, int index);
  */
 
 BGAV_PUBLIC
-const gavl_metadata_t * bgav_redirector_get_metadata(bgav_t * b, int index);
+const gavl_dictionary_t * bgav_redirector_get_metadata(bgav_t * b, int index);
   
 /***************************************************
  * Get information about the file
@@ -2537,7 +2537,7 @@ bgav_stream_decoder_connect_audio(bgav_stream_decoder_t * dec,
                                   gavl_packet_source_t * src,
                                   const gavl_compression_info_t * ci,
                                   const gavl_audio_format_t * fmt,
-                                  gavl_metadata_t * m);
+                                  gavl_dictionary_t * m);
   
 /** \brief Connect a video stream decoder
  *  \param dec A stream decoder
@@ -2560,7 +2560,7 @@ bgav_stream_decoder_connect_video(bgav_stream_decoder_t * dec,
                                   gavl_packet_source_t * src,
                                   const gavl_compression_info_t * ci,
                                   const gavl_video_format_t * fmt,
-                                  gavl_metadata_t * m);
+                                  gavl_dictionary_t * m);
 
 /** \brief Connect an overlay stream decoder
  *  \param dec A stream decoder
@@ -2583,7 +2583,7 @@ bgav_stream_decoder_connect_overlay(bgav_stream_decoder_t * dec,
                                     gavl_packet_source_t * src,
                                     const gavl_compression_info_t * ci,
                                     const gavl_video_format_t * fmt,
-                                    gavl_metadata_t * m);
+                                    gavl_dictionary_t * m);
 
 /** \brief Skip to a specified time
  *  \param dec A stream decoder

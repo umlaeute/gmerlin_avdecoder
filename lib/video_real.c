@@ -292,7 +292,7 @@ static int init_real(bgav_stream_t * s)
       }
     }
 
-  gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                     info->format_name);
   
   return 1;

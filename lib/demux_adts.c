@@ -61,7 +61,7 @@ static int probe_adts(bgav_input_context_t * input)
   
   /* Support aac live streams */
 
-  if((mimetype = gavl_metadata_get(&input->metadata, GAVL_META_MIMETYPE)) &&
+  if((mimetype = gavl_dictionary_get_string(&input->metadata, GAVL_META_MIMETYPE)) &&
      (!strcmp(mimetype, "audio/aacp") ||
       !strcmp(mimetype, "audio/aac")))
     return 1;
@@ -167,7 +167,7 @@ static int open_adts(bgav_demuxer_context_t * ctx)
   aac_priv_t * priv;
   bgav_stream_t * s;
   bgav_id3v1_tag_t * id3v1 = NULL;
-  gavl_metadata_t id3v1_metadata, id3v2_metadata;
+  gavl_dictionary_t id3v1_metadata, id3v2_metadata;
   uint8_t buf[ADTS_HEADER_LEN];
 
   bgav_adts_header_t adts;
@@ -215,12 +215,12 @@ static int open_adts(bgav_demuxer_context_t * ctx)
     memset(&id3v2_metadata, 0, sizeof(id3v2_metadata));
     bgav_id3v1_2_metadata(id3v1, &id3v1_metadata);
     bgav_id3v2_2_metadata(ctx->input->id3v2, &id3v2_metadata);
-    //    gavl_metadata_dump(&id3v2_metadata);
+    //    gavl_dictionary_dump(&id3v2_metadata);
 
-    gavl_metadata_merge(&ctx->tt->cur->metadata,
+    gavl_dictionary_merge(&ctx->tt->cur->metadata,
                         &id3v2_metadata, &id3v1_metadata);
-    gavl_metadata_free(&id3v1_metadata);
-    gavl_metadata_free(&id3v2_metadata);
+    gavl_dictionary_free(&id3v1_metadata);
+    gavl_dictionary_free(&id3v2_metadata);
     }
   else if(ctx->input->id3v2)
     bgav_id3v2_2_metadata(ctx->input->id3v2,
@@ -267,7 +267,7 @@ static int open_adts(bgav_demuxer_context_t * ctx)
   
   s->data.audio.format.samplerate = adts.samplerate;
   
-  gavl_metadata_set(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "ADTS");
 
   
@@ -281,16 +281,16 @@ static int open_adts(bgav_demuxer_context_t * ctx)
     goto fail;
 #endif
 
-  gavl_metadata_set(&ctx->tt->cur->metadata,
+  gavl_dictionary_set_string(&ctx->tt->cur->metadata,
                     GAVL_META_FORMAT, "ADTS");
   if(priv->block_samples == 2048)
-    gavl_metadata_set(&ctx->tt->cur->metadata,
+    gavl_dictionary_set_string(&ctx->tt->cur->metadata,
                     GAVL_META_MIMETYPE, "audio/aacp");
   else
-    gavl_metadata_set(&ctx->tt->cur->metadata,
+    gavl_dictionary_set_string(&ctx->tt->cur->metadata,
                     GAVL_META_MIMETYPE, "audio/aac");
 
-  gavl_metadata_get_int(&ctx->input->metadata, GAVL_META_BITRATE, &s->container_bitrate);
+  gavl_dictionary_get_string_int(&ctx->input->metadata, GAVL_META_BITRATE, &s->container_bitrate);
   
   //  ctx->stream_description = bgav_sprintf("AAC");
   return 1;

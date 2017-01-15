@@ -60,7 +60,7 @@ void bg_avdec_codec_reset(void * priv)
   }
 
 void bg_avdec_codec_set_parameter(void * priv, const char * name,
-                                  const bg_parameter_value_t * val)
+                                  const gavl_value_t * val)
   {
   bg_avdec_codec_t * c = priv;
   bg_avdec_option_set_parameter(c->opt, name, val);

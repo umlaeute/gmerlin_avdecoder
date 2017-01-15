@@ -467,7 +467,7 @@ static int init_vorbis(bgav_stream_t * s)
   bgav_vorbis_set_channel_setup(&s->data.audio.format);
   gavl_set_channel_setup(&s->data.audio.format);
 
-  gavl_metadata_set(&s->m, GAVL_META_FORMAT, "Ogg Vorbis");
+  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "Ogg Vorbis");
   
   /* Preroll */
 

@@ -1122,14 +1122,14 @@ static int open_mpegps(bgav_demuxer_context_t * ctx)
   else
     priv->have_pts = 1;
 
-  gavl_metadata_set_nocpy(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string_nocpy(&ctx->tt->cur->metadata, 
                           GAVL_META_FORMAT,
                           bgav_sprintf("MPEG-%d",
                                        priv->pack_header.version));
   if(priv->pack_header.version == 1)
-    gavl_metadata_set(&ctx->tt->cur->metadata, GAVL_META_MIMETYPE, "video/mpeg");
+    gavl_dictionary_set_string(&ctx->tt->cur->metadata, GAVL_META_MIMETYPE, "video/mpeg");
   else
-    gavl_metadata_set(&ctx->tt->cur->metadata, GAVL_META_MIMETYPE, "video/MP2P"); 
+    gavl_dictionary_set_string(&ctx->tt->cur->metadata, GAVL_META_MIMETYPE, "video/MP2P"); 
  
   if(((ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE) && priv->have_pts) ||
      (ctx->input->input->seek_sector) ||

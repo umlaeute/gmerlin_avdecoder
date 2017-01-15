@@ -340,7 +340,7 @@ static void init_stream_common(mkv_t * m,
   s->stats.pts_start = GAVL_TIME_UNDEFINED;
   
   if(track->Language)
-    gavl_metadata_set(&s->m, GAVL_META_LANGUAGE, track->Language);
+    gavl_dictionary_set_string(&s->m, GAVL_META_LANGUAGE, track->Language);
   
   if(!codecs)
     return;
@@ -473,7 +473,7 @@ static int init_subtitle(bgav_demuxer_context_t * ctx,
     {
     // fprintf(stderr, "UTF-8 subtitles\n");
     s = bgav_track_add_text_stream(ctx->tt->cur, ctx->opt, BGAV_UTF8);
-    gavl_metadata_set(&s->m, GAVL_META_FORMAT, "SRT");
+    gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "SRT");
     }
   else if(!strcmp(track->CodecID, "S_VOBSUB"))
     {
@@ -509,7 +509,7 @@ static int init_subtitle(bgav_demuxer_context_t * ctx,
       {
       s = bgav_track_add_overlay_stream(ctx->tt->cur, ctx->opt);
 
-      gavl_metadata_set(&s->m, GAVL_META_FORMAT, "DVD subtitles");
+      gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "DVD subtitles");
       s->fourcc = BGAV_MK_FOURCC('D', 'V', 'D', 'S');
       s->ext_data = (uint8_t*)pal;
       s->ext_size = 16 * 4; // 64
@@ -564,14 +564,14 @@ static gavl_chapter_list_t * create_chapter_list(bgav_mkv_chapters_t * chap)
 
 #define SET_TAG_STRING(name, gavl_name) \
   else if(!strcmp(tags[i].st[j].TagName, name)) \
-    gavl_metadata_set(ret, gavl_name, tags[i].st[j].TagString)
+    gavl_dictionary_set_string(ret, gavl_name, tags[i].st[j].TagString)
 
 #define SET_TAG_INT(name, gavl_name) \
   else if(!strcmp(tags[i].st[j].TagName, name)) \
-    gavl_metadata_set_int(ret, gavl_name, atoi(tags[i].st[j].TagString))
+    gavl_dictionary_set_string_int(ret, gavl_name, atoi(tags[i].st[j].TagString))
 
 static void init_metadata(bgav_mkv_tag_t * tags, int num_tags,
-                          gavl_metadata_t * ret)
+                          gavl_dictionary_t * ret)
   {
   int i, j;
   for(i = 0; i < num_tags; i++)
@@ -824,16 +824,16 @@ static int open_matroska(bgav_demuxer_context_t * ctx)
 
   if(!strcmp(p->ebml_header.DocType, "matroska"))
     {
-    gavl_metadata_set(&ctx->tt->cur->metadata, 
+    gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                       GAVL_META_FORMAT, "Matroska");
-    gavl_metadata_set(&ctx->tt->cur->metadata, 
+    gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                       GAVL_META_MIMETYPE, "video/x-matroska");
     }
   else if(!strcmp(p->ebml_header.DocType, "webm"))
     {
-    gavl_metadata_set(&ctx->tt->cur->metadata, 
+    gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                       GAVL_META_FORMAT, "Webm");
-    gavl_metadata_set(&ctx->tt->cur->metadata, 
+    gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                       GAVL_META_MIMETYPE, "video/webm");
     }
   bgav_input_close(input_mem);

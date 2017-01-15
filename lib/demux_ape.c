@@ -338,7 +338,7 @@ static int open_ape(bgav_demuxer_context_t * ctx)
   ctx->tt->cur->duration =
     gavl_samples_to_time(priv->h.samplerate,
                          s->duration);
-  gavl_metadata_set(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "APE");
 
   ctx->index_mode = INDEX_MODE_SIMPLE;

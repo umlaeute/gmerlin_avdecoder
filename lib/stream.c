@@ -141,7 +141,7 @@ void bgav_stream_free(bgav_stream_t * s)
   if(s->file_index)
     bgav_file_index_destroy(s->file_index);
 
-  gavl_metadata_free(&s->m);
+  gavl_dictionary_free(&s->m);
   
   if(s->packet_buffer)
     bgav_packet_buffer_destroy(s->packet_buffer);
@@ -192,7 +192,7 @@ void bgav_stream_dump(bgav_stream_t * s)
     }
 
   bgav_dprintf("  Metadata:\n");
-  gavl_metadata_dump(&s->m, 4);
+  gavl_dictionary_dump(&s->m, 4);
   
   bgav_dprintf("  Fourcc:            ");
   bgav_dump_fourcc(s->fourcc);
@@ -433,7 +433,7 @@ void bgav_stream_set_from_gavl(bgav_stream_t * s,
                                const gavl_compression_info_t * ci,
                                const gavl_audio_format_t * afmt,
                                const gavl_video_format_t * vfmt,
-                               const gavl_metadata_t * m)
+                               const gavl_dictionary_t * m)
   {
   if(afmt)
     {
@@ -456,7 +456,7 @@ void bgav_stream_set_from_gavl(bgav_stream_t * s,
   bgav_stream_set_extradata(s, ci->global_header,
                             ci->global_header_len);
   s->container_bitrate = ci->bitrate;
-  gavl_metadata_copy(&s->m, m);
+  gavl_dictionary_copy(&s->m, m);
   }
                          
 int bgav_streams_foreach(bgav_stream_t * s, int num,

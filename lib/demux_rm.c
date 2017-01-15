@@ -869,7 +869,7 @@ int bgav_demux_rm_open_with_header(bgav_demuxer_context_t * ctx,
       }
     }
 
-  gavl_metadata_set(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "RM");
   
   /* Handle metadata */
@@ -877,14 +877,14 @@ int bgav_demux_rm_open_with_header(bgav_demuxer_context_t * ctx,
   cnv = bgav_charset_converter_create(ctx->opt, "ISO-8859-1", BGAV_UTF8);
 
   if(priv->header->cont.title_len)
-    gavl_metadata_set_nocpy(&track->metadata,
+    gavl_dictionary_set_string_nocpy(&track->metadata,
                             GAVL_META_TITLE,
                             bgav_convert_string(cnv,
                                                 priv->header->cont.title,
                                                 priv->header->cont.title_len,
                                                 NULL));
   if(priv->header->cont.author_len)
-    gavl_metadata_set_nocpy(&track->metadata,
+    gavl_dictionary_set_string_nocpy(&track->metadata,
                             GAVL_META_AUTHOR,
                             bgav_convert_string(cnv,
                                                 priv->header->cont.author,
@@ -892,7 +892,7 @@ int bgav_demux_rm_open_with_header(bgav_demuxer_context_t * ctx,
                                                 NULL));
   
   if(priv->header->cont.copyright_len)
-    gavl_metadata_set_nocpy(&track->metadata,
+    gavl_dictionary_set_string_nocpy(&track->metadata,
                             GAVL_META_COPYRIGHT,
                             bgav_convert_string(cnv,
                                                 priv->header->cont.copyright,
@@ -900,7 +900,7 @@ int bgav_demux_rm_open_with_header(bgav_demuxer_context_t * ctx,
                                                 NULL));
   
   if(priv->header->cont.comment_len)
-    gavl_metadata_set_nocpy(&track->metadata,
+    gavl_dictionary_set_string_nocpy(&track->metadata,
                             GAVL_META_COMMENT,
                             bgav_convert_string(cnv,
                                                 priv->header->cont.comment,

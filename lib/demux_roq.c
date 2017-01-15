@@ -180,7 +180,7 @@ static int open_roq(bgav_demuxer_context_t * ctx)
     s->data.video.format.frame_duration = 1;
     }
 
-  gavl_metadata_set(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "ID Roq");
 
   ctx->data_start = ctx->input->position;

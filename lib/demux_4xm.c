@@ -315,7 +315,7 @@ static int open_4xm(bgav_demuxer_context_t * ctx)
                       free(tmp_string);
                       return 0;
                       }
-                    gavl_metadata_set_nocpy(&ctx->tt->cur->metadata,
+                    gavl_dictionary_set_string_nocpy(&ctx->tt->cur->metadata,
                                             GAVL_META_COMMENT, tmp_string);
                     }
                     break;
@@ -371,7 +371,7 @@ static int open_4xm(bgav_demuxer_context_t * ctx)
     }
   ctx->data_start = ctx->input->position;
   ctx->flags |= BGAV_DEMUXER_HAS_DATA_START;
-  gavl_metadata_set(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "4XM");
   return 1;
   }

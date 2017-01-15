@@ -171,7 +171,7 @@ static char const * const id3_genres[GENRE_MAX] =
   };
 
 #define CS(src, gavl_name) \
-  if(t->src) gavl_metadata_set(m, gavl_name, t->src);
+  if(t->src) gavl_dictionary_set_string(m, gavl_name, t->src);
 
 
 const char * bgav_id3v1_get_genre(int id)
@@ -181,7 +181,7 @@ const char * bgav_id3v1_get_genre(int id)
   return NULL;
   }
 
-void bgav_id3v1_2_metadata(bgav_id3v1_tag_t * t, gavl_metadata_t * m)
+void bgav_id3v1_2_metadata(bgav_id3v1_tag_t * t, gavl_dictionary_t * m)
   {
   CS(title, GAVL_META_TITLE);
   CS(artist, GAVL_META_ARTIST);
@@ -190,7 +190,7 @@ void bgav_id3v1_2_metadata(bgav_id3v1_tag_t * t, gavl_metadata_t * m)
   CS(comment, GAVL_META_COMMENT);
   
   if(t->genre < GENRE_MAX)
-    gavl_metadata_set(m, GAVL_META_GENRE, bgav_id3v1_get_genre(t->genre));
+    gavl_dictionary_set_string(m, GAVL_META_GENRE, bgav_id3v1_get_genre(t->genre));
   if(t->track)
-    gavl_metadata_set_int(m, GAVL_META_GENRE, t->track);
+    gavl_dictionary_set_string_int(m, GAVL_META_GENRE, t->track);
   }

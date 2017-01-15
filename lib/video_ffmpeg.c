@@ -911,8 +911,8 @@ static int init_ffmpeg(bgav_stream_t * s)
   
   av_dict_free(&options);
 
-  if(!gavl_metadata_get(&s->m, GAVL_META_FORMAT))
-    gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+  if(!gavl_dictionary_get_string(&s->m, GAVL_META_FORMAT))
+    gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                       priv->info->format_name);
 
   init_put_frame(s);

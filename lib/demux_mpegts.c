@@ -783,9 +783,9 @@ static int init_psi(bgav_demuxer_context_t * ctx,
                                     &ctx->tt->tracks[program],
                                     ctx->opt, -1, -1, -1, NULL, NULL))
       {
-      gavl_metadata_set(&ctx->tt->tracks[program].metadata, 
+      gavl_dictionary_set_string(&ctx->tt->tracks[program].metadata, 
                         GAVL_META_FORMAT, "MPEGTS");
-      gavl_metadata_set(&ctx->tt->tracks[program].metadata,
+      gavl_dictionary_set_string(&ctx->tt->tracks[program].metadata,
                         GAVL_META_MIMETYPE, "video/MP2T");
       priv->programs[program].pcr_pid = priv->programs[program].pmts.pcr_pid;
       priv->programs[program].initialized = 1;
@@ -1071,7 +1071,7 @@ static int init_raw(bgav_demuxer_context_t * ctx, int input_can_seek)
   init_streams_priv(&priv->programs[0],
                     &ctx->tt->tracks[0]);
 
-  gavl_metadata_set(&ctx->tt->tracks[0].metadata, 
+  gavl_dictionary_set_string(&ctx->tt->tracks[0].metadata, 
                     GAVL_META_FORMAT, "MPEGTS");
   
   return 1;
@@ -1197,7 +1197,7 @@ static int open_mpegts(bgav_demuxer_context_t * ctx)
       {
       init_streams_priv(&priv->programs[i],
                         &ctx->tt->tracks[i]);
-      gavl_metadata_set(&ctx->tt->tracks[i].metadata, 
+      gavl_dictionary_set_string(&ctx->tt->tracks[i].metadata, 
                         GAVL_META_FORMAT, "MPEGTS");
       }
     }
@@ -1219,7 +1219,7 @@ static int open_mpegts(bgav_demuxer_context_t * ctx)
 
     }
 
-  gavl_metadata_set(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "MPEGTS");
   
   ctx->index_mode = INDEX_MODE_MIXED;

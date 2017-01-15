@@ -524,7 +524,7 @@ static int setup_stream_vobsub(bgav_stream_t * s)
           language_2cc[1] = pos[1];
           language_2cc[2] = '\0';
           if((language_3cc = bgav_lang_from_twocc(language_2cc)))
-            gavl_metadata_set(&s->m, GAVL_META_LANGUAGE, language_3cc);
+            gavl_dictionary_set_string(&s->m, GAVL_META_LANGUAGE, language_3cc);
           }
 
         ctx->data_start = input->position;

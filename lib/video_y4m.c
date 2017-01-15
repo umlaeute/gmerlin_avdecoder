@@ -207,7 +207,7 @@ static int init_y4m(bgav_stream_t * s)
   priv = calloc(1, sizeof(*priv));
   s->decoder_priv = priv;
   
-  gavl_metadata_set(&s->m, GAVL_META_FORMAT, "Y4M");
+  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "Y4M");
   
   priv = s->decoder_priv;
   

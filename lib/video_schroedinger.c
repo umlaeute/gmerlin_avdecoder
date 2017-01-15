@@ -391,7 +391,7 @@ static int init_schroedinger(bgav_stream_t * s)
   if(decode_picture(s) != GAVL_SOURCE_OK) /* Get format */
     return 0;
 
-  gavl_metadata_set(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                     "Dirac");
 
   if(!s->ext_data)
