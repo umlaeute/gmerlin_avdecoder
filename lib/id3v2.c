@@ -739,7 +739,7 @@ void bgav_id3v2_2_metadata(bgav_id3v2_tag_t * t, gavl_dictionary_t*m)
 
   frame = bgav_id3v2_find_frame(t, track_tags);
   if(frame && frame->strings)
-    gavl_dictionary_set_string_int(m, GAVL_META_TRACKNUMBER, atoi(frame->strings[0]));
+    gavl_dictionary_set_int(m, GAVL_META_TRACKNUMBER, atoi(frame->strings[0]));
   
   /* Genre */
   

@@ -154,7 +154,7 @@ static bgav_track_table_t * parse_m3u(bgav_input_context_t * input)
 
           duration = gavl_seconds_to_time(strtod(pos, NULL));
           if(duration > 0)
-            gavl_dictionary_set_string_long(&t->metadata, GAVL_META_APPROX_DURATION, duration);
+            gavl_dictionary_set_long(&t->metadata, GAVL_META_APPROX_DURATION, duration);
           comma++;
 
           while(isspace(*comma) && (*comma != '\0'))

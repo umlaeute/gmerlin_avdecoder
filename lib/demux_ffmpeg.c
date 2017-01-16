@@ -759,7 +759,7 @@ static int open_ffmpeg(bgav_demuxer_context_t * ctx)
   tag = av_metadata_get(avfc->metadata, ffmpeg_name, NULL, \
                         AV_METADATA_IGNORE_SUFFIX); \
   if(tag) \
-    gavl_dictionary_set_string_int(&ctx->tt->cur->metadata, gavl_name, atoi(tag->value));
+    gavl_dictionary_set_int(&ctx->tt->cur->metadata, gavl_name, atoi(tag->value));
 
   
   if(avfc->metadata)

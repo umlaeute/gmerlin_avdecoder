@@ -152,7 +152,7 @@ void bgav_vorbis_comment_2_metadata(bgav_vorbis_comment_t * comment,
     gavl_dictionary_set_string(m, GAVL_META_ALBUMARTIST, field);
   
   if((field = bgav_vorbis_comment_get_field(comment, track_number_key)))
-    gavl_dictionary_set_string_int(m, GAVL_META_TRACKNUMBER, atoi(field));
+    gavl_dictionary_set_int(m, GAVL_META_TRACKNUMBER, atoi(field));
   
   for(j = 0; j < comment->num_user_comments; j++)
     {

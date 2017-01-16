@@ -290,7 +290,7 @@ static int open_adts(bgav_demuxer_context_t * ctx)
     gavl_dictionary_set_string(&ctx->tt->cur->metadata,
                     GAVL_META_MIMETYPE, "audio/aac");
 
-  gavl_dictionary_get_string_int(&ctx->input->metadata, GAVL_META_BITRATE, &s->container_bitrate);
+  gavl_dictionary_get_int(&ctx->input->metadata, GAVL_META_BITRATE, &s->container_bitrate);
   
   //  ctx->stream_description = bgav_sprintf("AAC");
   return 1;

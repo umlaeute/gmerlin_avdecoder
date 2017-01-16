@@ -170,7 +170,7 @@ int bgav_audio_start(bgav_stream_t * s)
     }
 
   if(s->data.audio.bits_per_sample)
-    gavl_dictionary_set_string_int(&s->m, GAVL_META_AUDIO_BITS ,
+    gavl_dictionary_set_int(&s->m, GAVL_META_AUDIO_BITS ,
                           s->data.audio.bits_per_sample);
 
 
@@ -178,10 +178,10 @@ int bgav_audio_start(bgav_stream_t * s)
   //    gavl_dictionary_set_string(&s->m, GAVL_META_BITRATE,
   //                      "VBR");
   else if(s->codec_bitrate)
-    gavl_dictionary_set_string_int(&s->m, GAVL_META_BITRATE,
+    gavl_dictionary_set_int(&s->m, GAVL_META_BITRATE,
                           s->codec_bitrate);
   else if(s->container_bitrate)
-    gavl_dictionary_set_string_int(&s->m, GAVL_META_BITRATE,
+    gavl_dictionary_set_int(&s->m, GAVL_META_BITRATE,
                           s->container_bitrate);
 
   if(s->action == BGAV_STREAM_DECODE)

@@ -140,7 +140,7 @@ void bgav_ape_tag_dump(bgav_ape_tag_t * tag)
 
 #define INTVAL(k, gavl_key) \
   if(!strcasecmp(tag->items[i].key, k) && tag->items[i].str)            \
-    gavl_dictionary_set_string_int(m, gavl_key, atoi(tag->items[i].str));
+    gavl_dictionary_set_int(m, gavl_key, atoi(tag->items[i].str));
 
 void bgav_ape_tag_2_metadata(bgav_ape_tag_t * tag, gavl_dictionary_t * m)
   {

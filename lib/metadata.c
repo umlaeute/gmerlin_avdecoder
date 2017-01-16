@@ -77,7 +77,7 @@ const char * bgav_metadata_get_date(const bgav_metadata_t*m)
 int bgav_metadata_get_track(const bgav_metadata_t*m)
   {
   int ret;
-  if(gavl_dictionary_get_string_int(m, GAVL_META_TRACKNUMBER, &ret))
+  if(gavl_dictionary_get_int(m, GAVL_META_TRACKNUMBER, &ret))
     return ret;
   return 0;
   }

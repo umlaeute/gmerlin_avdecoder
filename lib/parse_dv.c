@@ -63,7 +63,7 @@ static int parse_frame_dv(bgav_video_parser_t * parser, bgav_packet_t * p, int64
       if(bgav_dv_dec_get_date(priv->dv, &year, &month, &day) &&
          bgav_dv_dec_get_time(priv->dv, &hour, &minute, &second))
         {
-        gavl_dictionary_set_string_date_time(&parser->s->m,
+        gavl_dictionary_set_date_time(&parser->s->m,
                                     GAVL_META_DATE_CREATE,
                                     year,
                                     month,

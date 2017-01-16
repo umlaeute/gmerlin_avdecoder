@@ -192,5 +192,5 @@ void bgav_id3v1_2_metadata(bgav_id3v1_tag_t * t, gavl_dictionary_t * m)
   if(t->genre < GENRE_MAX)
     gavl_dictionary_set_string(m, GAVL_META_GENRE, bgav_id3v1_get_genre(t->genre));
   if(t->track)
-    gavl_dictionary_set_string_int(m, GAVL_META_GENRE, t->track);
+    gavl_dictionary_set_int(m, GAVL_META_GENRE, t->track);
   }

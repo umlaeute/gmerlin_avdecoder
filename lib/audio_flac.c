@@ -282,7 +282,7 @@ static int init_flac(bgav_stream_t * s)
 
   gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
                     "FLAC");
-  gavl_dictionary_set_string_int(&s->m, GAVL_META_BITRATE,
+  gavl_dictionary_set_int(&s->m, GAVL_META_BITRATE,
                         GAVL_BITRATE_LOSSLESS);
   return 1;
   }

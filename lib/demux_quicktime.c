@@ -58,7 +58,7 @@ static void time_to_metadata(gavl_dictionary_t * m,
   tm.tm_mon++;
   tm.tm_year+=1900;
 
-  gavl_dictionary_set_string_date_time(m,
+  gavl_dictionary_set_date_time(m,
                               key,
                               tm.tm_year,
                               tm.tm_mon,
@@ -784,7 +784,7 @@ static void build_index(bgav_demuxer_context_t * ctx)
   if(!gavl_dictionary_get_string(&ctx->tt->cur->metadata, gavl_name) && moov->udta.src && \
      isdigit(*(moov->udta.src)))                                        \
     { \
-    gavl_dictionary_set_string_int(&ctx->tt->cur->metadata, gavl_name, atoi(moov->udta.src)); \
+    gavl_dictionary_set_int(&ctx->tt->cur->metadata, gavl_name, atoi(moov->udta.src)); \
     }
 
 static void set_metadata(bgav_demuxer_context_t * ctx)
@@ -814,7 +814,7 @@ static void set_metadata(bgav_demuxer_context_t * ctx)
   if(!gavl_dictionary_get_string(&ctx->tt->cur->metadata, GAVL_META_TRACKNUMBER)
      && moov->udta.trkn)
     {
-    gavl_dictionary_set_string_int(&ctx->tt->cur->metadata, GAVL_META_TRACKNUMBER,
+    gavl_dictionary_set_int(&ctx->tt->cur->metadata, GAVL_META_TRACKNUMBER,
                           moov->udta.trkn);
     }
 

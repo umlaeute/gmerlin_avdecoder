@@ -349,7 +349,7 @@ gavl_edl_t * bgav_cue_get_edl(bgav_cue_t * cue,
         gavl_dictionary_set_string(&track->metadata, GAVL_META_TITLE,
                           cue->tracks[i].title);
 
-      gavl_dictionary_set_string_int(&track->metadata, GAVL_META_TRACKNUMBER,
+      gavl_dictionary_set_int(&track->metadata, GAVL_META_TRACKNUMBER,
                             cue->tracks[i].number);
 
       stream = gavl_edl_add_audio_stream(track);

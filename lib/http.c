@@ -669,7 +669,7 @@ void bgav_http_set_metadata(bgav_http_t * h, gavl_dictionary_t * m)
       bitrate = atoi(var + 8);
     }
   if(bitrate)
-    gavl_dictionary_set_string_int(m, GAVL_META_BITRATE, bitrate * 1000);
+    gavl_dictionary_set_int(m, GAVL_META_BITRATE, bitrate * 1000);
   }
 
 int64_t bgav_http_total_bytes(bgav_http_t * h)

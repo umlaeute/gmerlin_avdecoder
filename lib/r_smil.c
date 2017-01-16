@@ -132,7 +132,7 @@ static void get_url(bgav_yml_node_t * n, bgav_track_t * ret,
   if(bitrate)
     {
     i = atoi(bitrate);
-    gavl_dictionary_set_string_int(&ret->metadata, GAVL_META_BITRATE, i);
+    gavl_dictionary_set_int(&ret->metadata, GAVL_META_BITRATE, i);
     }
 
   if(language)

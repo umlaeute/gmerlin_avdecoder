@@ -571,7 +571,7 @@ static void create_chapter_list(bgav_mkv_chapters_t * chap,
 
 #define SET_TAG_INT(name, gavl_name) \
   else if(!strcmp(tags[i].st[j].TagName, name)) \
-    gavl_dictionary_set_string_int(ret, gavl_name, atoi(tags[i].st[j].TagString))
+    gavl_dictionary_set_int(ret, gavl_name, atoi(tags[i].st[j].TagString))
 
 static void init_metadata(bgav_mkv_tag_t * tags, int num_tags,
                           gavl_dictionary_t * ret)
