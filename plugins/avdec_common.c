@@ -437,7 +437,7 @@ int bg_avdec_init(avdec_priv * avdec)
     duration = bgav_get_duration(avdec->dec, i);
 
     if(duration != GAVL_TIME_UNDEFINED)
-      gavl_dictionary_set_string_long(&avdec->track_info[i].metadata,
+      gavl_dictionary_set_long(&avdec->track_info[i].metadata,
                              GAVL_META_APPROX_DURATION, duration);
         
     /* Get metadata */
