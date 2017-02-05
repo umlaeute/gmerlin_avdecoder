@@ -40,7 +40,7 @@ typedef struct
   
   } bgav_vaapi_t;
 
-int bgav_vaapi_init(bgav_vaapi_t *, AVCodecContext * avctx, enum PixelFormat pfmt);
+int bgav_vaapi_init(bgav_vaapi_t *, AVCodecContext * avctx, enum AVPixelFormat pfmt);
 
 void bgav_vaapi_cleanup(bgav_vaapi_t *);
 

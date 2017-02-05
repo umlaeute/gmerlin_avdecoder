@@ -38,20 +38,20 @@ static int get_profile(enum AVCodecID id)
   int profile;
   switch(id)
     {
-    case CODEC_ID_MPEG2VIDEO:
+    case AV_CODEC_ID_MPEG2VIDEO:
       profile = VAProfileMPEG2Main;
       break;
-    case CODEC_ID_MPEG4:
-    case CODEC_ID_H263:
+    case AV_CODEC_ID_MPEG4:
+    case AV_CODEC_ID_H263:
       profile = VAProfileMPEG4AdvancedSimple;
       break;
-    case CODEC_ID_H264:
+    case AV_CODEC_ID_H264:
       profile = VAProfileH264High;
       break;
-    case CODEC_ID_WMV3:
+    case AV_CODEC_ID_WMV3:
       profile = VAProfileVC1Main;
       break;
-    case CODEC_ID_VC1:
+    case AV_CODEC_ID_VC1:
       profile = VAProfileVC1Advanced;
       break;
     default:
@@ -121,7 +121,7 @@ static int has_entrypoint(VADisplay dpy, VAProfile profile,
   return ret;
   }
 
-static VAEntrypoint get_entrypoint(enum PixelFormat pfmt)
+static VAEntrypoint get_entrypoint(enum AVPixelFormat pfmt)
   {
   switch(pfmt)
     {
@@ -147,7 +147,7 @@ static void free_buffer(void * opaque, uint8_t * data)
 
 int bgav_vaapi_init(bgav_vaapi_t * v,
                     AVCodecContext * avctx,
-                    enum PixelFormat pfmt)
+                    enum AVPixelFormat pfmt)
   {
   int i;
   VAProfile profile;
