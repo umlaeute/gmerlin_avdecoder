@@ -421,6 +421,7 @@ void bgav_track_dump(bgav_t * b, bgav_track_t * t)
 
   bgav_diprintf(2, "Metadata\n");
   gavl_dictionary_dump(&t->metadata, 4);
+  bgav_dprintf("\n");
 
   for(i = 0; i < t->num_audio_streams; i++)
     {

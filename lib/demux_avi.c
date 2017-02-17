@@ -188,6 +188,7 @@ static const uint32_t video_codecs_mpeg4[] =
 static const uint32_t video_codecs_h264[] =
   {
     BGAV_MK_FOURCC('h', '2', '6', '4'),
+    BGAV_MK_FOURCC('H', '2', '6', '4'),
     0x00,
   };
 
@@ -1365,6 +1366,10 @@ static int init_video_stream(bgav_demuxer_context_t * ctx,
   else if(check_codec(bg_vs->fourcc, video_codecs_h264))
     {
     bg_vs->flags |= (STREAM_DTS_ONLY);
+
+    if(!bg_vs->ext_size)
+      bg_vs->flags |= STREAM_PARSE_FRAME;
+    
     bg_vs->ci.flags |= GAVL_COMPRESSION_HAS_B_FRAMES;
     }
   

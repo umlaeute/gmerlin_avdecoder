@@ -193,6 +193,7 @@ void bgav_stream_dump(bgav_stream_t * s)
 
   bgav_dprintf("  Metadata:\n");
   gavl_dictionary_dump(&s->m, 4);
+  bgav_dprintf("\n");
   
   bgav_dprintf("  Fourcc:            ");
   bgav_dump_fourcc(s->fourcc);

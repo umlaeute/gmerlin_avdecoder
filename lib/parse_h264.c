@@ -518,8 +518,12 @@ static int find_frame_boundary_h264(bgav_video_parser_t * parser, int * skip)
 static void handle_sps(bgav_video_parser_t * parser)
   {
   h264_priv_t * priv = parser->priv;
-  parser->format->timescale = priv->sps.vui.time_scale;
-  parser->format->frame_duration = priv->sps.vui.num_units_in_tick * 2;
+
+  if(!parser->format->timescale)
+    {
+    parser->format->timescale = priv->sps.vui.time_scale;
+    parser->format->frame_duration = priv->sps.vui.num_units_in_tick * 2;
+    }
   // bgav_video_parser_set_framerate(parser);
         
   bgav_h264_sps_get_image_size(&priv->sps,
@@ -532,6 +536,9 @@ static void handle_sps(bgav_video_parser_t * parser)
   if(!priv->sps.vui.bitstream_restriction_flag ||
      priv->sps.vui.num_reorder_frames)
     parser->s->ci.flags |= GAVL_COMPRESSION_HAS_B_FRAMES;
+  else
+    parser->s->ci.flags &= ~GAVL_COMPRESSION_HAS_B_FRAMES;
+    
   }
 
 static const uint8_t * get_nal_end(bgav_packet_t * p,
