@@ -39,19 +39,35 @@
 
 typedef struct
   {
+  char * mimetype;
+  int picture_type;
+  char * description;
+
+  int data_offset; // From frame data start
+  int data_size;
+  uint8_t * data;
+
+  } bgav_id3v2_picture_t;
+
+typedef struct
+  {
   struct
     {
+    uint64_t start; // Relative to tag start (which is the file start) 
     uint32_t fourcc;
-    uint32_t size;
+    uint32_t data_size;
+    uint32_t header_size;
     uint16_t flags;
     
     } header;
 
-  /* Either data or strings is non-null */
+  /* Either data or strings or picture is non-null */
 
   uint8_t * data;  /* Raw data from the file */
   char ** strings; /* NULL terminated array  */
   
+  bgav_id3v2_picture_t * picture;
+
   } bgav_id3v2_frame_t;
 
 /* Flags for ID3V2 Tag header */
@@ -68,12 +84,13 @@ struct bgav_id3v2_tag_s
     uint8_t major_version;
     uint8_t minor_version;
     uint8_t flags;
-    uint32_t size;
+    uint32_t data_size;
+    uint32_t header_size;
     } header;
 
   struct
     {
-    uint32_t size;
+    uint32_t data_size;
     uint32_t num_flags;
     uint8_t * flags;
     } extended_header;
@@ -105,13 +122,15 @@ static void dump_frame(bgav_id3v2_frame_t * frame)
   {
   int i;
   bgav_dprintf( "Header:\n");
-  bgav_dprintf( "  Fourcc: ");
+  bgav_dprintf( "  Fourcc:      ");
   bgav_dump_fourcc(frame->header.fourcc);
   bgav_dprintf( "\n");
   
-  bgav_dprintf( "  Size:   %d\n", frame->header.size);
+  bgav_dprintf( "  Start:       %"PRId64"\n", frame->header.start);
+  bgav_dprintf( "  Data Size:   %d\n", frame->header.data_size);
+  bgav_dprintf( "  Header Size: %d\n", frame->header.header_size);
 
-  bgav_dprintf( "  Flags:  ");
+  bgav_dprintf( "  Flags:       ");
 
   if(frame->header.flags & ID3V2_FRAME_TAG_ALTER_PRESERVATION)
     bgav_dprintf( "ALTER_PRESERVATION ");
@@ -133,9 +152,9 @@ static void dump_frame(bgav_id3v2_frame_t * frame)
   if(frame->data)
     {
     bgav_dprintf( "Raw data:\n");
-    gavl_hexdump(frame->data, frame->header.size, 16);
+    gavl_hexdump(frame->data, frame->header.data_size, 16);
     }
-  else if(frame->strings)
+  if(frame->strings)
     {
     bgav_dprintf( "Strings:\n");
     i = 0;
@@ -144,6 +163,83 @@ static void dump_frame(bgav_id3v2_frame_t * frame)
       bgav_dprintf( "%02x: %s\n", i, frame->strings[i]);
       i++;
       }
+    }
+  if(frame->picture)
+    {
+    bgav_dprintf("Picture:\n");
+    bgav_dprintf("  Mimetype: %s\n", frame->picture->mimetype);
+    bgav_dprintf("  Size:     %d\n", frame->picture->data_size);
+    bgav_dprintf("  Offset:   %d\n", frame->picture->data_offset);
+    bgav_dprintf("  Type:     ");
+    switch(frame->picture->picture_type)
+      {
+      case 0x00:  
+        bgav_dprintf("Other\n");
+        break;
+      case 0x01:  
+        bgav_dprintf("32x32 pixels 'file icon' (PNG only)\n");
+        break;
+      case 0x02:  
+        bgav_dprintf("Other file icon\n");
+        break;
+      case 0x03:  
+        bgav_dprintf("Cover (front)\n");
+        break;
+      case 0x04:  
+        bgav_dprintf("Cover (back)\n");
+        break;
+      case 0x05:  
+        bgav_dprintf("Leaflet page\n");
+        break;
+      case 0x06:  
+        bgav_dprintf("Media (e.g. label side of CD)\n");
+        break;
+      case 0x07:  
+        bgav_dprintf("Lead artist/lead performer/soloist\n");
+        break;
+      case 0x08:  
+        bgav_dprintf("Artist/performer\n");
+        break;
+      case 0x09:  
+        bgav_dprintf("Conductor\n");
+        break;
+      case 0x0A:  
+        bgav_dprintf("Band/Orchestra\n");
+        break;
+      case 0x0B:  
+        bgav_dprintf("Composer\n");
+        break;
+      case 0x0C:  
+        bgav_dprintf("Lyricist/text writer\n");
+        break;
+      case 0x0D:  
+        bgav_dprintf("Recording Location\n");
+        break;
+      case 0x0E:  
+        bgav_dprintf("During recording\n");
+        break;
+      case 0x0F:  
+        bgav_dprintf("During performance\n");
+        break;
+      case 0x10:  
+        bgav_dprintf("Movie/video screen capture\n");
+        break;
+      case 0x11:  
+        bgav_dprintf("A bright coloured fish\n");
+        break;
+      case 0x12:  
+        bgav_dprintf("Illustration\n");
+        break;
+      case 0x13:  
+        bgav_dprintf("Band/artist logotype\n");
+        break;
+      case 0x14:  
+        bgav_dprintf("Publisher/Studio logotype\n");
+        break;
+      }
+    if(frame->picture->description)
+      bgav_dprintf("  Description: %s\n", frame->picture->description);
+//    gavl_hexdump(frame->picture->data, frame->header.data_size, 16);
     }
   }
 
@@ -161,8 +257,20 @@ static void free_frame(bgav_id3v2_frame_t * frame)
       }
     free(frame->strings);
     }
-  else if(frame->data)
+
+  if(frame->data)
     free(frame->data);
+
+  if(frame->picture)
+    {
+    if(frame->picture->mimetype)
+      free(frame->picture->mimetype);
+    if(frame->picture->description)
+      free(frame->picture->description);
+    if(frame->picture->data)
+      free(frame->picture->data);
+    free(frame->picture);
+    } 
   }
 
 void bgav_id3v2_dump(bgav_id3v2_tag_t * t)
@@ -185,7 +293,7 @@ void bgav_id3v2_dump(bgav_id3v2_tag_t * t)
   if(t->header.flags & ID3V2_TAG_EXPERIMENTAL)
     bgav_dprintf( " FOOTER_PRESENT");
   bgav_dprintf( "\n");
-  bgav_dprintf( "  Size: %d\n", t->header.size);
+  bgav_dprintf( "  Size: %d\n", t->header.data_size);
   
   for(i = 0; i < t->num_frames; i++)
     {
@@ -251,6 +359,42 @@ static int is_null(const char * ptr, int num_bytes)
   return 1;
   }
 
+static char * get_charset(uint8_t * data,
+                          uint8_t cs, 
+                          bgav_charset_converter_t ** cnv,
+                          int * bytes_per_char, 
+                          const bgav_options_t * opt)
+  {
+  char * pos = NULL;
+  switch(cs)
+    {
+    case ENCODING_LATIN1:
+      *bytes_per_char = 1;
+      *cnv = bgav_charset_converter_create(opt, "LATIN1", BGAV_UTF8);
+      pos = (char*)data;
+      break;
+    case ENCODING_UTF16_BOM:
+      *bytes_per_char = 2;
+
+      if((data[0] == 0xFF) && (data[1] == 0xFE))
+        *cnv = bgav_charset_converter_create(opt, "UTF16LE", BGAV_UTF8);
+      else if((data[1] == 0xFF) && (data[0] == 0xFE))
+        *cnv = bgav_charset_converter_create(opt, "UTF16BE", BGAV_UTF8);
+      pos = ((char*)data) + 2;
+      break;
+    case ENCODING_UTF16_BE:
+      *bytes_per_char = 2;
+      *cnv = bgav_charset_converter_create(opt, "UTF16BE", BGAV_UTF8);
+      pos = (char*)data;
+      break;
+    case ENCODING_UTF8:
+      *bytes_per_char = 1;
+      pos = (char*)data;
+      break;
+    }
+  return pos;
+  }
+
 static char ** read_string_list(const bgav_options_t * opt,
                                 uint8_t * data, int data_size)
   {
@@ -261,41 +405,16 @@ static char ** read_string_list(const bgav_options_t * opt,
   char * end_pos;
   int num_strings;
   char ** ret;
-  bgav_charset_converter_t * cnv;
-  cnv = NULL;
+  bgav_charset_converter_t * cnv = NULL;
+
   encoding = *data;
 
   if(data_size == 1)
     return NULL;
   
-  switch(encoding)
-    {
-    case ENCODING_LATIN1:
-      bytes_per_char = 1;
-      cnv = bgav_charset_converter_create(opt, "LATIN1", BGAV_UTF8);
-      pos = ((char*)data) + 1;
-      break;
-    case ENCODING_UTF16_BOM:
-      bytes_per_char = 2;
-
-      if((data[1] == 0xFF) && (data[2] == 0xFE))
-        cnv = bgav_charset_converter_create(opt, "UTF16LE", BGAV_UTF8);
-      else if((data[2] == 0xFF) && (data[1] == 0xFE))
-        cnv = bgav_charset_converter_create(opt, "UTF16BE", BGAV_UTF8);
-      pos = ((char*)data) + 3;
-      break;
-    case ENCODING_UTF16_BE:
-      bytes_per_char = 2;
-      cnv = bgav_charset_converter_create(opt, "UTF16BE", BGAV_UTF8);
-      pos = ((char*)data) + 1;
-      break;
-    case ENCODING_UTF8:
-      bytes_per_char = 1;
-      pos = ((char*)data) + 1;
-      break;
-    default:
-      return NULL;
-    }
+  data++; 
+ 
+  pos = get_charset(data, encoding, &cnv, &bytes_per_char, opt);
   
   end_pos = pos;
 
@@ -336,14 +455,77 @@ static char ** read_string_list(const bgav_options_t * opt,
   return ret;
   }
 
+static bgav_id3v2_picture_t * 
+read_picture(const bgav_options_t * opt,
+             uint8_t * data, int data_size)
+  {
+  int charset;
+  int bytes_per_char = 1;
+  char * pos;
+  char * end_pos;
+  uint8_t * data_start = data;
+  bgav_id3v2_picture_t * ret;
+  bgav_charset_converter_t * cnv = NULL;
+
+  ret = calloc(1, sizeof(*ret));
+
+  charset = *data;
+  data++;
+  
+  if(strchr((char*)data, '/'))
+    ret->mimetype = gavl_strdup((char*)data);
+  else
+    ret->mimetype = bgav_sprintf("image/%s", (char*)data);
+
+  data += strlen((char*)data); // Mimetype
+  data++;                      // "\0"
+
+  ret->picture_type = *data;
+  data++;
+
+  pos = get_charset(data, charset, &cnv, &bytes_per_char, opt);
+ 
+  end_pos = pos;
+
+  while(!is_null(end_pos, bytes_per_char))
+    {
+    end_pos += bytes_per_char;
+    if(end_pos - (char * )data_start >= data_size)
+      break;
+    }
+
+  if(end_pos > pos)
+    {
+    if(cnv)
+      ret->description = bgav_convert_string(cnv,
+                                             pos, end_pos - pos,
+                                             NULL);
+    else
+      ret->description = gavl_strndup(pos, end_pos);
+    }
+
+  if(cnv)
+    bgav_charset_converter_destroy(cnv);
+
+  pos = end_pos + bytes_per_char;
+
+  ret->data_offset = (pos - (char*)data_start);
+  ret->data_size = data_size - ret->data_offset;
+
+  return ret;
+  }
+
 static int read_frame(bgav_input_context_t * input,
                       bgav_id3v2_frame_t * ret,
                       uint8_t * probe_data,
-                      int major_version)
+                      int major_version,
+                      int tag_header_size)
   {
   uint8_t buf[4];
   uint8_t * data;
-  
+
+  ret->header.start = input->position - 3; 
+ 
   if(major_version < 4)
     {
     switch(major_version)
@@ -356,7 +538,7 @@ static int read_frame(bgav_input_context_t * input,
            ((uint32_t)probe_data[2] << 8));
         if(bgav_input_read_data(input, buf, 3) < 3)
           return 0;
-        ret->header.size =
+        ret->header.data_size =
           (((uint32_t)buf[0] << 16) | 
            ((uint32_t)buf[1] << 8) |
            ((uint32_t)buf[2]));
@@ -369,7 +551,7 @@ static int read_frame(bgav_input_context_t * input,
                               ((uint32_t)probe_data[1] << 16) |
                               ((uint32_t)probe_data[2] << 8) |
                               ((uint32_t)buf[0]));
-        if(!bgav_input_read_32_be(input, &ret->header.size) ||
+        if(!bgav_input_read_32_be(input, &ret->header.data_size) ||
            !bgav_input_read_16_be(input, &ret->header.flags))
            
           return 0;
@@ -385,31 +567,41 @@ static int read_frame(bgav_input_context_t * input,
                           ((uint32_t)probe_data[2] << 8) |
                           ((uint32_t)buf[0]));
     
-    if(!read_32_syncsave(input, &ret->header.size) ||
+    if(!read_32_syncsave(input, &ret->header.data_size) ||
        !bgav_input_read_16_be(input, &ret->header.flags))
       return 0;
     }
-  if(ret->header.size > input->total_bytes - input->position)
+  if(ret->header.data_size > input->total_bytes - input->position)
     return 0;
+
+  ret->header.header_size = input->position - ret->header.start;
+ 
   
-  data = calloc(ret->header.size+2, 1);
-  if(bgav_input_read_data(input, data, ret->header.size) <
-     ret->header.size)
+  data = calloc(ret->header.data_size+2, 1);
+  if(bgav_input_read_data(input, data, ret->header.data_size) <
+     ret->header.data_size)
     return 0;
   
   if(((ret->header.fourcc & 0xFF000000) ==
      BGAV_MK_FOURCC('T', 0x00, 0x00, 0x00)) &&
      (ret->header.fourcc != BGAV_MK_FOURCC('T', 'X', 'X', 'X')))
     {
-    ret->strings = read_string_list(input->opt, data, ret->header.size);
+    ret->strings = read_string_list(input->opt, data, ret->header.data_size);
     free(data);
+    }
+  else if(ret->header.fourcc == BGAV_MK_FOURCC('A', 'P', 'I', 'C'))
+    {
+    ret->picture = read_picture(input->opt, data, ret->header.data_size);
     }
   else /* Copy raw data */
     {
     ret->data = data;
     
     }
-  //  dump_frame(ret);  
+
+  ret->header.start += tag_header_size;
+
+  dump_frame(ret);  
   return 1;
   }
 
@@ -423,6 +615,8 @@ bgav_id3v2_tag_t * bgav_id3v2_read(bgav_input_context_t * input)
   bgav_input_context_t * input_mem;
   uint8_t * data;
   int data_size;
+
+  int64_t start = input->position;
       
   bgav_id3v2_tag_t * ret = NULL;
   
@@ -441,7 +635,7 @@ bgav_id3v2_tag_t * bgav_id3v2_read(bgav_input_context_t * input)
   if(!bgav_input_read_data(input, &ret->header.major_version, 1) ||
      !bgav_input_read_data(input, &ret->header.minor_version, 1) ||
      !bgav_input_read_data(input, &ret->header.flags, 1) ||
-     !read_32_syncsave(input, &ret->header.size))
+     !read_32_syncsave(input, &ret->header.data_size))
     goto fail;
 
   tag_start_pos = input->position;
@@ -450,14 +644,16 @@ bgav_id3v2_tag_t * bgav_id3v2_read(bgav_input_context_t * input)
 
   if(ret->header.flags & ID3V2_TAG_EXTENDED_HEADER)
     {
-    if(!read_32_syncsave(input, &ret->extended_header.size))
+    if(!read_32_syncsave(input, &ret->extended_header.data_size))
       goto fail;
-    bgav_input_skip(input, ret->extended_header.size-4);
+    bgav_input_skip(input, ret->extended_header.data_size-4);
     }
+
+  ret->header.header_size = input->position - start;
   
   /* Read frames */
 
-  data_size = tag_start_pos + ret->header.size - input->position;
+  data_size = tag_start_pos + ret->header.data_size - input->position;
   data = malloc(data_size);
   if(bgav_input_read_data(input, data, data_size) < data_size)
     goto fail;
@@ -493,7 +689,7 @@ bgav_id3v2_tag_t * bgav_id3v2_read(bgav_input_context_t * input)
     if(!read_frame(input_mem,
                    &ret->frames[ret->num_frames],
                    probe_data,
-                   ret->header.major_version))
+                   ret->header.major_version, ret->header.header_size))
       {
       free_frame(&ret->frames[ret->num_frames]);
       break;
@@ -504,7 +700,7 @@ bgav_id3v2_tag_t * bgav_id3v2_read(bgav_input_context_t * input)
   bgav_input_destroy(input_mem);
   free(data);
   
-  ret->total_bytes = ret->header.size + 10;
+  ret->total_bytes = ret->header.data_size + 10;
   /* Read footer */
   
   if(ret->header.flags & ID3V2_TAG_FOOTER_PRESENT)
@@ -515,9 +711,9 @@ bgav_id3v2_tag_t * bgav_id3v2_read(bgav_input_context_t * input)
 
   /* Skip padding */
   
-  else if(tag_start_pos + ret->header.size > input->position)
+  else if(tag_start_pos + ret->header.data_size > input->position)
     {
-    bgav_input_skip(input, tag_start_pos + ret->header.size - input->position);
+    bgav_input_skip(input, tag_start_pos + ret->header.data_size - input->position);
     }
   //  bgav_id3v2_dump(ret);
   return ret;
@@ -624,6 +820,12 @@ static const uint32_t comment_tags[] =
     0x00,
   };
 
+static const uint32_t cover_tags[] =
+  {
+    BGAV_MK_FOURCC('A', 'P', 'I', 'C'),
+    0x00,
+  };
+
 static char * get_comment(const bgav_options_t * opt,
                           bgav_id3v2_frame_t* frame)
   {
@@ -667,7 +869,7 @@ static char * get_comment(const bgav_options_t * opt,
       return NULL;
     }
   
-  pos = frame->data + 4; /* Skip encoding and language */
+//  pos = frame->data + 4; /* Skip encoding and language */
 
   /* Skip short description */
   
@@ -675,10 +877,14 @@ static char * get_comment(const bgav_options_t * opt,
     pos += bytes_per_char;
 
   pos += bytes_per_char;
-  
+
+  if(encoding == ENCODING_UTF16_BOM)
+    pos += 2; // Skip BOM
+    
   if(cnv)
     ret = bgav_convert_string(cnv, 
-                              (char*)pos, frame->header.size - (int)(pos - frame->data),
+                              (char*)pos, frame->header.data_size - 
+                              (int)(pos - frame->data),
                               NULL);
   else
     ret = gavl_strdup((char*)pos);
@@ -763,6 +969,16 @@ void bgav_id3v2_2_metadata(bgav_id3v2_tag_t * t, gavl_dictionary_t*m)
 
   if(frame)
     gavl_dictionary_set_string_nocopy(m, GAVL_META_COMMENT, get_comment(t->opt, frame));
+
+  /* Cover */
+  if((frame = bgav_id3v2_find_frame(t, cover_tags)) &&
+     frame->picture)
+    {
+    gavl_metadata_add_image_embedded(m, GAVL_META_COVER_EMBEDDED, 
+                                     -1, -1, frame->picture->mimetype,
+                                     frame->picture->data_offset + frame->header.header_size + frame->header.start,
+                                     frame->picture->data_size);
+    }
   
   }
 
