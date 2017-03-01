@@ -45,7 +45,6 @@ typedef struct
 
   int data_offset; // From frame data start
   int data_size;
-  uint8_t * data;
 
   } bgav_id3v2_picture_t;
 
@@ -267,8 +266,6 @@ static void free_frame(bgav_id3v2_frame_t * frame)
       free(frame->picture->mimetype);
     if(frame->picture->description)
       free(frame->picture->description);
-    if(frame->picture->data)
-      free(frame->picture->data);
     free(frame->picture);
     } 
   }
@@ -575,7 +572,6 @@ static int read_frame(bgav_input_context_t * input,
     return 0;
 
   ret->header.header_size = input->position - ret->header.start;
- 
   
   data = calloc(ret->header.data_size+2, 1);
   if(bgav_input_read_data(input, data, ret->header.data_size) <
@@ -587,17 +583,20 @@ static int read_frame(bgav_input_context_t * input,
      (ret->header.fourcc != BGAV_MK_FOURCC('T', 'X', 'X', 'X')))
     {
     ret->strings = read_string_list(input->opt, data, ret->header.data_size);
-    free(data);
     }
   else if(ret->header.fourcc == BGAV_MK_FOURCC('A', 'P', 'I', 'C'))
     {
     ret->picture = read_picture(input->opt, data, ret->header.data_size);
+    
     }
   else /* Copy raw data */
     {
     ret->data = data;
-    
+    data = NULL;    
     }
+  
+  if(data)
+    free(data);
 
   ret->header.start += tag_header_size;
 
@@ -972,7 +971,7 @@ void bgav_id3v2_2_metadata(bgav_id3v2_tag_t * t, gavl_dictionary_t*m)
 
   /* Cover */
   if((frame = bgav_id3v2_find_frame(t, cover_tags)) &&
-     frame->picture)
+     frame->picture && (frame->picture->picture_type == 3))
     {
     gavl_metadata_add_image_embedded(m, GAVL_META_COVER_EMBEDDED, 
                                      -1, -1, frame->picture->mimetype,

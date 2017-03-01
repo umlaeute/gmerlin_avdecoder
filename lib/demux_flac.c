@@ -188,6 +188,57 @@ static int open_flac(bgav_demuxer_context_t * ctx)
       case 5: // CUESHEET
         bgav_input_skip(ctx->input, size);
         break;
+      case 6: // METADATA_BLOCK_PICTURE
+        {
+        uint32_t len;
+        uint32_t width;
+        uint32_t height;
+        uint32_t type;
+        char * mimetype = NULL;
+        
+        if(!bgav_input_read_32_be(ctx->input, &type) ||
+           !bgav_input_read_32_be(ctx->input, &len))
+          return 0;
+ 
+        mimetype = malloc(len + 1);
+        
+        if(bgav_input_read_data(ctx->input, (uint8_t*)mimetype, len) < len)
+          goto image_fail;
+
+        mimetype[len] = '\0';
+ 
+        if(!bgav_input_read_32_be(ctx->input, &len)) // Desc len
+          goto image_fail;
+
+        bgav_input_skip(ctx->input, len); // Description
+
+        if(!bgav_input_read_32_be(ctx->input, &width) ||
+           !bgav_input_read_32_be(ctx->input, &height))
+          goto image_fail;
+ 
+        bgav_input_skip(ctx->input, 8);      
+        
+        if(!bgav_input_read_32_be(ctx->input, &len)) // Data len
+          goto image_fail;
+
+        gavl_metadata_add_image_embedded(&ctx->tt->cur->metadata,
+                                         GAVL_META_COVER_EMBEDDED,
+                                         width, height,
+                                         mimetype,
+                                         ctx->input->position,
+                                         len);
+
+        bgav_input_skip(ctx->input, len); // Skip actual image data
+
+        free(mimetype);
+        break;
+
+        image_fail:
+        if(mimetype)
+          free(mimetype);        
+        return 0;
+        }
+        break;
       default:
         bgav_input_skip(ctx->input, size);
       }
@@ -197,9 +248,9 @@ static int open_flac(bgav_demuxer_context_t * ctx)
   ctx->flags |= BGAV_DEMUXER_HAS_DATA_START;
   
   gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
-                    GAVL_META_FORMAT, "FLAC");
+                             GAVL_META_FORMAT, "FLAC");
   gavl_dictionary_set_string(&ctx->tt->cur->metadata,
-                    GAVL_META_MIMETYPE, "audio/flac");
+                             GAVL_META_MIMETYPE, "audio/flac");
 
   ctx->index_mode = INDEX_MODE_SIMPLE;
   
