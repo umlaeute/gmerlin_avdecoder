@@ -600,7 +600,7 @@ static int read_frame(bgav_input_context_t * input,
 
   ret->header.start += tag_header_size;
 
-  dump_frame(ret);  
+//  dump_frame(ret);  
   return 1;
   }
 
