@@ -350,8 +350,31 @@ gavl_edl_t * bgav_cue_get_edl(bgav_cue_t * cue,
                           cue->tracks[i].title);
 
       gavl_dictionary_set_int(&track->metadata, GAVL_META_TRACKNUMBER,
-                            cue->tracks[i].number);
+                              cue->tracks[i].number);
 
+      if(cue->tracks[i].performer &&
+         cue->tracks[i].title)
+        {
+        gavl_dictionary_set_string_nocopy(&track->metadata, GAVL_META_LABEL,
+                                          bgav_sprintf("%02d %s - %s",
+                                                       cue->tracks[i].number,
+                                                       cue->tracks[i].performer,
+                                                       cue->tracks[i].title));
+        }
+      else if(cue->tracks[i].title)
+        {
+        gavl_dictionary_set_string_nocopy(&track->metadata, GAVL_META_LABEL,
+                                          bgav_sprintf("%02d %s",
+                                                       cue->tracks[i].number,
+                                                       cue->tracks[i].title));
+        }
+      else
+        {
+        gavl_dictionary_set_string_nocopy(&track->metadata, GAVL_META_LABEL,
+                                          bgav_sprintf("Track %02d",
+                                                       cue->tracks[i].number));
+        }
+      
       stream = gavl_edl_add_audio_stream(track);
       stream->timescale = 44100;
      
