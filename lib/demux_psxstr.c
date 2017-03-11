@@ -130,17 +130,17 @@ static int open_psxstr(bgav_demuxer_context_t * ctx)
         s = bgav_track_add_video_stream(ctx->tt->cur, ctx->opt);
         s->fourcc = BGAV_MK_FOURCC('M','D','E','C');
 
-        s->data.video.format.image_width  = BGAV_PTR_2_16LE(&sector[0x28]);
-        s->data.video.format.image_height = BGAV_PTR_2_16LE(&sector[0x2A]);
+        s->data.video.format->image_width  = BGAV_PTR_2_16LE(&sector[0x28]);
+        s->data.video.format->image_height = BGAV_PTR_2_16LE(&sector[0x2A]);
         
-        s->data.video.format.frame_width  = s->data.video.format.image_width;
-        s->data.video.format.frame_height = s->data.video.format.image_height;
+        s->data.video.format->frame_width  = s->data.video.format->image_width;
+        s->data.video.format->frame_height = s->data.video.format->image_height;
 
-        s->data.video.format.pixel_width = 1;
-        s->data.video.format.pixel_height = 1;
+        s->data.video.format->pixel_width = 1;
+        s->data.video.format->pixel_height = 1;
 
-        s->data.video.format.timescale = 15;
-        s->data.video.format.frame_duration = 1;
+        s->data.video.format->timescale = 15;
+        s->data.video.format->frame_duration = 1;
                 
         s->stream_id = channel + VIDEO_OFFSET;
                
@@ -152,8 +152,8 @@ static int open_psxstr(bgav_demuxer_context_t * ctx)
         s = bgav_track_add_audio_stream(ctx->tt->cur, ctx->opt);
         s->fourcc = BGAV_MK_FOURCC('A','D','X','A');
         
-        s->data.audio.format.samplerate      = (sector[0x13] & 0x04) ? 18900 : 37800;
-        s->data.audio.format.num_channels    = (sector[0x13] & 0x01) ? 2 : 1;
+        s->data.audio.format->samplerate      = (sector[0x13] & 0x04) ? 18900 : 37800;
+        s->data.audio.format->num_channels    = (sector[0x13] & 0x01) ? 2 : 1;
         s->data.audio.bits_per_sample = (sector[0x13] & 0x10) ? 8 : 4;
         s->data.audio.block_align     = 128;
 
@@ -162,7 +162,7 @@ static int open_psxstr(bgav_demuxer_context_t * ctx)
         break;
       }
     }
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "Sony Playstation (PSX) STR");
 
   ctx->data_start = ctx->input->position;

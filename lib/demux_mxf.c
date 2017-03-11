@@ -77,15 +77,15 @@ typedef struct
 static void set_pts(bgav_stream_t * s, stream_priv_t * sp,
                     bgav_packet_t * p)
   {
-  if(s->type == BGAV_STREAM_VIDEO)
+  if(s->type == GAVF_STREAM_VIDEO)
     {
     p->pts = sp->pts_counter;
-    p->duration = s->data.video.format.frame_duration;
+    p->duration = s->data.video.format->frame_duration;
     sp->pts_counter += p->duration;
     if(sp->frame_size)
       PACKET_SET_KEYFRAME(p);
     }
-  else if(s->type == BGAV_STREAM_AUDIO)
+  else if(s->type == GAVF_STREAM_AUDIO)
     {
     p->pts = sp->pts_counter;
     if(s->data.audio.block_align)
@@ -203,7 +203,7 @@ static int process_packet_frame_wrapped(bgav_demuxer_context_t * ctx)
     p->data_size = 0;
     for(i = 0; i < num_samples; i++)
       {
-      for(j = 0; j < s->data.audio.format.num_channels; j++)
+      for(j = 0; j < s->data.audio.format->num_channels; j++)
         {
         if(!bgav_input_read_32_le(ctx->input, (uint32_t*)(&sample)))
           return 0;
@@ -222,7 +222,7 @@ static int process_packet_frame_wrapped(bgav_demuxer_context_t * ctx)
           p->data_size += 2;
           }
         }
-      bgav_input_skip(ctx->input, 32 - s->data.audio.format.num_channels * 4);
+      bgav_input_skip(ctx->input, 32 - s->data.audio.format->num_channels * 4);
       }
     p->pts = sp->pts_counter;
     p->duration = num_samples;
@@ -240,12 +240,12 @@ static int process_packet_frame_wrapped(bgav_demuxer_context_t * ctx)
   if(p)
     {
 #if 0
-    if(s->type == BGAV_STREAM_AUDIO)
+    if(s->type == GAVF_STREAM_AUDIO)
       {
       fprintf(stderr, "Got audio packet\n");
       bgav_packet_dump(p);
       }
-    //    if(s->type == BGAV_STREAM_VIDEO)
+    //    if(s->type == GAVF_STREAM_VIDEO)
     //      fprintf(stderr, "Got video packet\n");
 #endif
     bgav_stream_done_packet_write(s, p);
@@ -302,7 +302,7 @@ static void init_stream_common(bgav_demuxer_context_t * ctx, bgav_stream_t * s,
      (((mxf_preface_t*)(priv->mxf.header.preface))->operational_pattern == MXF_OP_ATOM) &&
      sp->frame_size &&
      (sp->frame_size < st->max_packet_size) &&
-     (st->num_packets == 1) && (s->type == BGAV_STREAM_AUDIO))
+     (st->num_packets == 1) && (s->type == GAVF_STREAM_AUDIO))
     sd->clip_wrapped = 1;
 #endif
   
@@ -354,8 +354,8 @@ static void init_audio_stream(bgav_demuxer_context_t * ctx, bgav_stream_t * s,
   priv = s->priv;
   if(sd->sample_rate_num % sd->sample_rate_den)
     bgav_log(ctx->opt, BGAV_LOG_WARNING, LOG_DOMAIN, "Rounding fractional audio samplerate");
-  s->data.audio.format.samplerate = sd->sample_rate_num / sd->sample_rate_den;
-  s->data.audio.format.num_channels = sd->channels;
+  s->data.audio.format->samplerate = sd->sample_rate_num / sd->sample_rate_den;
+  s->data.audio.format->num_channels = sd->channels;
   s->data.audio.bits_per_sample = sd->bits_per_sample;
 
   if(is_pcm(fourcc))
@@ -377,17 +377,17 @@ static void init_timecode_track(bgav_stream_t * vs, mxf_track_t * timecode_track
   tc = (mxf_timecode_component_t *)(seq->structural_components[0]);
 
   /* Timecode format */
-  vs->data.video.format.timecode_format.int_framerate =
+  vs->data.video.format->timecode_format.int_framerate =
     tc->rounded_timecode_base;
 
   if(tc->drop_frame)
-    vs->data.video.format.timecode_format.flags |= GAVL_TIMECODE_DROP_FRAME;
+    vs->data.video.format->timecode_format.flags |= GAVL_TIMECODE_DROP_FRAME;
   
   /* First timecode only */
   vs->timecode_table = bgav_timecode_table_create(1);
   vs->timecode_table->entries[0].pts = 0;
   vs->timecode_table->entries[0].timecode =
-    gavl_timecode_from_framecount(&vs->data.video.format.timecode_format,
+    gavl_timecode_from_framecount(&vs->data.video.format->timecode_format,
                                   tc->start_timecode);
   }
 
@@ -416,19 +416,19 @@ static void init_video_stream(bgav_demuxer_context_t * ctx, bgav_stream_t * s,
   else
     s->index_mode = INDEX_MODE_SIMPLE;
   
-  s->data.video.format.timescale      = sd->sample_rate_num;
-  s->data.video.format.frame_duration = sd->sample_rate_den;
-  s->data.video.format.image_width    = sd->width;
-  s->data.video.format.image_height   = sd->height;
-  s->data.video.format.frame_width    = sd->width;
-  s->data.video.format.frame_height   = sd->height;
+  s->data.video.format->timescale      = sd->sample_rate_num;
+  s->data.video.format->frame_duration = sd->sample_rate_den;
+  s->data.video.format->image_width    = sd->width;
+  s->data.video.format->image_height   = sd->height;
+  s->data.video.format->frame_width    = sd->width;
+  s->data.video.format->frame_height   = sd->height;
 
   if(sd->ext_size)
     bgav_stream_set_extradata(s, sd->ext_data, sd->ext_size);
   
   /* Todo: Aspect ratio */
-  s->data.video.format.pixel_width    = 1;
-  s->data.video.format.pixel_height   = 1;
+  s->data.video.format->pixel_width    = 1;
+  s->data.video.format->pixel_height   = 1;
   }
 
 
@@ -460,7 +460,7 @@ handle_source_track_simple(bgav_demuxer_context_t * ctx,
     /* TODO */
     return;
     }
-  else if(ss->stream_type == BGAV_STREAM_UNKNOWN)
+  else if(ss->stream_type == GAVF_STREAM_NONE)
     {
     return;
     }
@@ -478,7 +478,7 @@ handle_source_track_simple(bgav_demuxer_context_t * ctx,
       return;
       }
     
-    if(ss->stream_type == BGAV_STREAM_AUDIO)
+    if(ss->stream_type == GAVF_STREAM_AUDIO)
       {
 
       fourcc = bgav_mxf_get_audio_fourcc(sd);
@@ -488,7 +488,7 @@ handle_source_track_simple(bgav_demuxer_context_t * ctx,
       s->cleanup = cleanup_stream_mxf;
       init_audio_stream(ctx, s, t, sd, fourcc);
       }
-    else if(ss->stream_type == BGAV_STREAM_VIDEO)
+    else if(ss->stream_type == GAVF_STREAM_VIDEO)
       {
       fourcc = bgav_mxf_get_video_fourcc(sd);
       if(!fourcc)
@@ -669,7 +669,7 @@ static int open_mxf(bgav_demuxer_context_t * ctx)
       }
     }
 
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "MXF");
 
   
@@ -807,7 +807,7 @@ static int find_source_stream(bgav_stream_t * streams, int num, int track_id)
 static int get_source_stream(bgav_track_table_t * tt,
                              mxf_file_t * f,
                              int * track_index, int * stream_index,
-                             bgav_stream_type_t type,
+                             gavf_stream_type_t type,
                              mxf_package_t * sp, int track_id)
   {
   int i;
@@ -837,27 +837,28 @@ static int get_source_stream(bgav_track_table_t * tt,
 
   switch(type)
     {
-    case BGAV_STREAM_AUDIO:
+    case GAVF_STREAM_AUDIO:
       *stream_index = find_source_stream(tt->tracks[*track_index].audio_streams,
                                          tt->tracks[*track_index].num_audio_streams,
                                          track_id);
       break;
-    case BGAV_STREAM_VIDEO:
+    case GAVF_STREAM_VIDEO:
       *stream_index = find_source_stream(tt->tracks[*track_index].video_streams,
                                          tt->tracks[*track_index].num_video_streams,
                                          track_id);
       break;
-    case BGAV_STREAM_SUBTITLE_TEXT:
+    case GAVF_STREAM_TEXT:
       *stream_index = find_source_stream(tt->tracks[*track_index].text_streams,
                                          tt->tracks[*track_index].num_text_streams,
                                          track_id);
       break;
-    case BGAV_STREAM_SUBTITLE_OVERLAY:
+    case GAVF_STREAM_OVERLAY:
       *stream_index = find_source_stream(tt->tracks[*track_index].overlay_streams,
                                          tt->tracks[*track_index].num_overlay_streams,
                                          track_id);
       break;
-    case BGAV_STREAM_UNKNOWN:
+    case GAVF_STREAM_NONE:
+    case GAVF_STREAM_MSG:
       break;
     }
   if(*stream_index < 0)
@@ -891,7 +892,7 @@ static void handle_material_track(bgav_demuxer_context_t * ctx, mxf_package_t * 
     /* TODO */
     return;
     }
-  else if(ss->stream_type == BGAV_STREAM_UNKNOWN)
+  else if(ss->stream_type == GAVF_STREAM_NONE)
     {
     return;
     }
@@ -905,15 +906,16 @@ static void handle_material_track(bgav_demuxer_context_t * ctx, mxf_package_t * 
     
     switch(ss->stream_type)
       {
-      case BGAV_STREAM_AUDIO:
+      case GAVF_STREAM_AUDIO:
         es = gavl_edl_add_audio_stream(et);
         break;
-      case BGAV_STREAM_VIDEO:
+      case GAVF_STREAM_VIDEO:
         es = gavl_edl_add_video_stream(et);
         break;
-      case BGAV_STREAM_SUBTITLE_TEXT:
-      case BGAV_STREAM_SUBTITLE_OVERLAY:
-      case BGAV_STREAM_UNKNOWN:
+      case GAVF_STREAM_TEXT:
+      case GAVF_STREAM_OVERLAY:
+      case GAVF_STREAM_NONE:
+      case GAVF_STREAM_MSG:
         break;
       }
     if(!es)

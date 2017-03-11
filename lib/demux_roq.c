@@ -156,8 +156,8 @@ static int open_roq(bgav_demuxer_context_t * ctx)
     s = bgav_track_add_audio_stream(ctx->tt->cur, ctx->opt);
     s->stream_id = AUDIO_ID;
     s->fourcc = BGAV_MK_FOURCC('R','O','Q','A');
-    s->data.audio.format.num_channels = num_channels;
-    s->data.audio.format.samplerate = RoQ_AUDIO_SAMPLE_RATE;
+    s->data.audio.format->num_channels = num_channels;
+    s->data.audio.format->samplerate = RoQ_AUDIO_SAMPLE_RATE;
     s->data.audio.bits_per_sample = 16;
     s->data.audio.block_align = num_channels * s->data.audio.bits_per_sample;
     }
@@ -167,20 +167,20 @@ static int open_roq(bgav_demuxer_context_t * ctx)
     s = bgav_track_add_video_stream(ctx->tt->cur, ctx->opt);
     s->stream_id = VIDEO_ID;
     s->fourcc = BGAV_MK_FOURCC('R','O','Q','V');
-    s->data.video.format.image_width = width;
-    s->data.video.format.image_height = height;
+    s->data.video.format->image_width = width;
+    s->data.video.format->image_height = height;
 
-    s->data.video.format.frame_width = width;
-    s->data.video.format.frame_height = height;
+    s->data.video.format->frame_width = width;
+    s->data.video.format->frame_height = height;
 
-    s->data.video.format.pixel_width = 1;
-    s->data.video.format.pixel_height = 1;
+    s->data.video.format->pixel_width = 1;
+    s->data.video.format->pixel_height = 1;
     
-    s->data.video.format.timescale = framerate;
-    s->data.video.format.frame_duration = 1;
+    s->data.video.format->timescale = framerate;
+    s->data.video.format->frame_duration = 1;
     }
 
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "ID Roq");
 
   ctx->data_start = ctx->input->position;

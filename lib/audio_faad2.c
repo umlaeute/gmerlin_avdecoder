@@ -134,9 +134,9 @@ static gavl_source_status_t decode_frame_faad2(bgav_stream_t * s)
      faad2 seems to be reporting 0 samples in this case :( */
   
   if(!frame_info.samples)
-    s->data.audio.frame->valid_samples = s->data.audio.format.samples_per_frame;
+    s->data.audio.frame->valid_samples = s->data.audio.format->samples_per_frame;
   else
-    s->data.audio.frame->valid_samples = frame_info.samples  / s->data.audio.format.num_channels;
+    s->data.audio.frame->valid_samples = frame_info.samples  / s->data.audio.format->num_channels;
 
   if((priv->last_duration >= 0) &&
      (s->data.audio.frame->valid_samples > priv->last_duration))
@@ -147,36 +147,36 @@ static gavl_source_status_t decode_frame_faad2(bgav_stream_t * s)
   if(!priv->init)
     return GAVL_SOURCE_OK;
   
-  if(s->data.audio.format.channel_locations[0] == GAVL_CHID_NONE)
+  if(s->data.audio.format->channel_locations[0] == GAVL_CHID_NONE)
     {
     bgav_faad_set_channel_setup(&frame_info,
-                                &s->data.audio.format);
+                                s->data.audio.format);
     }
   
-  if(!gavl_dictionary_get_string(&s->m, GAVL_META_FORMAT))
+  if(!gavl_dictionary_get_string(s->m, GAVL_META_FORMAT))
     {
     switch(frame_info.object_type)
       {
       case MAIN:
-        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "AAC Main");
+        gavl_dictionary_set_string(s->m, GAVL_META_FORMAT, "AAC Main");
         break;
       case LC:
-        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "AAC LC");
+        gavl_dictionary_set_string(s->m, GAVL_META_FORMAT, "AAC LC");
         break;
       case SSR:
-        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "AAC SSR");
+        gavl_dictionary_set_string(s->m, GAVL_META_FORMAT, "AAC SSR");
         break;
       case LTP:
-        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "AAC LTP");
+        gavl_dictionary_set_string(s->m, GAVL_META_FORMAT, "AAC LTP");
         break;
       case HE_AAC:
-        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "HE-AAC");
+        gavl_dictionary_set_string(s->m, GAVL_META_FORMAT, "HE-AAC");
         break;
       case ER_LC:
       case ER_LTP:
       case LD:
       case DRM_ER_LC: /* special object type for DRM */
-        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "MPEG_2/4 AAC");
+        gavl_dictionary_set_string(s->m, GAVL_META_FORMAT, "MPEG_2/4 AAC");
         break;
       }
     }
@@ -220,13 +220,13 @@ static int init_faad2(bgav_stream_t * s)
     
   /* Some mp4 files have a wrong samplerate in the sample description,
      so we correct it here */
-  if(samplerate == 2 * s->data.audio.format.samplerate)
+  if(samplerate == 2 * s->data.audio.format->samplerate)
     {
     //    fprintf(stderr, "Detected HE-AAC\n");
     //    gavl_hexdump(s->ext_data, s->ext_size, 16);
 
-    if(!s->data.audio.format.samples_per_frame)
-      s->data.audio.format.samples_per_frame = 2048;
+    if(!s->data.audio.format->samples_per_frame)
+      s->data.audio.format->samples_per_frame = 2048;
 
     s->ci.flags |= GAVL_COMPRESSION_SBR;
     
@@ -235,20 +235,20 @@ static int init_faad2(bgav_stream_t * s)
     }
   else
     {
-    if(!s->data.audio.format.samples_per_frame)
-      s->data.audio.format.samples_per_frame = 1024;
+    if(!s->data.audio.format->samples_per_frame)
+      s->data.audio.format->samples_per_frame = 1024;
     //    fprintf(stderr, "Detected NO HE-AAC\n");
     //    gavl_hexdump(s->ext_data, s->ext_size, 16);
     }
 
-  s->data.audio.preroll = s->data.audio.format.samples_per_frame;
+  s->data.audio.preroll = s->data.audio.format->samples_per_frame;
   
-  s->data.audio.format.samplerate = samplerate;
+  s->data.audio.format->samplerate = samplerate;
   
-  s->data.audio.format.num_channels = channels;
-  s->data.audio.format.sample_format = GAVL_SAMPLE_FLOAT;
-  //  s->data.audio.format.sample_format = GAVL_SAMPLE_S16;
-  s->data.audio.format.interleave_mode = GAVL_INTERLEAVE_ALL;
+  s->data.audio.format->num_channels = channels;
+  s->data.audio.format->sample_format = GAVL_SAMPLE_FLOAT;
+  //  s->data.audio.format->sample_format = GAVL_SAMPLE_S16;
+  s->data.audio.format->interleave_mode = GAVL_INTERLEAVE_ALL;
   
   cfg = faacDecGetCurrentConfiguration(priv->dec);
   cfg->outputFormat = FAAD_FMT_FLOAT;

@@ -103,7 +103,7 @@ static int parse_aac(bgav_audio_parser_t * parser)
   if(!parser->have_format)
     {
     parser->have_format = 1;
-    bgav_aac_frame_get_audio_format(priv->frame, &parser->s->data.audio.format);
+    bgav_aac_frame_get_audio_format(priv->frame, parser->s->data.audio.format);
     return PARSER_HAVE_FORMAT;
     }
   

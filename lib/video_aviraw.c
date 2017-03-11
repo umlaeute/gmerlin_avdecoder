@@ -182,10 +182,10 @@ static gavl_source_status_t decode_aviraw(bgav_stream_t * s, gavl_video_frame_t 
     {
     /* RGB AVIs are upside down */
     src = p->data;
-    dst = f->planes[0] + (s->data.video.format.image_height-1) * f->strides[0];
-    for(i = 0; i < s->data.video.format.image_height; i++)
+    dst = f->planes[0] + (s->data.video.format->image_height-1) * f->strides[0];
+    for(i = 0; i < s->data.video.format->image_height; i++)
       {
-      priv->scanline_func(src, dst, s->data.video.format.image_width,
+      priv->scanline_func(src, dst, s->data.video.format->image_width,
                           priv->pal);
       src += priv->in_stride;
       dst -= f->strides[0];
@@ -231,7 +231,7 @@ static int init_aviraw(bgav_stream_t * s)
       if(!s->data.video.pal.size)
         {
         priv->scanline_func = scanline_8_gray;
-        s->data.video.format.pixelformat = GAVL_GRAY_8;
+        s->data.video.format->pixelformat = GAVL_GRAY_8;
         }
       else
         {
@@ -240,28 +240,28 @@ static int init_aviraw(bgav_stream_t * s)
                    "Palette too small %d < 256",
                    s->data.video.pal.size);
         priv->scanline_func = scanline_8;
-        s->data.video.format.pixelformat = GAVL_RGB_24;
+        s->data.video.format->pixelformat = GAVL_RGB_24;
         }
       break;
     case 16:
       if(s->fourcc == BGAV_MK_FOURCC('M','T','V',' '))
         {
-        s->data.video.format.pixelformat = GAVL_RGB_16;
+        s->data.video.format->pixelformat = GAVL_RGB_16;
         priv->scanline_func = scanline_16_swap;
         }
       else
         {
-        s->data.video.format.pixelformat = GAVL_RGB_15;
+        s->data.video.format->pixelformat = GAVL_RGB_15;
         priv->scanline_func = scanline_16;
         }
       break;
     case 24:
       priv->scanline_func = scanline_24;
-      s->data.video.format.pixelformat = GAVL_BGR_24;
+      s->data.video.format->pixelformat = GAVL_BGR_24;
       break;
     case 32:
       priv->scanline_func = scanline_32;
-      s->data.video.format.pixelformat = GAVL_BGR_32;
+      s->data.video.format->pixelformat = GAVL_BGR_32;
       break;
     default:
       bgav_log(s->opt, BGAV_LOG_ERROR, LOG_DOMAIN,
@@ -270,14 +270,14 @@ static int init_aviraw(bgav_stream_t * s)
       break;
     }
 
-  priv->in_stride = (s->data.video.format.image_width * s->data.video.depth + 7) / 8;
+  priv->in_stride = (s->data.video.format->image_width * s->data.video.depth + 7) / 8;
 
   /* Padd to 4 byte */
   if(priv->in_stride % 4)
     {
     priv->in_stride += (4 - (priv->in_stride % 4));
     }
-  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "AVI raw");
+  gavl_dictionary_set_string(s->m, GAVL_META_FORMAT, "AVI raw");
   return 1;
   }
 

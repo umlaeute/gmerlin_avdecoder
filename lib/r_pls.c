@@ -98,7 +98,7 @@ static bgav_track_table_t * parse_pls(bgav_input_context_t * input)
       if(pos)
         {
         pos++;
-        gavl_dictionary_set_string(&t->metadata, GAVL_META_LABEL, pos);
+        gavl_dictionary_set_string(t->metadata, GAVL_META_LABEL, pos);
         have_title = 1;
         }
       }
@@ -114,7 +114,7 @@ static bgav_track_table_t * parse_pls(bgav_input_context_t * input)
       if(pos)
         {
         pos++;
-        gavl_dictionary_set_string(&t->metadata, GAVL_META_REFURL, pos);
+        gavl_dictionary_set_string(t->metadata, GAVL_META_REFURL, pos);
         }
       have_file = 1;
       }

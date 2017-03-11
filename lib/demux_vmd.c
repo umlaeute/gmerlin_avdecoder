@@ -130,13 +130,13 @@ static int open_vmd(bgav_demuxer_context_t * ctx)
 
   vs->stream_id = VIDEO_ID;
   vs->fourcc = BGAV_MK_FOURCC('V','M','D','V');
-  vs->data.video.format.image_width  = BGAV_PTR_2_16LE(&priv->header[12]);
-  vs->data.video.format.image_height = BGAV_PTR_2_16LE(&priv->header[14]);
+  vs->data.video.format->image_width  = BGAV_PTR_2_16LE(&priv->header[12]);
+  vs->data.video.format->image_height = BGAV_PTR_2_16LE(&priv->header[14]);
 
-  vs->data.video.format.frame_width  = vs->data.video.format.image_width;
-  vs->data.video.format.frame_height = vs->data.video.format.image_height;
-  vs->data.video.format.pixel_width  = 1;
-  vs->data.video.format.pixel_height = 1;
+  vs->data.video.format->frame_width  = vs->data.video.format->image_width;
+  vs->data.video.format->frame_height = vs->data.video.format->image_height;
+  vs->data.video.format->pixel_width  = 1;
+  vs->data.video.format->pixel_height = 1;
 
   bgav_stream_set_extradata(vs, priv->header, VMD_HEADER_SIZE);
   /* Initialize audio stream */
@@ -147,8 +147,8 @@ static int open_vmd(bgav_demuxer_context_t * ctx)
     as = bgav_track_add_audio_stream(ctx->tt->cur, ctx->opt);
     as->stream_id = AUDIO_ID;
     as->fourcc = BGAV_MK_FOURCC('V','M','D','A');
-    as->data.audio.format.samplerate = samplerate;
-    as->data.audio.format.num_channels =
+    as->data.audio.format->samplerate = samplerate;
+    as->data.audio.format->num_channels =
       (priv->header[811] & 0x80) ? 2 : 1;
     as->data.audio.block_align = BGAV_PTR_2_16LE(&priv->header[806]);
     if(as->data.audio.block_align & 0x8000)
@@ -159,15 +159,15 @@ static int open_vmd(bgav_demuxer_context_t * ctx)
     else
       as->data.audio.bits_per_sample = 8;
     
-    vs->data.video.format.frame_duration = as->data.audio.block_align;
-    vs->data.video.format.timescale =
-      as->data.audio.format.num_channels * as->data.audio.format.samplerate;
+    vs->data.video.format->frame_duration = as->data.audio.block_align;
+    vs->data.video.format->timescale =
+      as->data.audio.format->num_channels * as->data.audio.format->samplerate;
     }
   else
     {
     /* Assume 10 fps */
-    vs->data.video.format.frame_duration = 1;
-    vs->data.video.format.timescale = 10;
+    vs->data.video.format->frame_duration = 1;
+    vs->data.video.format->timescale = 10;
     }
 
 
@@ -226,7 +226,7 @@ static int open_vmd(bgav_demuxer_context_t * ctx)
       current_offset += size;
       frame_index++;
       }
-    current_video_pts += vs->data.video.format.frame_duration;
+    current_video_pts += vs->data.video.format->frame_duration;
     }
 
   priv->frame_count = frame_index;
@@ -235,7 +235,7 @@ static int open_vmd(bgav_demuxer_context_t * ctx)
   
   /* */
 
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "Sierra VMD");
   ret = 1;
   
@@ -277,7 +277,7 @@ static int next_packet_vmd(bgav_demuxer_context_t * ctx)
       return 0;
 
     p->data_size = frame->frame_size + BYTES_PER_FRAME_RECORD;
-    if(s->type == BGAV_STREAM_VIDEO)
+    if(s->type == GAVF_STREAM_VIDEO)
       {
       p->pts = frame->pts;
       //      fprintf(stderr, "Got video frame\n");

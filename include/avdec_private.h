@@ -338,15 +338,16 @@ void bgav_packet_pool_destroy(bgav_packet_pool_t*);
 /* Stream types
    (changing numeric values alters the index file format) */
 
+#if 0
 typedef enum
   {
-    BGAV_STREAM_UNKNOWN = 0,
-    BGAV_STREAM_AUDIO   = 1,
-    BGAV_STREAM_VIDEO   = 2,
-    BGAV_STREAM_SUBTITLE_TEXT   = 3,
-    BGAV_STREAM_SUBTITLE_OVERLAY   = 4,
+    GAVF_STREAM_NONE = 0,
+    GAVF_STREAM_AUDIO   = 1,
+    GAVF_STREAM_VIDEO   = 2,
+    GAVF_STREAM_TEXT   = 3,
+    GAVF_STREAM_OVERLAY   = 4,
   } bgav_stream_type_t;
-
+#endif
 
 /* Stream structure */ 
 
@@ -393,11 +394,11 @@ typedef enum
 #define STREAM_HAS_SYNC(s)     ((s)->sync_time != GAVL_TIME_UNDEFINED)
 
 #define STREAM_SET_STILL(s) \
-  s->data.video.format.framerate_mode = GAVL_FRAMERATE_STILL; \
+  s->data.video.format->framerate_mode = GAVL_FRAMERATE_STILL; \
   s->ci.flags &= ~(GAVL_COMPRESSION_HAS_P_FRAMES|GAVL_COMPRESSION_HAS_B_FRAMES);
 
 #define STREAM_IS_STILL(s) \
-  (s->data.video.format.framerate_mode == GAVL_FRAMERATE_STILL)
+  (s->data.video.format->framerate_mode == GAVL_FRAMERATE_STILL)
 
 typedef struct
   {
@@ -406,7 +407,7 @@ typedef struct
   int image_size; /* For M$ formats only */
       
   bgav_video_decoder_t * decoder;
-  gavl_video_format_t format;
+  gavl_video_format_t * format;
   //      int palette_changed;
       
   bgav_video_parser_t * parser;
@@ -426,12 +427,12 @@ typedef struct
   gavl_video_source_t * vsrc;
 
   } bgav_stream_video_t;
-
   
 struct bgav_stream_s
   {
-  uint32_t max_packet_size_tmp; // Incremented during parsing
+  gavl_dictionary_t * info;
   
+  uint32_t max_packet_size_tmp; // Incremented during parsing
   void * priv;
   void * decoder_priv;
   
@@ -443,7 +444,7 @@ struct bgav_stream_s
 
   bgav_stream_action_t action;
   int stream_id; /* Format specific stream id */
-  bgav_stream_type_t type;
+  gavf_stream_type_t type;
   bgav_packet_buffer_t * packet_buffer;
   
   uint8_t * ext_data;
@@ -494,7 +495,7 @@ struct bgav_stream_s
   bgav_packet_t * packet;
   int             packet_seq;
   
-  gavl_dictionary_t m;
+  gavl_dictionary_t * m;
   
   /*
    *  Sometimes, the bitrates important for codecs 
@@ -569,7 +570,7 @@ struct bgav_stream_s
     {
     struct
       {
-      gavl_audio_format_t format;
+      gavl_audio_format_t * format;
       bgav_audio_decoder_t * decoder;
       int bits_per_sample; /* In some cases, this must be set from the
                               Container to distinguish between 8 and 16 bit
@@ -691,7 +692,7 @@ struct bgav_track_s
   {
   // char * name;
   gavl_time_t duration;
-  bgav_metadata_t metadata;
+  bgav_metadata_t * metadata;
 
   int num_audio_streams;
   int num_video_streams;
@@ -706,6 +707,8 @@ struct bgav_track_s
   void * priv; /* For storing private data */  
 
   int flags;
+
+  gavl_dictionary_t * info;
   };
 
 /* track.c */
@@ -806,6 +809,8 @@ typedef struct
   bgav_track_t * tracks;
   bgav_track_t * cur;
   int refcount;
+  
+  gavl_dictionary_t info;
   } bgav_track_table_t;
 
 bgav_track_table_t * bgav_track_table_create(int num_tracks);
@@ -1810,7 +1815,7 @@ struct bgav_subtitle_reader_context_s
 
 struct bgav_subtitle_reader_s
   {
-  bgav_stream_type_t type;
+  gavf_stream_type_t type;
   char * extensions;
   char * name;
 

@@ -374,7 +374,7 @@ typedef struct
   uint16_t version;
   uint16_t revision_level;
   uint32_t vendor;
-  int type; /* BGAV_STREAM_AUDIO, BGAV_STREAM_VIDEO or BGAV_STREAM_SUBTITLE_TEXT */
+  int type; /* GAVF_STREAM_AUDIO, GAVF_STREAM_VIDEO or GAVF_STREAM_TEXT */
   union
     {
     struct

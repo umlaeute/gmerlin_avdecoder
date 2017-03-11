@@ -121,29 +121,29 @@ static int open_image(bgav_demuxer_context_t * ctx)
   if(is_png(probe_data))
     {
     s->fourcc = BGAV_MK_FOURCC('p', 'n', 'g', ' ');
-    gavl_dictionary_set_string(&ctx->tt->cur->metadata, GAVL_META_FORMAT, "PNG image");
-    gavl_dictionary_set_string(&ctx->tt->cur->metadata, GAVL_META_MIMETYPE, "image/png");
+    gavl_dictionary_set_string(ctx->tt->cur->metadata, GAVL_META_FORMAT, "PNG image");
+    gavl_dictionary_set_string(ctx->tt->cur->metadata, GAVL_META_MIMETYPE, "image/png");
     }
   else if(is_tiff(probe_data))
     {
     s->fourcc = BGAV_MK_FOURCC('t', 'i', 'f', 'f');
-    gavl_dictionary_set_string(&ctx->tt->cur->metadata, GAVL_META_FORMAT, "TIFF image");
-    gavl_dictionary_set_string(&ctx->tt->cur->metadata, GAVL_META_MIMETYPE, "image/tiff");
+    gavl_dictionary_set_string(ctx->tt->cur->metadata, GAVL_META_FORMAT, "TIFF image");
+    gavl_dictionary_set_string(ctx->tt->cur->metadata, GAVL_META_MIMETYPE, "image/tiff");
     }
   else if(is_jpeg(probe_data))
     {
     s->fourcc = BGAV_MK_FOURCC('j', 'p', 'e', 'g');    
-    gavl_dictionary_set_string(&ctx->tt->cur->metadata, GAVL_META_FORMAT, "JPEG image");
-    gavl_dictionary_set_string(&ctx->tt->cur->metadata, GAVL_META_MIMETYPE, "image/jpeg");
+    gavl_dictionary_set_string(ctx->tt->cur->metadata, GAVL_META_FORMAT, "JPEG image");
+    gavl_dictionary_set_string(ctx->tt->cur->metadata, GAVL_META_MIMETYPE, "image/jpeg");
     }
 
-  s->data.video.format.timescale = 1000; // Actually arbitrary since we only have pts = 0
-  s->data.video.format.frame_duration = 0;
-  s->data.video.format.framerate_mode = GAVL_FRAMERATE_STILL;
+  s->data.video.format->timescale = 1000; // Actually arbitrary since we only have pts = 0
+  s->data.video.format->frame_duration = 0;
+  s->data.video.format->framerate_mode = GAVL_FRAMERATE_STILL;
   
-  s->timescale = s->data.video.format.timescale;
-  s->data.video.format.pixel_width  = 1;
-  s->data.video.format.pixel_height = 1;  
+  s->timescale = s->data.video.format->timescale;
+  s->data.video.format->pixel_width  = 1;
+  s->data.video.format->pixel_height = 1;  
   
   s->ci.flags &= ~(GAVL_COMPRESSION_HAS_B_FRAMES | GAVL_COMPRESSION_HAS_P_FRAMES);
   
@@ -177,7 +177,7 @@ static int next_packet_image(bgav_demuxer_context_t * ctx)
   p->pts = 0;
   
   PACKET_SET_KEYFRAME(p);
-  p->duration = s->data.video.format.frame_duration;
+  p->duration = s->data.video.format->frame_duration;
   bgav_stream_done_packet_write(s, p);
   return 1;
   }

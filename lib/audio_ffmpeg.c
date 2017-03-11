@@ -138,30 +138,30 @@ static int init_format(bgav_stream_t * s)
 
   /* These might be set from the codec or the container */
 
-  s->data.audio.format.num_channels = priv->ctx->channels;
-  s->data.audio.format.samplerate   = priv->ctx->sample_rate;
+  s->data.audio.format->num_channels = priv->ctx->channels;
+  s->data.audio.format->samplerate   = priv->ctx->sample_rate;
   
   /* These come from the codec */
   
-  s->data.audio.format.sample_format =
+  s->data.audio.format->sample_format =
     sample_format_ffmpeg_2_gavl(priv->ctx->sample_fmt, &planar);
 
   if(planar)
-    s->data.audio.format.interleave_mode = GAVL_INTERLEAVE_NONE;
+    s->data.audio.format->interleave_mode = GAVL_INTERLEAVE_NONE;
   else
-    s->data.audio.format.interleave_mode = GAVL_INTERLEAVE_ALL;
+    s->data.audio.format->interleave_mode = GAVL_INTERLEAVE_ALL;
   
   /* If we got no sample format, initialization went wrong */
-  if(s->data.audio.format.sample_format == GAVL_SAMPLE_NONE)
+  if(s->data.audio.format->sample_format == GAVL_SAMPLE_NONE)
     {
     bgav_log(s->opt, BGAV_LOG_ERROR, LOG_DOMAIN,
              "Could not get sample format (maybe codec init failed)");
     return 0;
     }
   priv->sample_size =
-    gavl_bytes_per_sample(s->data.audio.format.sample_format);
+    gavl_bytes_per_sample(s->data.audio.format->sample_format);
   
-  gavl_set_channel_setup(&s->data.audio.format);
+  gavl_set_channel_setup(s->data.audio.format);
 
   
 
@@ -214,14 +214,14 @@ static gavl_source_status_t decode_frame_ffmpeg(bgav_stream_t * s)
     int num_skip = priv->frame->valid_samples;
     priv->frame->valid_samples += priv->excess_samples;
 
-    gavl_audio_frame_skip(&s->data.audio.format, priv->frame,
+    gavl_audio_frame_skip(s->data.audio.format, priv->frame,
                           num_skip);
     
-    if(priv->frame->valid_samples > s->data.audio.format.samples_per_frame)
-      priv->frame->valid_samples = s->data.audio.format.samples_per_frame;
+    if(priv->frame->valid_samples > s->data.audio.format->samples_per_frame)
+      priv->frame->valid_samples = s->data.audio.format->samples_per_frame;
     priv->excess_samples -= priv->frame->valid_samples;
     
-    gavl_audio_frame_copy_ptrs(&s->data.audio.format,
+    gavl_audio_frame_copy_ptrs(s->data.audio.format,
                                s->data.audio.frame, priv->frame);
     return GAVL_SOURCE_OK;
     }
@@ -290,29 +290,29 @@ static gavl_source_status_t decode_frame_ffmpeg(bgav_stream_t * s)
       priv->frame = gavl_audio_frame_create(NULL);
     
     /* This will break with planar formats */
-    if(s->data.audio.format.interleave_mode == GAVL_INTERLEAVE_ALL)
+    if(s->data.audio.format->interleave_mode == GAVL_INTERLEAVE_ALL)
       priv->frame->samples.u_8 = priv->f->extended_data[0];
     else
       {
       int i;
-      for(i = 0; i < s->data.audio.format.num_channels; i++)
+      for(i = 0; i < s->data.audio.format->num_channels; i++)
         {
         priv->frame->channels.u_8[i] = priv->f->extended_data[i];
         }
       }   
     
-    if(!s->data.audio.format.samples_per_frame)
+    if(!s->data.audio.format->samples_per_frame)
       {
       // fprintf(stderr, "num_samples: %d, frame_size: %d\n",
       //         f.nb_samples, priv->ctx->frame_size);
-      s->data.audio.format.samples_per_frame = priv->f->nb_samples;
+      s->data.audio.format->samples_per_frame = priv->f->nb_samples;
       }
 
     priv->frame->valid_samples = priv->f->nb_samples;
     
-    if(priv->frame->valid_samples > s->data.audio.format.samples_per_frame)
+    if(priv->frame->valid_samples > s->data.audio.format->samples_per_frame)
       {
-      priv->frame->valid_samples = s->data.audio.format.samples_per_frame;
+      priv->frame->valid_samples = s->data.audio.format->samples_per_frame;
       priv->excess_samples = priv->f->nb_samples - priv->frame->valid_samples;
       }
     }
@@ -328,7 +328,7 @@ static gavl_source_status_t decode_frame_ffmpeg(bgav_stream_t * s)
 
   s->flags |= STREAM_HAVE_FRAME;
   
-  gavl_audio_frame_copy_ptrs(&s->data.audio.format,
+  gavl_audio_frame_copy_ptrs(s->data.audio.format,
                              s->data.audio.frame, priv->frame);
   
   return GAVL_SOURCE_OK;
@@ -369,8 +369,8 @@ static int init_ffmpeg_audio(bgav_stream_t * s)
   bgav_dprintf("Adding extradata %d bytes\n", priv->ctx->extradata_size);
   gavl_hexdump(priv->ctx->extradata, priv->ctx->extradata_size, 16);
 #endif    
-  priv->ctx->channels        = s->data.audio.format.num_channels;
-  priv->ctx->sample_rate     = s->data.audio.format.samplerate;
+  priv->ctx->channels        = s->data.audio.format->num_channels;
+  priv->ctx->sample_rate     = s->data.audio.format->samplerate;
   priv->ctx->block_align     = s->data.audio.block_align;
   priv->ctx->bit_rate        = s->codec_bitrate;
   priv->ctx->bits_per_coded_sample = s->data.audio.bits_per_sample;
@@ -412,12 +412,12 @@ static int init_ffmpeg_audio(bgav_stream_t * s)
 
   /* Set missing format values */
   
-  s->data.audio.format.interleave_mode = GAVL_INTERLEAVE_ALL;
+  s->data.audio.format->interleave_mode = GAVL_INTERLEAVE_ALL;
   s->data.audio.preroll = priv->info->preroll;
 
   //  /* Check if we know the format already */
-  //  if(s->data.audio.format.num_channels &&
-  //     s->data.audio.format.samplerate &&
+  //  if(s->data.audio.format->num_channels &&
+  //     s->data.audio.format->samplerate &&
   //     (priv->ctx->sample_fmt != SAMPLE_FMT_NONE))
   //    {
   //    if(!init_format(s))
@@ -429,7 +429,7 @@ static int init_ffmpeg_audio(bgav_stream_t * s)
       return 0;
   //    }
     
-  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(s->m, GAVL_META_FORMAT,
                     priv->info->format_name);
   return 1;
   }

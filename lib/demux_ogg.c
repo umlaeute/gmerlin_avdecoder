@@ -346,10 +346,10 @@ static void parse_vorbis_comment(bgav_stream_t * s, uint8_t * data,
     {
     language = bgav_lang_from_name(field);
     if(language)
-      gavl_dictionary_set_string(&s->m, GAVL_META_LANGUAGE, language);
+      gavl_dictionary_set_string(s->m, GAVL_META_LANGUAGE, language);
     }
   
-  gavl_dictionary_set_string(&s->m, GAVL_META_SOFTWARE, vc.vendor);
+  gavl_dictionary_set_string(s->m, GAVL_META_SOFTWARE, vc.vendor);
   bgav_vorbis_comment_free(&vc);
   bgav_input_destroy(input_mem);
   }
@@ -535,7 +535,7 @@ static void setup_flac(bgav_stream_t * s)
 
   s->flags |= STREAM_PARSE_FRAME;
   s->index_mode = INDEX_MODE_SIMPLE;
-  s->timescale = s->data.audio.format.samplerate;
+  s->timescale = s->data.audio.format->samplerate;
   }
 
 /* Set up a track, which starts at start position */
@@ -620,14 +620,14 @@ static int setup_track(bgav_demuxer_context_t * ctx, bgav_track_t * track,
         ogg_stream->header_packets_read = 1;
 
         /* Get channels */
-        s->data.audio.format.num_channels =
+        s->data.audio.format->num_channels =
           priv->op.packet[11];
 
         /* Get samplerate */
-        s->data.audio.format.samplerate =
+        s->data.audio.format->samplerate =
           BGAV_PTR_2_32LE(priv->op.packet + 12);
-        s->timescale = s->data.audio.format.samplerate;
-        bgav_vorbis_set_channel_setup(&s->data.audio.format);
+        s->timescale = s->data.audio.format->samplerate;
+        bgav_vorbis_set_channel_setup(s->data.audio.format);
         
         /* Read remaining header packets from this page */
         while(ogg_stream_packetout(&ogg_stream->os, &priv->op) == 1)
@@ -650,10 +650,10 @@ static int setup_track(bgav_demuxer_context_t * ctx, bgav_track_t * track,
         ogg_stream->header_packets_read = 1;
         
         /* Get channels */
-        s->data.audio.format.num_channels = priv->op.packet[9];
+        s->data.audio.format->num_channels = priv->op.packet[9];
 
         /* Get samplerate */
-        s->data.audio.format.samplerate = 48000; // We don't care about the input rate
+        s->data.audio.format->samplerate = 48000; // We don't care about the input rate
         s->timescale = 48000;
         
         /* TODO: Channel setup */
@@ -670,27 +670,27 @@ static int setup_track(bgav_demuxer_context_t * ctx, bgav_track_t * track,
 
         /* Get picture dimensions, fps and keyframe shift */
 
-        s->data.video.format.frame_width =
+        s->data.video.format->frame_width =
           BGAV_PTR_2_16BE(priv->op.packet+10);
-        s->data.video.format.frame_width *= 16;
+        s->data.video.format->frame_width *= 16;
 
-        s->data.video.format.frame_height =
+        s->data.video.format->frame_height =
           BGAV_PTR_2_16BE(priv->op.packet+12);
-        s->data.video.format.frame_height *= 16;
+        s->data.video.format->frame_height *= 16;
         
-        s->data.video.format.image_width =
+        s->data.video.format->image_width =
           BGAV_PTR_2_24BE(priv->op.packet+14);
-        s->data.video.format.image_height =
+        s->data.video.format->image_height =
           BGAV_PTR_2_24BE(priv->op.packet+17);
         
-        s->data.video.format.timescale =
+        s->data.video.format->timescale =
           BGAV_PTR_2_32BE(priv->op.packet+22);
-        s->data.video.format.frame_duration =
+        s->data.video.format->frame_duration =
           BGAV_PTR_2_32BE(priv->op.packet+26);
 
-        s->data.video.format.pixel_width =
+        s->data.video.format->pixel_width =
           BGAV_PTR_2_24BE(priv->op.packet+30);
-        s->data.video.format.pixel_height =
+        s->data.video.format->pixel_height =
           BGAV_PTR_2_24BE(priv->op.packet+33);
 
         // fprintf(stderr, "Got video format:\n");
@@ -732,8 +732,8 @@ static int setup_track(bgav_demuxer_context_t * ctx, bgav_track_t * track,
 
         s->flags |= STREAM_PARSE_FRAME;
         
-        s->data.video.format.timescale = dirac_header.timescale;
-        s->data.video.format.frame_duration = dirac_header.frame_duration;
+        s->data.video.format->timescale = dirac_header.timescale;
+        s->data.video.format->frame_duration = dirac_header.frame_duration;
 
         bgav_stream_set_extradata(s, priv->op.packet, priv->op.bytes);
         
@@ -790,7 +790,7 @@ static int setup_track(bgav_demuxer_context_t * ctx, bgav_track_t * track,
         bgav_stream_set_extradata(s, priv->op.packet, priv->op.bytes);
         
         /* Samplerate */
-        s->data.audio.format.samplerate = BGAV_PTR_2_32LE(priv->op.packet + 36);
+        s->data.audio.format->samplerate = BGAV_PTR_2_32LE(priv->op.packet + 36);
 
         /* Extra packets */
         ogg_stream->header_packets_needed += BGAV_PTR_2_32LE(priv->op.packet + 68);
@@ -823,16 +823,16 @@ static int setup_track(bgav_demuxer_context_t * ctx, bgav_track_t * track,
 
         /* Set up the stream from the OGM header */
 
-        s->data.video.format.image_width  = ogm_header.data.video.width;
-        s->data.video.format.image_height = ogm_header.data.video.height;
+        s->data.video.format->image_width  = ogm_header.data.video.width;
+        s->data.video.format->image_height = ogm_header.data.video.height;
 
-        s->data.video.format.frame_width  = ogm_header.data.video.width;
-        s->data.video.format.frame_height = ogm_header.data.video.height;
-        s->data.video.format.pixel_width  = 1;
-        s->data.video.format.pixel_height = 1;
+        s->data.video.format->frame_width  = ogm_header.data.video.width;
+        s->data.video.format->frame_height = ogm_header.data.video.height;
+        s->data.video.format->pixel_width  = 1;
+        s->data.video.format->pixel_height = 1;
 
-        s->data.video.format.frame_duration = ogm_header.time_unit;
-        s->data.video.format.timescale      = ogm_header.samples_per_unit * 10000000;
+        s->data.video.format->frame_duration = ogm_header.time_unit;
+        s->data.video.format->timescale      = ogm_header.samples_per_unit * 10000000;
 
         //        gavl_video_format_dump(&s->data.video.format);
       
@@ -873,7 +873,7 @@ static int setup_track(bgav_demuxer_context_t * ctx, bgav_track_t * track,
         
         s->timescale = 10000000 / ogm_header.time_unit;
 
-        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "OGM subtitles");
+        gavl_dictionary_set_string(s->m, GAVL_META_FORMAT, "OGM subtitles");
         ogg_stream->header_packets_needed = 2;
         ogg_stream->header_packets_read = 1;
         priv->is_ogm = 1;
@@ -1281,7 +1281,7 @@ static gavl_time_t granulepos_2_time(bgav_stream_t * s,
     case FOURCC_SPEEX:
     case FOURCC_OGM_AUDIO:
     case FOURCC_OPUS:
-      return gavl_samples_to_time(s->data.audio.format.samplerate,
+      return gavl_samples_to_time(s->data.audio.format->samplerate,
                                   pos);
       break;
     case FOURCC_THEORA:
@@ -1290,13 +1290,13 @@ static gavl_time_t granulepos_2_time(bgav_stream_t * s,
       frames = pos >> stream_priv->keyframe_granule_shift;
       frames +=
         pos-(frames<<stream_priv->keyframe_granule_shift);
-      return gavl_frames_to_time(s->data.video.format.timescale,
-                                 s->data.video.format.frame_duration,
+      return gavl_frames_to_time(s->data.video.format->timescale,
+                                 s->data.video.format->frame_duration,
                                  frames);
       break;
     case FOURCC_OGM_VIDEO:
-      return gavl_frames_to_time(s->data.video.format.timescale,
-                                 s->data.video.format.frame_duration,
+      return gavl_frames_to_time(s->data.video.format->timescale,
+                                 s->data.video.format->frame_duration,
                                  pos);
       break;
     case FOURCC_DIRAC:
@@ -1304,8 +1304,8 @@ static gavl_time_t granulepos_2_time(bgav_stream_t * s,
       int64_t high_word = pos >> 22;
       int32_t low_word  = pos & 0x3fffff;
       if(!stream_priv->interlaced_coding)
-        return ((high_word + low_word) >> 10) * s->data.video.format.frame_duration;
-      return ((high_word + low_word) >> 9) * s->data.video.format.frame_duration;
+        return ((high_word + low_word) >> 10) * s->data.video.format->frame_duration;
+      return ((high_word + low_word) >> 9) * s->data.video.format->frame_duration;
       }
     }
   return GAVL_TIME_UNDEFINED;
@@ -1379,17 +1379,17 @@ static void get_metadata(bgav_track_t * track)
   {
   stream_priv_t * stream_priv;
   int i;
-  gavl_dictionary_free(&track->metadata);
+  gavl_dictionary_reset(track->metadata);
 
   for(i = 0; i < track->num_audio_streams; i++)
     {
     stream_priv = track->audio_streams[i].priv;
-    gavl_dictionary_merge2(&track->metadata, &stream_priv->metadata);
+    gavl_dictionary_merge2(track->metadata, &stream_priv->metadata);
     }
   for(i = 0; i < track->num_video_streams; i++)
     {
     stream_priv = track->video_streams[i].priv;
-    gavl_dictionary_merge2(&track->metadata, &stream_priv->metadata);
+    gavl_dictionary_merge2(track->metadata, &stream_priv->metadata);
     }
   /* Get mime type. */
   if(!track->num_video_streams && (track->num_audio_streams == 1))
@@ -1397,21 +1397,21 @@ static void get_metadata(bgav_track_t * track)
     switch(track->audio_streams[0].fourcc)
       {
       case FOURCC_VORBIS:
-        gavl_dictionary_set_string(&track->metadata, GAVL_META_MIMETYPE, "audio/ogg");
+        gavl_dictionary_set_string(track->metadata, GAVL_META_MIMETYPE, "audio/ogg");
         break;
       case FOURCC_OPUS:
-        gavl_dictionary_set_string(&track->metadata, GAVL_META_MIMETYPE, "audio/opus");
+        gavl_dictionary_set_string(track->metadata, GAVL_META_MIMETYPE, "audio/opus");
         break;
       case FOURCC_SPEEX:
-        gavl_dictionary_set_string(&track->metadata, GAVL_META_MIMETYPE, "audio/x-speex");
+        gavl_dictionary_set_string(track->metadata, GAVL_META_MIMETYPE, "audio/x-speex");
         break;
       }   
     }
   else if(track->num_video_streams > 0)
-      gavl_dictionary_set_string(&track->metadata, GAVL_META_MIMETYPE, "video/ogg");
+      gavl_dictionary_set_string(track->metadata, GAVL_META_MIMETYPE, "video/ogg");
 
 
-  gavl_dictionary_set_string(&track->metadata, GAVL_META_FORMAT, "Ogg");
+  gavl_dictionary_set_string(track->metadata, GAVL_META_FORMAT, "Ogg");
   }
 
 static int open_ogg(bgav_demuxer_context_t * ctx)
@@ -1563,8 +1563,8 @@ static int open_ogg(bgav_demuxer_context_t * ctx)
         const char * artist;
         const char * title;
         
-        artist = gavl_dictionary_get_string(&ctx->tt->tracks[i].metadata, GAVL_META_ARTIST);
-        title = gavl_dictionary_get_string(&ctx->tt->tracks[i].metadata, GAVL_META_TITLE);
+        artist = gavl_dictionary_get_string(ctx->tt->tracks[i].metadata, GAVL_META_ARTIST);
+        title = gavl_dictionary_get_string(ctx->tt->tracks[i].metadata, GAVL_META_TITLE);
         
         if(artist && title)
           name = bgav_sprintf("%s - %s",
@@ -1574,16 +1574,16 @@ static int open_ogg(bgav_demuxer_context_t * ctx)
           name = bgav_sprintf("%s", title);
         else
           name = bgav_sprintf("Track %d", i+1);
-        gavl_dictionary_set_string_nocopy(&ctx->tt->tracks[i].metadata, GAVL_META_LABEL, name);
+        gavl_dictionary_set_string_nocopy(ctx->tt->tracks[i].metadata, GAVL_META_LABEL, name);
         }
       }
     }
   else /* Streaming case */
     {
     const char * title =
-      gavl_dictionary_get_string(&ctx->tt->tracks[0].metadata, GAVL_META_TITLE);
+      gavl_dictionary_get_string(ctx->tt->tracks[0].metadata, GAVL_META_TITLE);
     if(title)
-      gavl_dictionary_set_string(&ctx->tt->tracks[0].metadata, GAVL_META_LABEL, title);
+      gavl_dictionary_set_string(ctx->tt->tracks[0].metadata, GAVL_META_LABEL, title);
     get_metadata(&ctx->tt->tracks[0]);
 
     /* Set end position to -1 */
@@ -1693,16 +1693,16 @@ static void metadata_changed(bgav_demuxer_context_t * ctx)
   if(ctx->opt->metadata_change_callback)
     {
     get_metadata(ctx->tt->cur);
-    gavl_dictionary_merge2(&ctx->tt->cur->metadata, &ctx->input->metadata);
+    gavl_dictionary_merge2(ctx->tt->cur->metadata, &ctx->input->metadata);
 
-    if(!gavl_dictionary_get_string(&ctx->tt->cur->metadata, GAVL_META_LABEL))
+    if(!gavl_dictionary_get_string(ctx->tt->cur->metadata, GAVL_META_LABEL))
       {
-      name = get_name(&ctx->tt->cur->metadata);
+      name = get_name(ctx->tt->cur->metadata);
       if(name)
-        gavl_dictionary_set_string_nocopy(&ctx->tt->cur->metadata, GAVL_META_LABEL, name);
+        gavl_dictionary_set_string_nocopy(ctx->tt->cur->metadata, GAVL_META_LABEL, name);
       }
     ctx->opt->metadata_change_callback(ctx->opt->metadata_change_callback_data,
-                                       &ctx->tt->cur->metadata);
+                                       ctx->tt->cur->metadata);
     }
   priv->metadata_changed = 0;
   }
@@ -1915,7 +1915,7 @@ static int next_packet_ogg(bgav_demuxer_context_t * ctx)
                 stream_priv->frame_counter = pframes + iframes;
 
                 STREAM_SET_SYNC(s, stream_priv->frame_counter *
-                                s->data.video.format.frame_duration);
+                                s->data.video.format->frame_duration);
                 }
             
               if(stream_priv->frame_counter >= 0)
@@ -1953,8 +1953,8 @@ static int next_packet_ogg(bgav_demuxer_context_t * ctx)
           // fprintf(stderr, "Granulepos: %lld\n", priv->op.granulepos);
           
           p->pts = stream_priv->frame_counter *
-            s->data.video.format.frame_duration;
-          p->duration = s->data.video.format.frame_duration;
+            s->data.video.format->frame_duration;
+          p->duration = s->data.video.format->frame_duration;
           stream_priv->frame_counter++;
 
           if(priv->op.e_o_s)
@@ -2005,7 +2005,7 @@ static int next_packet_ogg(bgav_demuxer_context_t * ctx)
           if(!stream_priv->interlaced_coding)
             p->dts /= 2;
           
-          p->duration = s->data.video.format.frame_duration;
+          p->duration = s->data.video.format->frame_duration;
           
           set_packet_pos(priv, stream_priv, &page_continued, p);
           
@@ -2035,7 +2035,7 @@ static int next_packet_ogg(bgav_demuxer_context_t * ctx)
                 {
                 stream_priv->do_sync = 0;
 
-                STREAM_SET_SYNC(s, (int64_t)s->data.video.format.frame_duration *
+                STREAM_SET_SYNC(s, (int64_t)s->data.video.format->frame_duration *
                                 stream_priv->frame_counter);
                 
                 }
@@ -2061,13 +2061,13 @@ static int next_packet_ogg(bgav_demuxer_context_t * ctx)
           if(priv->op.packet[0] & 0x08)
             PACKET_SET_KEYFRAME(p);
           p->pts =
-            s->data.video.format.frame_duration * stream_priv->frame_counter;
+            s->data.video.format->frame_duration * stream_priv->frame_counter;
           
           stream_priv->frame_counter++;
 
           if(s->action == BGAV_STREAM_PARSE)
             s->duration =
-              s->data.video.format.frame_duration * stream_priv->frame_counter;
+              s->data.video.format->frame_duration * stream_priv->frame_counter;
         
           set_packet_pos(priv, stream_priv, &page_continued, p);
           bgav_stream_done_packet_write(s, p);
@@ -2286,21 +2286,22 @@ static void resync_ogg(bgav_demuxer_context_t * ctx, bgav_stream_t * s)
 
   switch(s->type)
     {
-    case BGAV_STREAM_AUDIO:
+    case GAVF_STREAM_AUDIO:
       stream_priv->prev_granulepos = STREAM_GET_SYNC(s);
       ogg_stream_reset(&stream_priv->os);
       break;
-    case BGAV_STREAM_VIDEO:
+    case GAVF_STREAM_VIDEO:
       stream_priv->frame_counter = STREAM_GET_SYNC(s) /
-        s->data.video.format.frame_duration;
+        s->data.video.format->frame_duration;
       ogg_stream_reset(&stream_priv->os);
       break;
-    case BGAV_STREAM_SUBTITLE_TEXT:
+    case GAVF_STREAM_TEXT:
       if(!(s->flags & STREAM_SUBREADER))
         ogg_stream_reset(&stream_priv->os);
       break;
-    case BGAV_STREAM_SUBTITLE_OVERLAY:
-    case BGAV_STREAM_UNKNOWN:
+    case GAVF_STREAM_OVERLAY:
+    case GAVF_STREAM_NONE:
+    case GAVF_STREAM_MSG:
       break;
     }
   }

@@ -270,7 +270,7 @@ gavl_time_t bgav_get_duration(bgav_t * bgav, int track)
 
 const char * bgav_get_track_name(bgav_t * b, int track)
   {
-  return gavl_dictionary_get_string(&b->tt->tracks[track].metadata, GAVL_META_LABEL);
+  return gavl_dictionary_get_string(b->tt->tracks[track].metadata, GAVL_META_LABEL);
   }
 
 void bgav_stop(bgav_t * b)
@@ -493,12 +493,12 @@ int bgav_can_seek(bgav_t * b)
 
 const bgav_metadata_t * bgav_get_metadata(bgav_t*b, int track)
   {
-  return &b->tt->tracks[track].metadata;
+  return b->tt->tracks[track].metadata;
   }
 
 const char * bgav_get_description(bgav_t * b)
   {
-  return gavl_dictionary_get_string(&b->tt->tracks[0].metadata,
+  return gavl_dictionary_get_string(b->tt->tracks[0].metadata,
                            GAVL_META_FORMAT);
   }
 

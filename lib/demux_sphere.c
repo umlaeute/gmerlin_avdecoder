@@ -202,19 +202,19 @@ static int open_sphere(bgav_demuxer_context_t * ctx)
   
   as = bgav_track_add_audio_stream(ctx->tt->cur, ctx->opt);
 
-  as->data.audio.format.num_channels = h.Channels;
+  as->data.audio.format->num_channels = h.Channels;
   
   if(h.SampleCoding && strcmp(h.SampleCoding, "pcm"))
     {
     if(!strcmp(h.SampleCoding, "ulaw") || !strcmp(h.SampleCoding, "mu-law"))
       {
       as->fourcc = BGAV_MK_FOURCC('u','l','a','w');
-      as->data.audio.block_align = as->data.audio.format.num_channels;
+      as->data.audio.block_align = as->data.audio.format->num_channels;
       }
     else if(!strcmp(h.SampleCoding, "alaw"))
       {
       as->fourcc = BGAV_MK_FOURCC('a','l','a','w');
-      as->data.audio.block_align = as->data.audio.format.num_channels;
+      as->data.audio.block_align = as->data.audio.format->num_channels;
       }
     }
   else /* pcm */
@@ -232,7 +232,7 @@ static int open_sphere(bgav_demuxer_context_t * ctx)
       return 0;
       }
     
-    as->data.audio.block_align = as->data.audio.format.num_channels * bytes_per_sample;
+    as->data.audio.block_align = as->data.audio.format->num_channels * bytes_per_sample;
     as->data.audio.bits_per_sample = bytes_per_sample * 8;
 
     /* Endianess */
@@ -267,26 +267,26 @@ static int open_sphere(bgav_demuxer_context_t * ctx)
       }
     }
 
-  as->data.audio.format.samplerate = h.SampleRate;
+  as->data.audio.format->samplerate = h.SampleRate;
 
   if(ctx->input->total_bytes)
     {
     total_samples = (ctx->input->total_bytes - HEADERSIZE) / as->data.audio.block_align;
-    ctx->tt->cur->duration =  gavl_samples_to_time(as->data.audio.format.samplerate, total_samples);
+    ctx->tt->cur->duration =  gavl_samples_to_time(as->data.audio.format->samplerate, total_samples);
     if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
       ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
     }
   else if(h.SampleCount)
     {
     ctx->tt->cur->audio_streams->duration = h.SampleCount;
-    ctx->tt->cur->duration =  gavl_samples_to_time(as->data.audio.format.samplerate, h.SampleCount);
+    ctx->tt->cur->duration =  gavl_samples_to_time(as->data.audio.format->samplerate, h.SampleCount);
     if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
       ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
     }
 
   bgav_input_skip(ctx->input, HEADERSIZE - ctx->input->position);
   
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "NIST SPHERE");
   
   ctx->index_mode = INDEX_MODE_PCM;
@@ -347,7 +347,7 @@ static void seek_sphere(bgav_demuxer_context_t * ctx,
   s = &ctx->tt->cur->audio_streams[0];
 
   sample = gavl_time_rescale(scale,
-                             s->data.audio.format.samplerate, time);
+                             s->data.audio.format->samplerate, time);
     
   position =  s->data.audio.block_align * sample + HEADERSIZE;
   bgav_input_seek(ctx->input, position, SEEK_SET);

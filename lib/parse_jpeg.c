@@ -146,7 +146,7 @@ static int parse_frame_jpeg(bgav_video_parser_t * parser, bgav_packet_t * p,
   /* Extract format */
   if(!priv->have_format)
     {
-    parser->s->data.video.format.pixelformat =
+    parser->s->data.video.format->pixelformat =
       get_pixelformat(p);
     priv->have_format = 1;
     }

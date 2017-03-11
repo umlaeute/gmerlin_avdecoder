@@ -121,8 +121,7 @@ static int do_convert(bgav_charset_converter_t * cnv,
       }
     }
   
-  
-  if(!(*ret_alloc) < len + BYTES_INCREMENT)
+  if((*ret_alloc) < len + BYTES_INCREMENT)
     *ret_alloc = len + BYTES_INCREMENT;
   
   inbytesleft  = len;

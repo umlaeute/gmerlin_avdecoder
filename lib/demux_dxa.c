@@ -142,27 +142,27 @@ static int open_dxa(bgav_demuxer_context_t * ctx)
   if(flags & 0xC0)
     h >>= 1;
   
-  vs->data.video.format.image_width = w;
-  vs->data.video.format.frame_width = w;
+  vs->data.video.format->image_width = w;
+  vs->data.video.format->frame_width = w;
 
-  vs->data.video.format.image_height = h;
-  vs->data.video.format.frame_height = h;
+  vs->data.video.format->image_height = h;
+  vs->data.video.format->frame_height = h;
 
-  vs->data.video.format.pixel_width  = 1;
-  vs->data.video.format.pixel_height = 1;
+  vs->data.video.format->pixel_width  = 1;
+  vs->data.video.format->pixel_height = 1;
   
   
   vs->fourcc = BGAV_MK_FOURCC('D', 'X', 'A', ' ');
 
-  vs->data.video.format.timescale      = den;
-  vs->data.video.format.frame_duration = num;
+  vs->data.video.format->timescale      = den;
+  vs->data.video.format->frame_duration = num;
   
   priv->frames = frames;
 
   ctx->tt->cur->duration =
-    gavl_time_unscale(vs->data.video.format.timescale,
+    gavl_time_unscale(vs->data.video.format->timescale,
                       (int64_t)(priv->frames) * 
-                      vs->data.video.format.frame_duration);
+                      vs->data.video.format->frame_duration);
   
   /* Check for audio stream */
 
@@ -218,7 +218,7 @@ static int open_dxa(bgav_demuxer_context_t * ctx)
   priv->audio_position = priv->audio_start;
   priv->video_position = priv->video_start;
 
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "DXA");
 
   return 1;
@@ -237,7 +237,7 @@ static int next_packet_dxa(bgav_demuxer_context_t * ctx)
     return 0;
 
   /* Try audio stream */
-  if(ctx->request_stream->type == BGAV_STREAM_AUDIO)
+  if(ctx->request_stream->type == GAVF_STREAM_AUDIO)
     {
     if(priv->audio_position < priv->audio_end)
       s = ctx->request_stream;
@@ -256,7 +256,7 @@ static int next_packet_dxa(bgav_demuxer_context_t * ctx)
     return 0;
 
   /* Read audio packet */
-  if(s->type == BGAV_STREAM_AUDIO)
+  if(s->type == GAVF_STREAM_AUDIO)
     {
     int bytes_to_read;
     bytes_to_read = priv->audio_block_size;
@@ -300,7 +300,7 @@ static int next_packet_dxa(bgav_demuxer_context_t * ctx)
             memcpy(p->data, pal, pal_size);
           bgav_input_read_data(ctx->input, p->data + pal_size, 4);
           p->data_size = 4 + pal_size;
-          p->pts = s->data.video.format.frame_duration * priv->current_frame;
+          p->pts = s->data.video.format->frame_duration * priv->current_frame;
           
           bgav_stream_done_packet_write(s, p);
           
@@ -328,7 +328,7 @@ static int next_packet_dxa(bgav_demuxer_context_t * ctx)
             return 0;
           
           p->data_size = size + DXA_EXTRA_SIZE + pal_size;
-          p->pts = s->data.video.format.frame_duration * priv->current_frame;
+          p->pts = s->data.video.format->frame_duration * priv->current_frame;
           
           bgav_stream_done_packet_write(s, p);
 

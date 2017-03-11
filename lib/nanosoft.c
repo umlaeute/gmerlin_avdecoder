@@ -221,23 +221,23 @@ void bgav_WAVEFORMAT_get_format(bgav_WAVEFORMAT_t * wf,
   //  bgav_WAVEFORMAT_dump(wf);
   
   s->fourcc                         = BGAV_WAVID_2_FOURCC(wf->f.WAVEFORMAT.wFormatTag);
-  s->data.audio.format.num_channels = wf->f.WAVEFORMAT.nChannels;
-  s->data.audio.format.samplerate   = wf->f.WAVEFORMAT.nSamplesPerSec;
+  s->data.audio.format->num_channels = wf->f.WAVEFORMAT.nChannels;
+  s->data.audio.format->samplerate   = wf->f.WAVEFORMAT.nSamplesPerSec;
   s->codec_bitrate                  = wf->f.WAVEFORMAT.nAvgBytesPerSec * 8;
   s->container_bitrate              = wf->f.WAVEFORMAT.nAvgBytesPerSec * 8;
   s->data.audio.block_align         = wf->f.WAVEFORMAT.nBlockAlign;
   
-  s->timescale = s->data.audio.format.samplerate;
+  s->timescale = s->data.audio.format->samplerate;
 
   switch(wf->type)
     {
     case BGAV_WAVEFORMAT_WAVEFORMAT:
       s->data.audio.bits_per_sample     = 8;
-      gavl_set_channel_setup(&s->data.audio.format);
+      gavl_set_channel_setup(s->data.audio.format);
       break;
     case BGAV_WAVEFORMAT_PCMWAVEFORMAT:
       s->data.audio.bits_per_sample     = wf->f.PCMWAVEFORMAT.wBitsPerSample;
-      gavl_set_channel_setup(&s->data.audio.format);
+      gavl_set_channel_setup(s->data.audio.format);
       break;
     case BGAV_WAVEFORMAT_WAVEFORMATEX:
       s->data.audio.bits_per_sample     = wf->f.PCMWAVEFORMAT.wBitsPerSample;
@@ -249,13 +249,13 @@ void bgav_WAVEFORMAT_get_format(bgav_WAVEFORMAT_t * wf,
         memcpy(s->ext_data, wf->f.WAVEFORMATEX.ext_data, s->ext_size);
         }
       
-      gavl_set_channel_setup(&s->data.audio.format);
+      gavl_set_channel_setup(s->data.audio.format);
       break;
     case BGAV_WAVEFORMAT_WAVEFORMATEXTENSIBLE:
       s->data.audio.bits_per_sample     = wf->f.PCMWAVEFORMAT.wBitsPerSample;
       s->fourcc = guid_2_fourcc(&wf->f.WAVEFORMATEXTENSIBLE.SubFormat);
       channel_mask_2_format(wf->f.WAVEFORMATEXTENSIBLE.dwChannelMask,
-                            &s->data.audio.format);
+                            s->data.audio.format);
 
       if(wf->f.WAVEFORMATEX.ext_size)
         {
@@ -274,8 +274,8 @@ void bgav_WAVEFORMAT_set_format(bgav_WAVEFORMAT_t * wf,
   {
   memset(wf, 0, sizeof(*wf));
   wf->type = BGAV_WAVEFORMAT_WAVEFORMATEX;
-  wf->f.WAVEFORMAT.nChannels         = s->data.audio.format.num_channels;
-  wf->f.WAVEFORMAT.nSamplesPerSec    = s->data.audio.format.samplerate;
+  wf->f.WAVEFORMAT.nChannels         = s->data.audio.format->num_channels;
+  wf->f.WAVEFORMAT.nSamplesPerSec    = s->data.audio.format->samplerate;
   wf->f.WAVEFORMAT.nAvgBytesPerSec   = s->codec_bitrate / 8;
   wf->f.WAVEFORMAT.nBlockAlign       = s->data.audio.block_align;
   wf->f.WAVEFORMAT.wFormatTag        = BGAV_FOURCC_2_WAVID(s->fourcc);
@@ -374,14 +374,14 @@ uint32_t bgav_BITMAPINFOHEADER_get_fourcc(bgav_BITMAPINFOHEADER_t * bh)
 void bgav_BITMAPINFOHEADER_get_format(bgav_BITMAPINFOHEADER_t * bh,
                                       bgav_stream_t * s)
   {
-  s->data.video.format.frame_width  = bh->biWidth;
-  s->data.video.format.frame_height = bh->biHeight;
+  s->data.video.format->frame_width  = bh->biWidth;
+  s->data.video.format->frame_height = bh->biHeight;
 
-  s->data.video.format.image_width  = bh->biWidth;
-  s->data.video.format.image_height = bh->biHeight;
+  s->data.video.format->image_width  = bh->biWidth;
+  s->data.video.format->image_height = bh->biHeight;
 
-  s->data.video.format.pixel_width  = 1;
-  s->data.video.format.pixel_height = 1;
+  s->data.video.format->pixel_width  = 1;
+  s->data.video.format->pixel_height = 1;
   s->data.video.depth               = bh->biBitCount;
   s->data.video.image_size          = bh->biSizeImage;
   s->data.video.planes              = bh->biPlanes;
@@ -398,8 +398,8 @@ void bgav_BITMAPINFOHEADER_set_format(bgav_BITMAPINFOHEADER_t * bh,
                                       bgav_stream_t * s)
   {
   memset(bh, 0, sizeof(*bh));
-  bh->biWidth = s->data.video.format.image_width;
-  bh->biHeight = s->data.video.format.image_height;
+  bh->biWidth = s->data.video.format->image_width;
+  bh->biHeight = s->data.video.format->image_height;
   bh->biCompression = swap_endian(s->fourcc);
   bh->biBitCount    = s->data.video.depth;
   //  if(bh->biBitCount > 24)

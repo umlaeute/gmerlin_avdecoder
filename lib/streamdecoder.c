@@ -132,7 +132,7 @@ bgav_stream_decoder_connect_audio(bgav_stream_decoder_t * dec,
                                   const gavl_audio_format_t * fmt,
                                   gavl_dictionary_t * m)
   {
-  dec->s.type = BGAV_STREAM_AUDIO;
+  dec->s.type = GAVF_STREAM_AUDIO;
   dec->s.flags |= STREAM_STANDALONE;
 
   bgav_stream_set_from_gavl(&dec->s, ci, fmt, NULL, m);
@@ -140,7 +140,7 @@ bgav_stream_decoder_connect_audio(bgav_stream_decoder_t * dec,
   if(!init_common(dec, src, ci, m))
     return NULL;
 
-  gavl_dictionary_copy(m, &dec->s.m);
+  gavl_dictionary_copy(m, dec->s.m);
   
   return dec->s.data.audio.source;
   }
@@ -152,14 +152,14 @@ bgav_stream_decoder_connect_video(bgav_stream_decoder_t * dec,
                                   const gavl_video_format_t * fmt,
                                   gavl_dictionary_t * m)
   {
-  dec->s.type = BGAV_STREAM_VIDEO;
+  dec->s.type = GAVF_STREAM_VIDEO;
   dec->s.flags |= STREAM_STANDALONE;
   bgav_stream_set_from_gavl(&dec->s, ci, NULL, fmt, m);
   
   if(!init_common(dec, src, ci, m))
     return NULL;
 
-  gavl_dictionary_copy(m, &dec->s.m);
+  gavl_dictionary_copy(m, dec->s.m);
   
   return dec->s.data.video.vsrc;
   }
@@ -172,7 +172,7 @@ bgav_stream_decoder_connect_overlay(bgav_stream_decoder_t * dec,
                                     const gavl_video_format_t * fmt,
                                     gavl_dictionary_t * m)
   {
-  dec->s.type = BGAV_STREAM_VIDEO;
+  dec->s.type = GAVF_STREAM_VIDEO;
   dec->s.flags |= STREAM_STANDALONE;
   dec->s.src_flags |= GAVL_SOURCE_SRC_DISCONTINUOUS;
 
@@ -181,7 +181,7 @@ bgav_stream_decoder_connect_overlay(bgav_stream_decoder_t * dec,
   if(!init_common(dec, src, ci, m))
     return NULL;
 
-  gavl_dictionary_copy(m, &dec->s.m);
+  gavl_dictionary_copy(m, dec->s.m);
 
   return dec->s.data.subtitle.video.vsrc;
   }
@@ -193,11 +193,11 @@ bgav_stream_decoder_skip(bgav_stream_decoder_t * dec, int64_t t)
   int scale;
   switch(dec->s.type)
     {
-    case BGAV_STREAM_AUDIO:
-      scale = dec->s.data.audio.format.samplerate;
+    case GAVF_STREAM_AUDIO:
+      scale = dec->s.data.audio.format->samplerate;
       break;
-    case BGAV_STREAM_VIDEO:
-      scale = dec->s.data.video.format.timescale;
+    case GAVF_STREAM_VIDEO:
+      scale = dec->s.data.video.format->timescale;
       break;
     default:
       return GAVL_TIME_UNDEFINED;
@@ -223,10 +223,10 @@ bgav_stream_decoder_reset(bgav_stream_decoder_t * dec)
   STREAM_SET_SYNC(&dec->s, p->pts);
   switch(dec->s.type)
     {
-    case BGAV_STREAM_AUDIO:
+    case GAVF_STREAM_AUDIO:
       bgav_audio_resync(&dec->s);
       break;
-    case BGAV_STREAM_VIDEO:
+    case GAVF_STREAM_VIDEO:
       bgav_video_resync(&dec->s);
       break;
     default:

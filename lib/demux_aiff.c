@@ -232,8 +232,8 @@ static int open_aiff(bgav_demuxer_context_t * ctx)
           return 0;
           }
         
-        s->data.audio.format.samplerate =   comm.samplerate;
-        s->data.audio.format.num_channels = comm.num_channels;
+        s->data.audio.format->samplerate =   comm.samplerate;
+        s->data.audio.format->num_channels = comm.num_channels;
         s->data.audio.bits_per_sample =     comm.num_bits;
 
         /*
@@ -241,34 +241,34 @@ static int open_aiff(bgav_demuxer_context_t * ctx)
          *  http://music.calarts.edu/~tre/AIFFC/
          */
 
-        switch(s->data.audio.format.num_channels)
+        switch(s->data.audio.format->num_channels)
           {
           case 1:
-            s->data.audio.format.channel_locations[0] = GAVL_CHID_FRONT_CENTER;
+            s->data.audio.format->channel_locations[0] = GAVL_CHID_FRONT_CENTER;
             break;
           case 2:
-            s->data.audio.format.channel_locations[0] = GAVL_CHID_FRONT_LEFT;
-            s->data.audio.format.channel_locations[1] = GAVL_CHID_FRONT_RIGHT;
+            s->data.audio.format->channel_locations[0] = GAVL_CHID_FRONT_LEFT;
+            s->data.audio.format->channel_locations[1] = GAVL_CHID_FRONT_RIGHT;
             break;
           case 3:
-            s->data.audio.format.channel_locations[0] = GAVL_CHID_FRONT_LEFT;
-            s->data.audio.format.channel_locations[1] = GAVL_CHID_FRONT_CENTER;
-            s->data.audio.format.channel_locations[2] = GAVL_CHID_FRONT_RIGHT;
+            s->data.audio.format->channel_locations[0] = GAVL_CHID_FRONT_LEFT;
+            s->data.audio.format->channel_locations[1] = GAVL_CHID_FRONT_CENTER;
+            s->data.audio.format->channel_locations[2] = GAVL_CHID_FRONT_RIGHT;
             break;
           case 4: /* Note: 4 channels can also be "left center right surround" but we
                      believe, that quad is more common */
-            s->data.audio.format.channel_locations[0] = GAVL_CHID_FRONT_LEFT;
-            s->data.audio.format.channel_locations[1] = GAVL_CHID_FRONT_RIGHT;
-            s->data.audio.format.channel_locations[2] = GAVL_CHID_REAR_LEFT;
-            s->data.audio.format.channel_locations[3] = GAVL_CHID_REAR_RIGHT;
+            s->data.audio.format->channel_locations[0] = GAVL_CHID_FRONT_LEFT;
+            s->data.audio.format->channel_locations[1] = GAVL_CHID_FRONT_RIGHT;
+            s->data.audio.format->channel_locations[2] = GAVL_CHID_REAR_LEFT;
+            s->data.audio.format->channel_locations[3] = GAVL_CHID_REAR_RIGHT;
             break;
           case 6:
-            s->data.audio.format.channel_locations[0] = GAVL_CHID_FRONT_LEFT;
-            s->data.audio.format.channel_locations[1] = GAVL_CHID_FRONT_CENTER_LEFT;
-            s->data.audio.format.channel_locations[2] = GAVL_CHID_FRONT_CENTER;
-            s->data.audio.format.channel_locations[3] = GAVL_CHID_FRONT_RIGHT;
-            s->data.audio.format.channel_locations[4] = GAVL_CHID_FRONT_CENTER_RIGHT;
-            s->data.audio.format.channel_locations[5] = GAVL_CHID_REAR_CENTER;
+            s->data.audio.format->channel_locations[0] = GAVL_CHID_FRONT_LEFT;
+            s->data.audio.format->channel_locations[1] = GAVL_CHID_FRONT_CENTER_LEFT;
+            s->data.audio.format->channel_locations[2] = GAVL_CHID_FRONT_CENTER;
+            s->data.audio.format->channel_locations[3] = GAVL_CHID_FRONT_RIGHT;
+            s->data.audio.format->channel_locations[4] = GAVL_CHID_FRONT_CENTER_RIGHT;
+            s->data.audio.format->channel_locations[5] = GAVL_CHID_REAR_CENTER;
             break;
           }
         
@@ -305,7 +305,7 @@ static int open_aiff(bgav_demuxer_context_t * ctx)
                       s->data.audio.bits_per_sample);
               return 0;
               }
-            s->data.audio.format.samples_per_frame = 1024;
+            s->data.audio.format->samples_per_frame = 1024;
             priv->samples_per_block = 1;
             break;
           case BGAV_MK_FOURCC('f','l','3','2'):
@@ -315,7 +315,7 @@ static int open_aiff(bgav_demuxer_context_t * ctx)
           case BGAV_MK_FOURCC('f','l','6','4'):
             s->data.audio.block_align = 8 * comm.num_channels;
             priv->samples_per_block = 1;
-            s->data.audio.format.samples_per_frame = 1024;
+            s->data.audio.format->samples_per_frame = 1024;
             break;
           case BGAV_MK_FOURCC('a','l','a','w'):
           case BGAV_MK_FOURCC('A','L','A','W'):
@@ -323,24 +323,24 @@ static int open_aiff(bgav_demuxer_context_t * ctx)
           case BGAV_MK_FOURCC('U','L','A','W'):
             s->data.audio.block_align = comm.num_channels;
             priv->samples_per_block = 1;
-            s->data.audio.format.samples_per_frame = 1024;
+            s->data.audio.format->samples_per_frame = 1024;
             break;
 #if 0
           case BGAV_MK_FOURCC('G','S','M',' '):
             s->data.audio.block_align = 33;
             priv->samples_per_block = 160;
-            s->data.audio.format.samples_per_frame = 160;
+            s->data.audio.format->samples_per_frame = 160;
             break;
 #endif
           case BGAV_MK_FOURCC('M','A','C','3'):
             s->data.audio.block_align = comm.num_channels * 2;
             priv->samples_per_block = 6;
-            s->data.audio.format.samples_per_frame = 6*128;
+            s->data.audio.format->samples_per_frame = 6*128;
             break;
           case BGAV_MK_FOURCC('M','A','C','6'):
             s->data.audio.block_align = comm.num_channels;
             priv->samples_per_block = 6;
-            s->data.audio.format.samples_per_frame = 6*128;
+            s->data.audio.format->samples_per_frame = 6*128;
             break;
           default:
             bgav_log(s->opt, BGAV_LOG_ERROR, LOG_DOMAIN, "Compression %c%c%c%c not supported",
@@ -353,22 +353,22 @@ static int open_aiff(bgav_demuxer_context_t * ctx)
         break;
       case BGAV_MK_FOURCC('N','A','M','E'):
         tmp_string = read_meta_string(ctx->input, &ch);
-        gavl_dictionary_set_string_nocopy(&ctx->tt->cur->metadata,
+        gavl_dictionary_set_string_nocopy(ctx->tt->cur->metadata,
                                 GAVL_META_TITLE, tmp_string);
         break;
       case BGAV_MK_FOURCC('A','U','T','H'):
         tmp_string = read_meta_string(ctx->input, &ch);
-        gavl_dictionary_set_string_nocopy(&ctx->tt->cur->metadata,
+        gavl_dictionary_set_string_nocopy(ctx->tt->cur->metadata,
                                 GAVL_META_AUTHOR, tmp_string);
         break;
       case BGAV_MK_FOURCC('(','c',')',' '):
         tmp_string = read_meta_string(ctx->input, &ch);
-        gavl_dictionary_set_string_nocopy(&ctx->tt->cur->metadata,
+        gavl_dictionary_set_string_nocopy(ctx->tt->cur->metadata,
                                 GAVL_META_COPYRIGHT, tmp_string);
         break;
       case BGAV_MK_FOURCC('A','N','N','O'):
         tmp_string = read_meta_string(ctx->input, &ch);
-        gavl_dictionary_set_string_nocopy(&ctx->tt->cur->metadata,
+        gavl_dictionary_set_string_nocopy(ctx->tt->cur->metadata,
                                 GAVL_META_COMMENT, tmp_string);
         break;
       case BGAV_MK_FOURCC('S','S','N','D'):
@@ -380,7 +380,7 @@ static int open_aiff(bgav_demuxer_context_t * ctx)
 
         ctx->tt->cur->audio_streams->duration = pos_2_time(ctx, priv->data_size + ctx->data_start);
         track->duration =
-          gavl_time_unscale(s->data.audio.format.samplerate,
+          gavl_time_unscale(s->data.audio.format->samplerate,
                             ctx->tt->cur->audio_streams->duration);
         
         keep_going = 0;
@@ -394,10 +394,10 @@ static int open_aiff(bgav_demuxer_context_t * ctx)
     ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
 
   if(priv->is_aifc)
-    gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+    gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                       GAVL_META_FORMAT, "AIFF-C");
   else
-    gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+    gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                       GAVL_META_FORMAT, "AIFF");
   ctx->index_mode = INDEX_MODE_PCM;
   return 1;
@@ -416,7 +416,7 @@ static int next_packet_aiff(bgav_demuxer_context_t * ctx)
   p = bgav_stream_get_packet_write(s);
   
   bytes_to_read =
-    (s->data.audio.format.samples_per_frame * s->data.audio.block_align) /
+    (s->data.audio.format->samples_per_frame * s->data.audio.block_align) /
     priv->samples_per_block;
   
   bgav_packet_alloc(p, bytes_to_read);
@@ -441,7 +441,7 @@ static void seek_aiff(bgav_demuxer_context_t * ctx, int64_t time, int scale)
   bgav_stream_t * s = &ctx->tt->cur->audio_streams[0];
   time_scaled =
     gavl_time_rescale(scale,
-                      s->data.audio.format.samplerate,
+                      s->data.audio.format->samplerate,
                       time);
   
   pos = time_2_pos(ctx, time_scaled);

@@ -171,15 +171,15 @@ static int open_vqa(bgav_demuxer_context_t * ctx)
   bgav_stream_set_extradata(s, priv->header, VQA_HEADER_SIZE);
   
   s->fourcc = BGAV_MK_FOURCC('W','V','Q','A');
-  s->data.video.format.image_width = h.Width;
-  s->data.video.format.frame_width = h.Width;
+  s->data.video.format->image_width = h.Width;
+  s->data.video.format->frame_width = h.Width;
 
-  s->data.video.format.image_height = h.Height;
-  s->data.video.format.frame_height = h.Height;
-  s->data.video.format.pixel_width = 1;
-  s->data.video.format.pixel_height = 1;
-  s->data.video.format.timescale = h.FrameRate;
-  s->data.video.format.frame_duration = 1;
+  s->data.video.format->image_height = h.Height;
+  s->data.video.format->frame_height = h.Height;
+  s->data.video.format->pixel_width = 1;
+  s->data.video.format->pixel_height = 1;
+  s->data.video.format->timescale = h.FrameRate;
+  s->data.video.format->frame_duration = 1;
   
   /* Initialize audio stream */
   if(h.Freq || ((h.Version == 1) && (h.Flags == 1)))
@@ -192,14 +192,14 @@ static int open_vqa(bgav_demuxer_context_t * ctx)
       s->fourcc = BGAV_MK_FOURCC('w','s','p','c');
 
     s->stream_id = AUDIO_ID;
-    s->data.audio.format.samplerate = h.Freq;
+    s->data.audio.format->samplerate = h.Freq;
 
-    if(!s->data.audio.format.samplerate)
-      s->data.audio.format.samplerate = 22050;
+    if(!s->data.audio.format->samplerate)
+      s->data.audio.format->samplerate = 22050;
     
-    s->data.audio.format.num_channels = h.Channels;
-    if(!s->data.audio.format.num_channels)
-      s->data.audio.format.num_channels = 1;
+    s->data.audio.format->num_channels = h.Channels;
+    if(!s->data.audio.format->num_channels)
+      s->data.audio.format->num_channels = 1;
     
     s->data.audio.bits_per_sample = h.Bits;
     }
@@ -210,7 +210,7 @@ static int open_vqa(bgav_demuxer_context_t * ctx)
   ctx->data_start = ctx->input->position;
   ctx->flags |= BGAV_DEMUXER_HAS_DATA_START;
 
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "Westwood VQA");
   return 1;
   }
@@ -251,7 +251,7 @@ static int next_packet_vqa(bgav_demuxer_context_t * ctx)
   if(size & 1)
     bgav_input_skip(ctx->input, 1);
   
-  if(s->type == BGAV_STREAM_VIDEO)
+  if(s->type == GAVF_STREAM_VIDEO)
     p->pts = s->in_position;
   bgav_stream_done_packet_write(s, p);
   

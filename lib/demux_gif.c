@@ -165,18 +165,18 @@ static int open_gif(bgav_demuxer_context_t * ctx)
 
   s->ci.flags &= ~GAVL_COMPRESSION_HAS_P_FRAMES;
 
-  s->data.video.format.image_width  = sd.width;
-  s->data.video.format.image_height = sd.height;
+  s->data.video.format->image_width  = sd.width;
+  s->data.video.format->image_height = sd.height;
 
-  s->data.video.format.frame_width  = sd.width;
-  s->data.video.format.frame_height = sd.height;
-  s->data.video.format.pixel_width = 1;
-  s->data.video.format.pixel_height = 1;
-  s->data.video.format.timescale = 100;
-  s->data.video.format.frame_duration = 100; // Not reliable
-  s->data.video.format.framerate_mode = GAVL_FRAMERATE_VARIABLE;
+  s->data.video.format->frame_width  = sd.width;
+  s->data.video.format->frame_height = sd.height;
+  s->data.video.format->pixel_width = 1;
+  s->data.video.format->pixel_height = 1;
+  s->data.video.format->timescale = 100;
+  s->data.video.format->frame_duration = 100; // Not reliable
+  s->data.video.format->framerate_mode = GAVL_FRAMERATE_VARIABLE;
   s->data.video.depth = 32; // RGBA
-  s->data.video.format.pixelformat = GAVL_RGBA_32;
+  s->data.video.format->pixelformat = GAVL_RGBA_32;
 
   ctx->data_start = ctx->input->position;
   ctx->flags |= BGAV_DEMUXER_HAS_DATA_START;

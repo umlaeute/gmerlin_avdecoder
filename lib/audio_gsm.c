@@ -57,7 +57,7 @@ static int init_gsm(bgav_stream_t * s)
   priv->gsm_state = gsm_create();
   s->decoder_priv = priv;
 
-  if(s->data.audio.format.num_channels > 1)
+  if(s->data.audio.format->num_channels > 1)
     {
     bgav_log(s->opt, BGAV_LOG_ERROR, LOG_DOMAIN,
             "Multichannel GSM not supported");
@@ -73,19 +73,19 @@ static int init_gsm(bgav_stream_t * s)
     }
 
   /* Set format */
-  s->data.audio.format.interleave_mode   = GAVL_INTERLEAVE_NONE;
-  s->data.audio.format.sample_format     = GAVL_SAMPLE_S16;
+  s->data.audio.format->interleave_mode   = GAVL_INTERLEAVE_NONE;
+  s->data.audio.format->sample_format     = GAVL_SAMPLE_S16;
   
-  s->data.audio.format.samples_per_frame = priv->ms ? 2*GSM_FRAME_SAMPLES : GSM_FRAME_SAMPLES;
-  gavl_set_channel_setup(&s->data.audio.format);
+  s->data.audio.format->samples_per_frame = priv->ms ? 2*GSM_FRAME_SAMPLES : GSM_FRAME_SAMPLES;
+  gavl_set_channel_setup(s->data.audio.format);
   
-  priv->frame = gavl_audio_frame_create(&s->data.audio.format);
+  priv->frame = gavl_audio_frame_create(s->data.audio.format);
 
   if(priv->ms)
-    gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
+    gavl_dictionary_set_string(s->m, GAVL_META_FORMAT,
                       "MSGM");
   else
-    gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
+    gavl_dictionary_set_string(s->m, GAVL_META_FORMAT,
                       "GSM 6.10");
   return 1;
   }
@@ -138,7 +138,7 @@ static gavl_source_status_t decode_frame_gsm(bgav_stream_t * s)
   else
     priv->packet_ptr += GSM_BLOCK_SIZE;
 
-  gavl_audio_frame_copy_ptrs(&s->data.audio.format, s->data.audio.frame, priv->frame);
+  gavl_audio_frame_copy_ptrs(s->data.audio.format, s->data.audio.frame, priv->frame);
   
   return GAVL_SOURCE_OK;
   }

@@ -41,13 +41,13 @@ static int parse_adts(bgav_audio_parser_t * parser)
       {
       if(!parser->have_format)
         {
-        bgav_adts_header_get_format(&h, &parser->s->data.audio.format);
+        bgav_adts_header_get_format(&h, parser->s->data.audio.format);
         parser->have_format = 1;
         return PARSER_HAVE_FORMAT;
         }
       bgav_audio_parser_set_frame(parser,
                                   i, h.frame_bytes,
-                                  parser->s->data.audio.format.samples_per_frame * h.num_blocks);
+                                  parser->s->data.audio.format->samples_per_frame * h.num_blocks);
       return PARSER_HAVE_FRAME;
       }
     }

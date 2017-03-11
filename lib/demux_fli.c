@@ -85,16 +85,16 @@ static int open_fli(bgav_demuxer_context_t * ctx)
   s = bgav_track_add_video_stream(ctx->tt->cur, ctx->opt);
   s->fourcc = BGAV_MK_FOURCC('F','L','I','C');
 
-  s->data.video.format.image_width  = BGAV_PTR_2_16LE(&priv->header[0x08]);
-  s->data.video.format.image_height = BGAV_PTR_2_16LE(&priv->header[0x0A]);
+  s->data.video.format->image_width  = BGAV_PTR_2_16LE(&priv->header[0x08]);
+  s->data.video.format->image_height = BGAV_PTR_2_16LE(&priv->header[0x0A]);
 
-  if(!s->data.video.format.image_width || !s->data.video.format.image_height)
+  if(!s->data.video.format->image_width || !s->data.video.format->image_height)
     return 0;
   
-  s->data.video.format.frame_width  = s->data.video.format.image_width;
-  s->data.video.format.frame_height = s->data.video.format.image_height;
-  s->data.video.format.pixel_width  = 1;
-  s->data.video.format.pixel_height = 1;
+  s->data.video.format->frame_width  = s->data.video.format->image_width;
+  s->data.video.format->frame_height = s->data.video.format->image_height;
+  s->data.video.format->pixel_width  = 1;
+  s->data.video.format->pixel_height = 1;
 
   priv->header_size = FLIC_HEADER_SIZE;
     
@@ -107,8 +107,8 @@ static int open_fli(bgav_demuxer_context_t * ctx)
     priv->header_size = 12;
 
     s->timescale = 15;
-    s->data.video.format.timescale = 15;
-    s->data.video.format.frame_duration = 1;
+    s->data.video.format->timescale = 15;
+    s->data.video.format->frame_duration = 1;
     }
   else if(magic_number == FLIC_FILE_MAGIC_1)
     {
@@ -116,8 +116,8 @@ static int open_fli(bgav_demuxer_context_t * ctx)
      * in this case, the speed (n) is number of 1/70s ticks between frames:
      */
     s->timescale = 70;
-    s->data.video.format.timescale = 70;
-    s->data.video.format.frame_duration = speed;
+    s->data.video.format->timescale = 70;
+    s->data.video.format->frame_duration = speed;
     }
   else if(magic_number == FLIC_FILE_MAGIC_2)
     {
@@ -125,23 +125,23 @@ static int open_fli(bgav_demuxer_context_t * ctx)
      * in this case, the speed (n) is number of milliseconds between frames:
      */
     s->timescale = 1000;
-    s->data.video.format.timescale = 1000;
-    s->data.video.format.frame_duration = speed;
+    s->data.video.format->timescale = 1000;
+    s->data.video.format->frame_duration = speed;
     }
   else
     return 0;
 
-  if(!s->data.video.format.frame_duration)
+  if(!s->data.video.format->frame_duration)
     {
     s->timescale = 15;
-    s->data.video.format.timescale = 15;
-    s->data.video.format.frame_duration = 1;
+    s->data.video.format->timescale = 15;
+    s->data.video.format->frame_duration = 1;
     }
 
   /* Set extradata */
   bgav_stream_set_extradata(s, priv->header, priv->header_size);
   
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "FLI/FLC");
 
   priv->skip_header = 1;
@@ -194,7 +194,7 @@ static int next_packet_fli(bgav_demuxer_context_t * ctx)
         return 0;
         }
       
-      p->pts = s->in_position * s->data.video.format.frame_duration;
+      p->pts = s->in_position * s->data.video.format->frame_duration;
       p->data_size = size;
       
       bgav_stream_done_packet_write(s, p);

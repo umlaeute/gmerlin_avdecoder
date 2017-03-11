@@ -47,7 +47,7 @@ static void dump_index(bgav_stream_t * s)
   int i;
   gavl_timecode_t tc;
   
-  if(s->type == BGAV_STREAM_VIDEO)
+  if(s->type == GAVF_STREAM_VIDEO)
     {
     for(i = 0; i < s->file_index->num_entries; i++)
       {
@@ -124,7 +124,7 @@ void bgav_file_index_dump(bgav_t * b)
       if(!s->file_index)
         continue;
       bgav_dprintf("   Audio stream %d [ID: %08x, Timescale: %d, PTS offset: %"PRId64"]\n", j+1,
-                   s->stream_id, s->data.audio.format.samplerate,
+                   s->stream_id, s->data.audio.format->samplerate,
                    s->stats.pts_start);
       bgav_dprintf("   Maximum packet size: %d\n",
                    b->tt->tracks[i].audio_streams[j].ci.max_packet_size);
@@ -140,16 +140,16 @@ void bgav_file_index_dump(bgav_t * b)
       if(!s->file_index)
         continue;
       bgav_dprintf("   Video stream %d [ID: %08x, Timescale: %d, PTS offset: %"PRId64"]\n", j+1,
-                   s->stream_id, s->data.video.format.timescale,
+                   s->stream_id, s->data.video.format->timescale,
                    s->stats.pts_start);
       bgav_dprintf("   Maximum packet size: %d\n",
                    b->tt->tracks[i].video_streams[j].ci.max_packet_size);
       bgav_dprintf("   Interlace mode: %s\n",
-                   gavl_interlace_mode_to_string(s->data.video.format.interlace_mode));
+                   gavl_interlace_mode_to_string(s->data.video.format->interlace_mode));
       bgav_dprintf("   Framerate mode: %s\n",
-                   gavl_framerate_mode_to_string(s->data.video.format.framerate_mode));
-      if(s->data.video.format.framerate_mode == GAVL_FRAMERATE_CONSTANT)
-        bgav_dprintf("   Frame Duration: %d\n", s->data.video.format.frame_duration);
+                   gavl_framerate_mode_to_string(s->data.video.format->framerate_mode));
+      if(s->data.video.format->framerate_mode == GAVL_FRAMERATE_CONSTANT)
+        bgav_dprintf("   Frame Duration: %d\n", s->data.video.format->frame_duration);
       
       bgav_dprintf("   Duration: %"PRId64", entries: %d\n",
                    b->tt->tracks[i].video_streams[j].duration,
@@ -248,7 +248,7 @@ bgav_file_index_append_packet(bgav_file_index_t * idx,
  *        - Fourcc        (32)
  *        - MaxPacketSize (32)
  *        - Timescale     (32)
- *        if(StreamType == BGAV_STREAM_VIDEO)
+ *        if(StreamType == GAVF_STREAM_VIDEO)
  *          - InterlaceMode (32)
  *          - FramerateMode (32)
  *          if(FramerateMode == GAVL_FRAMERATE_CONSTANT)
@@ -260,7 +260,7 @@ bgav_file_index_append_packet(bgav_file_index_t * idx,
  *            - packet flags (32)
  *            - position (64)
  *            - time (64)
- *        if(StreamType == BGAV_STREAM_VIDEO)
+ *        if(StreamType == GAVF_STREAM_VIDEO)
  *          - number of timecodes (32)
  *          - Timecodes consisting of
  *            - pts (64)
@@ -369,37 +369,39 @@ file_index_read_stream(bgav_input_context_t * input, bgav_stream_t * s)
 
   switch(s->type)
     {
-    case BGAV_STREAM_AUDIO:
+    case GAVF_STREAM_AUDIO:
       if(!bgav_input_read_32_be(input, &tmp_32))
         return NULL;
-      s->data.audio.format.samplerate = tmp_32;
+      s->data.audio.format->samplerate = tmp_32;
       break;
-    case BGAV_STREAM_VIDEO:
+    case GAVF_STREAM_VIDEO:
       if(!bgav_input_read_32_be(input, &tmp_32))
         return NULL;
-      s->data.video.format.timescale = tmp_32;
+      s->data.video.format->timescale = tmp_32;
       
       if(!bgav_input_read_32_be(input, &tmp_32))
         return NULL;
-      s->data.video.format.interlace_mode = tmp_32;
+      s->data.video.format->interlace_mode = tmp_32;
       
       if(!bgav_input_read_32_be(input, &tmp_32))
         return NULL;
-      s->data.video.format.framerate_mode = tmp_32;
+      s->data.video.format->framerate_mode = tmp_32;
 
-      if(s->data.video.format.framerate_mode == GAVL_FRAMERATE_CONSTANT)
+      if(s->data.video.format->framerate_mode == GAVL_FRAMERATE_CONSTANT)
         {
         if(!bgav_input_read_32_be(input, &tmp_32))
           return NULL;
-        s->data.video.format.frame_duration = tmp_32;
+        s->data.video.format->frame_duration = tmp_32;
         }
       
       break;
-    case BGAV_STREAM_SUBTITLE_TEXT:
-    case BGAV_STREAM_SUBTITLE_OVERLAY:
-    case BGAV_STREAM_UNKNOWN:
+    case GAVF_STREAM_TEXT:
+    case GAVF_STREAM_OVERLAY:
+    case GAVF_STREAM_NONE:
       if(!bgav_input_read_32_be(input, (uint32_t*)&s->timescale))
         return NULL;
+      break;
+    case GAVF_STREAM_MSG:
       break;
     }
   
@@ -420,7 +422,7 @@ file_index_read_stream(bgav_input_context_t * input, bgav_stream_t * s)
       return NULL;
     }
 
-  if(s->type == BGAV_STREAM_VIDEO)
+  if(s->type == GAVF_STREAM_VIDEO)
     {
     if(!bgav_input_read_32_be(input, (uint32_t*)&ret->tt.num_entries))
       return NULL;
@@ -456,20 +458,22 @@ file_index_write_stream(FILE * output,
   
   switch(s->type)
     {
-    case BGAV_STREAM_AUDIO:
-      write_32(output, s->data.audio.format.samplerate);
+    case GAVF_STREAM_AUDIO:
+      write_32(output, s->data.audio.format->samplerate);
       break;
-    case BGAV_STREAM_VIDEO:
-      write_32(output, s->data.video.format.timescale);
-      write_32(output, s->data.video.format.interlace_mode);
-      write_32(output, s->data.video.format.framerate_mode);
-      if(s->data.video.format.framerate_mode == GAVL_FRAMERATE_CONSTANT)
-        write_32(output, s->data.video.format.frame_duration);
+    case GAVF_STREAM_VIDEO:
+      write_32(output, s->data.video.format->timescale);
+      write_32(output, s->data.video.format->interlace_mode);
+      write_32(output, s->data.video.format->framerate_mode);
+      if(s->data.video.format->framerate_mode == GAVL_FRAMERATE_CONSTANT)
+        write_32(output, s->data.video.format->frame_duration);
       break;
-    case BGAV_STREAM_SUBTITLE_TEXT:
-    case BGAV_STREAM_SUBTITLE_OVERLAY:
-    case BGAV_STREAM_UNKNOWN:
+    case GAVF_STREAM_TEXT:
+    case GAVF_STREAM_OVERLAY:
+    case GAVF_STREAM_NONE:
       write_32(output, s->timescale);
+      break;
+    case GAVF_STREAM_MSG:
       break;
     }
   
@@ -484,7 +488,7 @@ file_index_write_stream(FILE * output,
     write_64(output, idx->entries[i].pts);
     }
 
-  if(s->type == BGAV_STREAM_VIDEO)
+  if(s->type == GAVF_STREAM_VIDEO)
     {
     write_32(output, idx->tt.num_entries);
     
@@ -530,7 +534,7 @@ static void set_has_file_index(bgav_t * b)
     for(j= 0; j <b->tt->tracks[i].num_audio_streams; j++)
       {
       s = &b->tt->tracks[i].audio_streams[j];
-      update_duration(s, s->data.audio.format.samplerate,
+      update_duration(s, s->data.audio.format->samplerate,
                       &b->tt->tracks[i].duration);
       set_has_file_index_s(s, b->demuxer);
       }
@@ -538,7 +542,7 @@ static void set_has_file_index(bgav_t * b)
       {
       s = &b->tt->tracks[i].video_streams[j];
       update_duration(s,
-                      s->data.video.format.timescale,
+                      s->data.video.format->timescale,
                       &b->tt->tracks[i].duration);
       set_has_file_index_s(s, b->demuxer);
       }
@@ -628,18 +632,18 @@ int bgav_read_file_index(bgav_t * b)
         
         switch(stream_type)
           {
-          case BGAV_STREAM_AUDIO:
+          case GAVF_STREAM_AUDIO:
             s = bgav_track_add_audio_stream(&b->tt->tracks[i], &b->opt);
             break;
-          case BGAV_STREAM_VIDEO:
+          case GAVF_STREAM_VIDEO:
             s = bgav_track_add_video_stream(&b->tt->tracks[i], &b->opt);
             break;
             /* Passing NULL as encoding might break when we have MPEG-like formats with
                text subtitles */
-          case BGAV_STREAM_SUBTITLE_TEXT:
+          case GAVF_STREAM_TEXT:
             s = bgav_track_add_text_stream(&b->tt->tracks[i], &b->opt, NULL);
             break;
-          case BGAV_STREAM_SUBTITLE_OVERLAY:
+          case GAVF_STREAM_OVERLAY:
             s = bgav_track_add_overlay_stream(&b->tt->tracks[i], &b->opt);
             break;
           }

@@ -147,8 +147,8 @@ static int parse_frame_dirac(bgav_video_parser_t * parser,
 
         /* Generate true timestamp from picture counter */
         p->pts = (ph.pic_num - priv->pic_num_first) *
-          parser->s->data.video.format.frame_duration + priv->pts_first;
-        p->duration = parser->s->data.video.format.frame_duration;
+          parser->s->data.video.format->frame_duration + priv->pts_first;
+        p->duration = parser->s->data.video.format->frame_duration;
         
         if(ph.num_refs == 0)
           {

@@ -58,8 +58,8 @@ static int open_gsm(bgav_demuxer_context_t * ctx)
 
   as = bgav_track_add_audio_stream(ctx->tt->cur, ctx->opt);
   as->fourcc = BGAV_MK_FOURCC('G', 'S', 'M', ' ');
-  as->data.audio.format.samplerate = 8000;
-  as->data.audio.format.num_channels = 1;
+  as->data.audio.format->samplerate = 8000;
+  as->data.audio.format->num_channels = 1;
 
   
   as->data.audio.block_align = GSM_BLOCK_SIZE;
@@ -68,13 +68,13 @@ static int open_gsm(bgav_demuxer_context_t * ctx)
     {
     total_samples = bytes_2_samples(ctx->input->total_bytes); 
     ctx->tt->cur->duration = 
-      gavl_samples_to_time(as->data.audio.format.samplerate, total_samples);
+      gavl_samples_to_time(as->data.audio.format->samplerate, total_samples);
 
     if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
       ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
     }
 
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "GSM");
 
   ctx->data_start = ctx->input->position;
@@ -115,7 +115,7 @@ static void seek_gsm(bgav_demuxer_context_t * ctx, int64_t time, int scale)
   
   s = &ctx->tt->cur->audio_streams[0];
   
-  sample = gavl_time_rescale(scale, s->data.audio.format.samplerate, time); 
+  sample = gavl_time_rescale(scale, s->data.audio.format->samplerate, time); 
   sample /= GSM_FRAME_SIZE;
   position = sample * GSM_BLOCK_SIZE;
   sample *= GSM_FRAME_SIZE;

@@ -121,18 +121,18 @@ void bgav_seek_audio(bgav_t * bgav, int stream, int64_t sample)
   if(bgav->demuxer->index_mode == INDEX_MODE_PCM)
     {
     bgav->demuxer->demuxer->seek(bgav->demuxer, sample,
-                                 s->data.audio.format.samplerate);
+                                 s->data.audio.format->samplerate);
     //    return;
     }
   else if(bgav->demuxer->index_mode == INDEX_MODE_SI_SA)
     {
-    frame_time = gavl_time_rescale(s->data.audio.format.samplerate,
+    frame_time = gavl_time_rescale(s->data.audio.format->samplerate,
                                    s->timescale, sample);
     bgav_superindex_seek(bgav->demuxer->si, s,
                          &frame_time,
                          s->timescale);
     
-    s->out_time = gavl_time_rescale(s->timescale, s->data.audio.format.samplerate,
+    s->out_time = gavl_time_rescale(s->timescale, s->data.audio.format->samplerate,
                                     STREAM_GET_SYNC(s));
     }
   else /* Fileindex */
@@ -152,7 +152,7 @@ void bgav_seek_audio(bgav_t * bgav, int stream, int64_t sample)
     
     s->out_time = s->file_index->entries[s->index_position].pts + s->stats.pts_start;
 
-    STREAM_SET_SYNC(s, gavl_time_rescale(s->data.audio.format.samplerate, s->timescale,
+    STREAM_SET_SYNC(s, gavl_time_rescale(s->data.audio.format->samplerate, s->timescale,
                                          s->out_time));
     sample += s->stats.pts_start;
     
@@ -162,7 +162,7 @@ void bgav_seek_audio(bgav_t * bgav, int stream, int64_t sample)
   
   bgav_audio_resync(s);
 
-  bgav_audio_skipto(s, &sample, s->data.audio.format.samplerate);
+  bgav_audio_skipto(s, &sample, s->data.audio.format->samplerate);
   
   }
 
@@ -190,7 +190,7 @@ void bgav_seek_video(bgav_t * bgav, int stream, int64_t time)
      (bgav_video_keyframe_after(bgav, stream, s->out_time) > time))
     {
     //    fprintf(stderr, "Skip to: %ld\n", time);
-    bgav_video_skipto(s, &time, s->data.video.format.timescale);
+    bgav_video_skipto(s, &time, s->data.video.format->timescale);
     //    fprintf(stderr, "Skipped to: %ld %ld\n", time, s->out_time);
     return;
     }
@@ -236,7 +236,7 @@ void bgav_seek_video(bgav_t * bgav, int stream, int64_t time)
   time += s->stats.pts_start;
   
   //  fprintf(stderr, "Skip to: %ld\n", time);
-  bgav_video_skipto(s, &time, s->data.video.format.timescale);
+  bgav_video_skipto(s, &time, s->data.video.format->timescale);
   //  fprintf(stderr, "Skipped to: %ld %ld\n", time, s->out_time);
   }
 

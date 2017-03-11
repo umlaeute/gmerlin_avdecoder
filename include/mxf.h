@@ -239,8 +239,8 @@ struct mxf_sequence_s
   int64_t duration;
 
   /* Secondary */
-  int is_timecode; /* stream_type will be BGAV_STREAM_UNKNOWN then */
-  bgav_stream_type_t stream_type;
+  int is_timecode; /* stream_type will be GAVF_STREAM_NONE then */
+  gavf_stream_type_t stream_type;
   mxf_metadata_t ** structural_components;
   };
 

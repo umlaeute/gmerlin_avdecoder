@@ -71,13 +71,13 @@ int bgav_set_overlay_stream(bgav_t * b, int stream, bgav_stream_action_t action)
 const gavl_video_format_t * bgav_get_subtitle_format(bgav_t * b, int stream)
   {
   bgav_stream_t * s = bgav_track_get_subtitle_stream(b->tt->cur, stream);
-  return &s->data.subtitle.video.format;
+  return s->data.subtitle.video.format;
   }
 
 int bgav_subtitle_is_text(bgav_t * b, int stream)
   {
   bgav_stream_t * s = bgav_track_get_subtitle_stream(b->tt->cur, stream);
-  if(s->type == BGAV_STREAM_SUBTITLE_TEXT)
+  if(s->type == GAVF_STREAM_TEXT)
     return 1;
   else
     return 0;
@@ -86,7 +86,7 @@ int bgav_subtitle_is_text(bgav_t * b, int stream)
 const char * bgav_get_subtitle_language(bgav_t * b, int stream)
   {
   bgav_stream_t * s = bgav_track_get_subtitle_stream(b->tt->cur, stream);
-  return gavl_dictionary_get_string(&s->m, GAVL_META_LANGUAGE);
+  return gavl_dictionary_get_string(s->m, GAVL_META_LANGUAGE);
   }
 
 /* LEGACY */
@@ -165,7 +165,7 @@ int bgav_has_subtitle(bgav_t * b, int stream)
 
 void bgav_subtitle_dump(bgav_stream_t * s)
   {
-  if(s->type == BGAV_STREAM_SUBTITLE_TEXT)
+  if(s->type == GAVF_STREAM_TEXT)
     {
     bgav_dprintf( "  Character set:     %s\n",
                   (s->data.subtitle.charset ? s->data.subtitle.charset :
@@ -174,7 +174,7 @@ void bgav_subtitle_dump(bgav_stream_t * s)
   else
     {
     bgav_dprintf( "  Format:\n");
-    gavl_video_format_dump(&s->data.subtitle.video.format);
+    gavl_video_format_dump(s->data.subtitle.video.format);
     }
   }
 
@@ -307,21 +307,21 @@ int bgav_overlay_start(bgav_stream_t * s)
     if(!dec->init(s))
       return 0;
 
-    s->data.subtitle.video.format.timescale = s->timescale;
+    s->data.subtitle.video.format->timescale = s->timescale;
 
     if(s->vframe)
       {
       s->data.subtitle.video.vsrc =
         gavl_video_source_create(read_video_nocopy,
                                  s, GAVL_SOURCE_SRC_ALLOC | s->src_flags,
-                                 &s->data.subtitle.video.format);
+                                 s->data.subtitle.video.format);
       }
     else
       {
       s->data.subtitle.video.vsrc =
         gavl_video_source_create(read_video_copy,
                                  s, s->src_flags,
-                                 &s->data.subtitle.video.format);
+                                 s->data.subtitle.video.format);
       }
     }
   else if(s->action == BGAV_STREAM_READRAW)
@@ -331,7 +331,7 @@ int bgav_overlay_start(bgav_stream_t * s)
                                       s,
                                       GAVL_SOURCE_SRC_ALLOC,
                                       &s->ci,
-                                      &s->data.subtitle.video.format);
+                                      s->data.subtitle.video.format);
     }
   
   return 1;
@@ -368,7 +368,7 @@ void bgav_subtitle_stop(bgav_stream_t * s)
 void bgav_subtitle_resync(bgav_stream_t * s)
   {
   /* Nothing to do here */
-  if(s->type == BGAV_STREAM_SUBTITLE_TEXT)
+  if(s->type == GAVF_STREAM_TEXT)
     return;
 
   if(s->data.subtitle.video.decoder &&
@@ -390,38 +390,38 @@ int bgav_subtitle_skipto(bgav_stream_t * s, int64_t * time, int scale)
 const char * bgav_get_subtitle_info(bgav_t * b, int stream)
   {
   bgav_stream_t * s = bgav_track_get_subtitle_stream(b->tt->cur, stream);
-  return gavl_dictionary_get_string(&s->m, GAVL_META_LABEL);
+  return gavl_dictionary_get_string(s->m, GAVL_META_LABEL);
   }
 
 const bgav_metadata_t *
 bgav_get_subtitle_metadata(bgav_t * b, int stream)
   {
   bgav_stream_t * s = bgav_track_get_subtitle_stream(b->tt->cur, stream);
-  return &s->m;
+  return s->m;
   }
 
 const bgav_metadata_t *
 bgav_get_text_metadata(bgav_t * b, int stream)
   {
-  return &b->tt->cur->text_streams[stream].m;
+  return b->tt->cur->text_streams[stream].m;
   }
 
 const bgav_metadata_t *
 bgav_get_text_metadata_t(bgav_t * b, int track, int stream)
   {
-  return &b->tt->tracks[track].text_streams[stream].m;
+  return b->tt->tracks[track].text_streams[stream].m;
   }
 
 const bgav_metadata_t *
 bgav_get_overlay_metadata(bgav_t * b, int stream)
   {
-  return &b->tt->cur->overlay_streams[stream].m;
+  return b->tt->cur->overlay_streams[stream].m;
   }
 
 const bgav_metadata_t *
 bgav_get_overlay_metadata_t(bgav_t * b, int track, int stream)
   {
-  return &b->tt->tracks[track].overlay_streams[stream].m;
+  return b->tt->tracks[track].overlay_streams[stream].m;
   }
 
 gavl_packet_source_t *
@@ -432,7 +432,7 @@ bgav_get_text_packet_source(bgav_t * b, int stream)
 
 const gavl_video_format_t * bgav_get_overlay_format(bgav_t * b, int stream)
   {
-  return &b->tt->cur->overlay_streams[stream].data.subtitle.video.format;
+  return b->tt->cur->overlay_streams[stream].data.subtitle.video.format;
   }
 
 int bgav_get_text_timescale(bgav_t * b, int stream)

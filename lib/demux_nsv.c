@@ -443,23 +443,23 @@ static int open_nsv(bgav_demuxer_context_t * ctx)
     s->flags |= STREAM_NO_DURATIONS;
     s->fourcc = sh.vidfmt;
     
-    s->data.video.format.image_width  = sh.width;
-    s->data.video.format.image_height = sh.height;
+    s->data.video.format->image_width  = sh.width;
+    s->data.video.format->image_height = sh.height;
     
-    s->data.video.format.frame_width =
-      s->data.video.format.image_width;
-    s->data.video.format.frame_height =
-      s->data.video.format.image_height;
+    s->data.video.format->frame_width =
+      s->data.video.format->image_width;
+    s->data.video.format->frame_height =
+      s->data.video.format->image_height;
     
-    s->data.video.format.pixel_width  = 1;
-    s->data.video.format.pixel_height = 1;
+    s->data.video.format->pixel_width  = 1;
+    s->data.video.format->pixel_height = 1;
     s->stream_id = VIDEO_ID;
 
     /* Calculate framerate */
 
     calc_framerate(sh.framerate,
-                   &s->data.video.format.timescale,
-                   &s->data.video.format.frame_duration);
+                   &s->data.video.format->timescale,
+                   &s->data.video.format->frame_duration);
     /* Get depth for RGB3 */
     //    if(sh.vidfmt == BGAV_MK_FOURCC('R','G','B','3'))
     s->data.video.depth = 24;
@@ -489,15 +489,15 @@ static int open_nsv(bgav_demuxer_context_t * ctx)
 
     /* Metadata */
     if(p->fh.metadata.title)
-      gavl_dictionary_set_string(&ctx->tt->cur->metadata,
+      gavl_dictionary_set_string(ctx->tt->cur->metadata,
                         GAVL_META_TITLE,
                         p->fh.metadata.title);
     if(p->fh.metadata.url)
-      gavl_dictionary_set_string(&ctx->tt->cur->metadata,
+      gavl_dictionary_set_string(ctx->tt->cur->metadata,
                         GAVL_META_RELURL,
                         p->fh.metadata.url);
     if(p->fh.metadata.creator)
-      gavl_dictionary_set_string(&ctx->tt->cur->metadata,
+      gavl_dictionary_set_string(ctx->tt->cur->metadata,
                         GAVL_META_AUTHOR,
                         p->fh.metadata.creator);
     
@@ -520,9 +520,9 @@ static int open_nsv(bgav_demuxer_context_t * ctx)
   ctx->data_start = ctx->input->position;
   ctx->flags |= BGAV_DEMUXER_HAS_DATA_START;
   
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "NSV");
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata,
+  gavl_dictionary_set_string(ctx->tt->cur->metadata,
                     GAVL_META_MIMETYPE, "video/nsv");
 
   if(p->need_pcm_format)
@@ -563,18 +563,18 @@ static int get_pcm_format(bgav_demuxer_context_t * ctx, bgav_stream_t * s)
   /* Channels */
   if(!bgav_input_read_8(ctx->input, &tmp_8))
     return 0;
-  s->data.audio.format.num_channels = tmp_8;
+  s->data.audio.format->num_channels = tmp_8;
   
   /* Samplerate */
   if(!bgav_input_read_16_le(ctx->input, &tmp_16))
     return 0;
-  s->data.audio.format.samplerate = tmp_16;
-  s->data.audio.block_align = (s->data.audio.bits_per_sample * s->data.audio.format.num_channels) / 8;
+  s->data.audio.format->samplerate = tmp_16;
+  s->data.audio.block_align = (s->data.audio.bits_per_sample * s->data.audio.format->num_channels) / 8;
 
 #if 1 /* What's that???? */
   s->data.audio.bits_per_sample = 8;
-  s->data.audio.format.num_channels = 1;
-  s->data.audio.format.samplerate /= 4;
+  s->data.audio.format->num_channels = 1;
+  s->data.audio.format->samplerate /= 4;
 #endif
   return 1;
   }
@@ -681,7 +681,7 @@ static int next_packet_nsv(bgav_demuxer_context_t * ctx)
         return 0;
       p->data_size = video_len;
       p->pts =
-        s->in_position * s->data.video.format.frame_duration;
+        s->in_position * s->data.video.format->frame_duration;
       
       if(s->fourcc == BGAV_MK_FOURCC('V','P','6','1'))
         {
@@ -799,17 +799,17 @@ static void seek_nsv(bgav_demuxer_context_t * ctx, int64_t time, int scale)
 
   if(vs)
     {
-    frame_position = gavl_time_rescale(scale, vs->data.video.format.timescale,
+    frame_position = gavl_time_rescale(scale, vs->data.video.format->timescale,
                                        sync_time);
-    frame_position /= vs->data.video.format.frame_duration;
-    STREAM_SET_SYNC(vs, frame_position * vs->data.video.format.frame_duration);
+    frame_position /= vs->data.video.format->frame_duration;
+    STREAM_SET_SYNC(vs, frame_position * vs->data.video.format->frame_duration);
     vs->in_position = frame_position;
     }
   if(as)
     {
     STREAM_SET_SYNC(as,
-                    gavl_time_rescale(scale, as->data.audio.format.samplerate, sync_time)+
-                    gavl_time_rescale(1000, as->data.audio.format.samplerate, sh.syncoffs));
+                    gavl_time_rescale(scale, as->data.audio.format->samplerate, sync_time)+
+                    gavl_time_rescale(1000, as->data.audio.format->samplerate, sh.syncoffs));
     }
   }
 

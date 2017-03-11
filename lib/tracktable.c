@@ -24,6 +24,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <gavl/trackinfo.h>
+
 bgav_track_table_t * bgav_track_table_create(int num_tracks)
   {
   bgav_track_table_t * ret;
@@ -35,7 +37,12 @@ bgav_track_table_t * bgav_track_table_create(int num_tracks)
     ret->tracks = calloc(num_tracks, sizeof(*(ret->tracks)));
     /* Set all durations to undefined */
     for(i = 0; i < num_tracks; i++)
+      {
+      ret->tracks[i].info = gavl_append_track(&ret->info);
+      ret->tracks[i].metadata = gavl_track_get_metadata_nc(ret->tracks[ret->num_tracks].info);
+      
       ret->tracks[i].duration = GAVL_TIME_UNDEFINED;
+      }
     ret->num_tracks = num_tracks;
     ret->cur = ret->tracks;
     }
@@ -51,12 +58,17 @@ bgav_track_t * bgav_track_table_append_track(bgav_track_table_t * t)
   t->tracks = realloc(t->tracks, sizeof(*t->tracks) * (t->num_tracks+1));
   memset(&t->tracks[t->num_tracks], 0, sizeof(t->tracks[t->num_tracks]));
   t->tracks[t->num_tracks].duration = GAVL_TIME_UNDEFINED;
-  t->num_tracks++;
 
+  t->tracks[t->num_tracks].info = gavl_append_track(&t->info);
+  t->tracks[t->num_tracks].metadata = gavl_track_get_metadata_nc(t->tracks[t->num_tracks].info);
+  
+  t->num_tracks++;
+  
   t->cur = t->tracks + track_index;
   
   return &t->tracks[t->num_tracks-1];
   }
+
 
 void bgav_track_table_remove_track(bgav_track_table_t * t, int idx)
   {
@@ -71,6 +83,7 @@ void bgav_track_table_remove_track(bgav_track_table_t * t, int idx)
     }
   memset(&t->tracks[t->num_tracks - 1], 0, 
          sizeof(t->tracks[t->num_tracks - 1]));
+  gavl_delete_track(&t->info, idx);
   t->num_tracks--;
   }
 
@@ -90,6 +103,7 @@ void bgav_track_table_unref(bgav_track_table_t * t)
     bgav_track_free(&t->tracks[i]);
     }
   free(t->tracks);
+  gavl_dictionary_free(&t->info);
   free(t);
   }
 
@@ -109,7 +123,7 @@ void bgav_track_table_merge_metadata(bgav_track_table_t*t,
   int i;
   for(i = 0; i < t->num_tracks; i++)
     {
-    gavl_dictionary_merge2(&t->tracks[i].metadata, m);
+    gavl_dictionary_merge2(t->tracks[i].metadata, m);
     }
   }
 

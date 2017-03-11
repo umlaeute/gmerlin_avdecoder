@@ -83,7 +83,7 @@ static int open_smjpeg(bgav_demuxer_context_t * ctx)
         
         if(!bgav_input_read_16_be(ctx->input, &tmp_16))
           return 0;
-        s->data.audio.format.samplerate = tmp_16;
+        s->data.audio.format->samplerate = tmp_16;
 
         if(!bgav_input_read_data(ctx->input, &tmp_8, 1))
           return 0;
@@ -91,7 +91,7 @@ static int open_smjpeg(bgav_demuxer_context_t * ctx)
 
         if(!bgav_input_read_data(ctx->input, &tmp_8, 1))
           return 0;
-        s->data.audio.format.num_channels = tmp_8;
+        s->data.audio.format->num_channels = tmp_8;
 
         if(!bgav_input_read_fourcc(ctx->input, &fourcc))
           return 0;
@@ -115,18 +115,18 @@ static int open_smjpeg(bgav_demuxer_context_t * ctx)
         if(!bgav_input_read_16_be(ctx->input, &tmp_16))
           return 0;
 
-        s->data.video.format.image_width = tmp_16;
-        s->data.video.format.frame_width = tmp_16;
+        s->data.video.format->image_width = tmp_16;
+        s->data.video.format->frame_width = tmp_16;
 
         if(!bgav_input_read_16_be(ctx->input, &tmp_16))
           return 0;
 
-        s->data.video.format.image_height = tmp_16;
-        s->data.video.format.frame_height = tmp_16;
-        s->data.video.format.pixel_width  = 1;
-        s->data.video.format.pixel_height = 1;
-        s->data.video.format.timescale = 1000;
-        s->data.video.format.framerate_mode = GAVL_FRAMERATE_VARIABLE;
+        s->data.video.format->image_height = tmp_16;
+        s->data.video.format->frame_height = tmp_16;
+        s->data.video.format->pixel_width  = 1;
+        s->data.video.format->pixel_height = 1;
+        s->data.video.format->timescale = 1000;
+        s->data.video.format->framerate_mode = GAVL_FRAMERATE_VARIABLE;
         s->flags |= STREAM_NO_DURATIONS;
 
         if(!bgav_input_read_fourcc(ctx->input, &fourcc))

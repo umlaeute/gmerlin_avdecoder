@@ -165,7 +165,7 @@ static int open_wav(bgav_demuxer_context_t * ctx)
 
   if(priv->info)
     {
-    bgav_RIFFINFO_get_metadata(priv->info, &ctx->tt->cur->metadata);
+    bgav_RIFFINFO_get_metadata(priv->info, ctx->tt->cur->metadata);
     }
 
   /* Packet size will be at least 1024 bytes */
@@ -182,14 +182,14 @@ static int open_wav(bgav_demuxer_context_t * ctx)
   if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
 
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "WAV");
 
   if(ctx->tt->cur->audio_streams[0].data.audio.bits_per_sample)
     {
     ctx->index_mode = INDEX_MODE_PCM;
     s->duration = priv->data_size / s->data.audio.block_align;
-    ctx->tt->cur->duration = gavl_time_unscale(s->data.audio.format.samplerate,
+    ctx->tt->cur->duration = gavl_time_unscale(s->data.audio.format->samplerate,
                                                s->duration);
     }
   else
@@ -233,7 +233,7 @@ static int next_packet_wav(bgav_demuxer_context_t * ctx)
   p = bgav_stream_get_packet_write(s);
   
   p->pts =
-    ((ctx->input->position - priv->data_start) * s->data.audio.format.samplerate) /
+    ((ctx->input->position - priv->data_start) * s->data.audio.format->samplerate) /
     (s->codec_bitrate / 8);
   
   bgav_packet_alloc(p, priv->packet_size);
@@ -262,7 +262,7 @@ static void seek_wav(bgav_demuxer_context_t * ctx, int64_t time, int scale)
   if(s->data.audio.bits_per_sample)
     {
     file_position = s->data.audio.block_align * gavl_time_rescale(scale,
-                                                                  s->data.audio.format.samplerate,
+                                                                  s->data.audio.format->samplerate,
                                                                   time);
     }
   else
@@ -272,7 +272,7 @@ static void seek_wav(bgav_demuxer_context_t * ctx, int64_t time, int scale)
     file_position *= s->data.audio.block_align;
     }
   /* Calculate the time before we add the start offset */
-  STREAM_SET_SYNC(s, ((int64_t)file_position * s->data.audio.format.samplerate) /
+  STREAM_SET_SYNC(s, ((int64_t)file_position * s->data.audio.format->samplerate) /
     (s->codec_bitrate / 8));
   
   file_position += priv->data_start;

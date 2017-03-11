@@ -73,7 +73,7 @@
 
 static void cleanup_stream_ffmpeg(bgav_stream_t * s)
   {
-  if(s->type == BGAV_STREAM_VIDEO)
+  if(s->type == GAVF_STREAM_VIDEO)
     {
     if(s->priv)
       free(s->priv);
@@ -547,8 +547,8 @@ static void init_audio_stream(bgav_demuxer_context_t * ctx,
   
   s->timescale = st->time_base.den;
   
-  s->data.audio.format.num_channels = params->channels;
-  s->data.audio.format.samplerate = params->sample_rate;
+  s->data.audio.format->num_channels = params->channels;
+  s->data.audio.format->samplerate = params->sample_rate;
   
   bgav_stream_set_extradata(s, params->extradata, params->extradata_size);
   
@@ -598,23 +598,23 @@ static void init_video_stream(bgav_demuxer_context_t * ctx,
   st->discard = AVDISCARD_NONE;
   
   
-  s->data.video.format.image_width = params->width;
-  s->data.video.format.image_height = params->height;
-  s->data.video.format.frame_width = params->width;
-  s->data.video.format.frame_height = params->height;
+  s->data.video.format->image_width = params->width;
+  s->data.video.format->image_height = params->height;
+  s->data.video.format->frame_width = params->width;
+  s->data.video.format->frame_height = params->height;
 
   if(st->time_base.den && st->time_base.num)
     {
-    s->data.video.format.timescale      = st->time_base.den;
-    s->data.video.format.frame_duration = st->time_base.num;
+    s->data.video.format->timescale      = st->time_base.den;
+    s->data.video.format->frame_duration = st->time_base.num;
     }
   
   s->timescale = st->time_base.den;
   
-  s->data.video.format.pixel_width = params->sample_aspect_ratio.num;
-  s->data.video.format.pixel_height = params->sample_aspect_ratio.den;
-  if(!s->data.video.format.pixel_width) s->data.video.format.pixel_width = 1;
-  if(!s->data.video.format.pixel_height) s->data.video.format.pixel_height = 1;
+  s->data.video.format->pixel_width = params->sample_aspect_ratio.num;
+  s->data.video.format->pixel_height = params->sample_aspect_ratio.den;
+  if(!s->data.video.format->pixel_width) s->data.video.format->pixel_width = 1;
+  if(!s->data.video.format->pixel_height) s->data.video.format->pixel_height = 1;
 #if LIBAVCODEC_VERSION_INT < ((52<<16)+(0<<8)+0)
   s->data.video.depth = params->bits_per_sample;
 #else
@@ -753,13 +753,13 @@ static int open_ffmpeg(bgav_demuxer_context_t * ctx)
   tag = av_metadata_get(avfc->metadata, ffmpeg_name, NULL, \
                         AV_METADATA_IGNORE_SUFFIX); \
   if(tag) \
-    gavl_dictionary_set_string(&ctx->tt->cur->metadata, gavl_name, tag->value);
+    gavl_dictionary_set_string(ctx->tt->cur->metadata, gavl_name, tag->value);
 
 #define GET_METADATA_INT(gavl_name, ffmpeg_name) \
   tag = av_metadata_get(avfc->metadata, ffmpeg_name, NULL, \
                         AV_METADATA_IGNORE_SUFFIX); \
   if(tag) \
-    gavl_dictionary_set_int(&ctx->tt->cur->metadata, gavl_name, atoi(tag->value));
+    gavl_dictionary_set_int(ctx->tt->cur->metadata, gavl_name, atoi(tag->value));
 
   
   if(avfc->metadata)
@@ -789,7 +789,7 @@ static int open_ffmpeg(bgav_demuxer_context_t * ctx)
     gavl_dictionary_set_string_int(&ctx->tt->cur->metadata, GAVL_META_TRACKNUMBER, avfc->track);
 #endif
 
-  gavl_dictionary_set_string_nocopy(&ctx->tt->cur->metadata,
+  gavl_dictionary_set_string_nocopy(ctx->tt->cur->metadata,
                           GAVL_META_FORMAT,
                           bgav_sprintf(TRD("%s (via ffmpeg)"),
                                        priv->avfc->iformat->long_name));
@@ -860,11 +860,11 @@ static int next_packet_ffmpeg(bgav_demuxer_context_t * ctx)
     if(!STREAM_HAS_SYNC(s))
       STREAM_SET_SYNC(s, p->pts);
     
-    if((s->type == BGAV_STREAM_VIDEO) && pkt.duration)
+    if((s->type == GAVF_STREAM_VIDEO) && pkt.duration)
       p->duration = pkt.duration * avs->time_base.num;
     }
   /* Handle palette */
-  if((s->type == BGAV_STREAM_VIDEO) &&
+  if((s->type == GAVF_STREAM_VIDEO) &&
 #if LIBAVCODEC_VERSION_MAJOR < 54
      avs->params->palctrl &&
      avs->params->palctrl->palette_changed

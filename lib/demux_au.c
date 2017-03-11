@@ -173,8 +173,8 @@ static int open_au(bgav_demuxer_context_t * ctx)
 
   /* Get audio format */
   
-  as->data.audio.format.samplerate = hdr.sample_rate;
-  as->data.audio.format.num_channels = hdr.channels;
+  as->data.audio.format->samplerate = hdr.sample_rate;
+  as->data.audio.format->num_channels = hdr.channels;
   
   priv = calloc(1, sizeof(*priv));
   ctx->priv = priv;
@@ -191,7 +191,7 @@ static int open_au(bgav_demuxer_context_t * ctx)
     ctx->tt->cur->audio_streams->duration =
       pos_2_time(ctx, ctx->data_start + priv->data_size);
     ctx->tt->cur->duration =
-      gavl_samples_to_time(as->data.audio.format.samplerate,
+      gavl_samples_to_time(as->data.audio.format->samplerate,
                            ctx->tt->cur->audio_streams->duration);
     }
   
@@ -205,7 +205,7 @@ static int open_au(bgav_demuxer_context_t * ctx)
   ctx->data_start = ctx->input->position;
   ctx->flags |= BGAV_DEMUXER_HAS_DATA_START;
 
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "AU/SND");
   ctx->index_mode = INDEX_MODE_PCM;
   return 1;

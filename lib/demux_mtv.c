@@ -137,19 +137,19 @@ static int open_mtv(bgav_demuxer_context_t * ctx)
   s = bgav_track_add_video_stream(ctx->tt->cur, ctx->opt);
   s->fourcc = BGAV_MK_FOURCC('M','T','V',' ');
   s->stream_id = VIDEO_ID;
-  s->data.video.format.image_width = priv->h.width;
-  s->data.video.format.frame_width = priv->h.width;
+  s->data.video.format->image_width = priv->h.width;
+  s->data.video.format->frame_width = priv->h.width;
 
-  s->data.video.format.image_height = priv->h.height;
-  s->data.video.format.frame_height = priv->h.height;
+  s->data.video.format->image_height = priv->h.height;
+  s->data.video.format->frame_height = priv->h.height;
 
-  s->data.video.format.pixel_width = 1;
-  s->data.video.format.pixel_height = 1;
+  s->data.video.format->pixel_width = 1;
+  s->data.video.format->pixel_height = 1;
 
   priv->video_fps = (priv->h.audio_br / 4) / priv->h.audio_subsegments;
   
-  s->data.video.format.timescale = priv->video_fps;
-  s->data.video.format.frame_duration = 1;
+  s->data.video.format->timescale = priv->video_fps;
+  s->data.video.format->frame_duration = 1;
   s->data.video.depth = priv->h.bpp;
   priv->do_audio = 1;
   
@@ -159,12 +159,12 @@ static int open_mtv(bgav_demuxer_context_t * ctx)
   if(ctx->input->total_bytes)
     {
     ctx->tt->cur->duration =
-      gavl_time_unscale(ctx->tt->cur->video_streams[0].data.video.format.timescale,
+      gavl_time_unscale(ctx->tt->cur->video_streams[0].data.video.format->timescale,
                         (ctx->input->total_bytes - MTV_HEADER_SIZE) / priv->sync_size);
     if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
       ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
     }
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "MTV");
 
   ctx->data_start = ctx->input->position;
@@ -253,7 +253,7 @@ static void seek_mtv(bgav_demuxer_context_t * ctx, int64_t time, int scale)
     s = &ctx->tt->cur->audio_streams[0];
 
     STREAM_SET_SYNC(s, gavl_time_rescale(priv->video_fps,
-                                         s->data.audio.format.samplerate,
+                                         s->data.audio.format->samplerate,
                                          frame_number));
     }
   if(ctx->tt->cur->num_video_streams)

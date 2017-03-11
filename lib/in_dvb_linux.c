@@ -540,7 +540,7 @@ static int load_channel_cache(bgav_input_context_t * ctx)
         goto fail;
       priv->channels[channel_index].extra_pcr_pid = atoi(attr);
 
-      gavl_dictionary_set_string(&ctx->tt->tracks[channel_index].metadata,
+      gavl_dictionary_set_string(ctx->tt->tracks[channel_index].metadata,
                         GAVL_META_LABEL, priv->channels[channel_index].name);
       
       while(channel_child)
@@ -590,7 +590,7 @@ static int load_channel_cache(bgav_input_context_t * ctx)
                   {
                   char language[4];
                   sscanf(stream_child->children->str, "%3s", language);
-                  gavl_dictionary_set_string(&s->m, GAVL_META_LANGUAGE, language);
+                  gavl_dictionary_set_string(s->m, GAVL_META_LANGUAGE, language);
                   }
                 stream_child = stream_child->next;
                 }
@@ -706,7 +706,7 @@ static void save_channel_cache(bgav_input_context_t * ctx)
       fprintf(output, "        <fourcc>%08x</fourcc>\n",
               ctx->tt->tracks[i].audio_streams[j].fourcc);
 
-      language = gavl_dictionary_get_string(&ctx->tt->tracks[i].audio_streams[j].m,
+      language = gavl_dictionary_get_string(ctx->tt->tracks[i].audio_streams[j].m,
                                    GAVL_META_LANGUAGE);
       if(language)
         fprintf(output, "        <language>%3s</language>\n",
@@ -813,7 +813,7 @@ static int open_dvb(bgav_input_context_t * ctx, const char * url, char ** redire
     ctx->tt = bgav_track_table_create(priv->num_channels);
     for(i = 0; i < priv->num_channels; i++)
       {
-      gavl_dictionary_set_string(&ctx->tt->tracks[i].metadata,
+      gavl_dictionary_set_string(ctx->tt->tracks[i].metadata,
                         GAVL_META_LABEL, priv->channels[i].name);
       if(!get_streams(ctx, &priv->channels[i]))
         return 0;
@@ -1067,7 +1067,7 @@ static void check_eit(bgav_input_context_t* ctx)
       
       /* Parse descriptors */
 
-      m = &ctx->tt->cur->metadata;
+      m = ctx->tt->cur->metadata;
 
       tmp_string = gavl_dictionary_get_string(m, GAVL_META_DATE);
       
@@ -1139,7 +1139,7 @@ static void check_eit(bgav_input_context_t* ctx)
   if(ctx->opt->metadata_change_callback && priv->metadata_changed)
     {
     ctx->opt->metadata_change_callback(ctx->opt->metadata_change_callback_data,
-                                       &ctx->tt->cur->metadata);
+                                       ctx->tt->cur->metadata);
     priv->metadata_changed = 0;
     }
   }
@@ -1447,7 +1447,7 @@ static int select_track_dvb(bgav_input_context_t * ctx, int track)
   select(priv->dvr_fd+1, &rset, NULL, NULL, &timeout);
 
   /* Clear metadata so they are reread */
-  gavl_dictionary_free(&ctx->tt->cur->metadata);
+  gavl_dictionary_free(ctx->tt->cur->metadata);
   return 1;
   }
 

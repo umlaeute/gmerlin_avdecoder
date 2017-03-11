@@ -186,7 +186,7 @@ write_callback(const FLAC__StreamDecoder *decoder,
   __total += frame->header.blocksize;
 #endif
   priv->frame->valid_samples = frame->header.blocksize;
-  priv->copy_samples(priv->frame, buffer, s->data.audio.format.num_channels,
+  priv->copy_samples(priv->frame, buffer, s->data.audio.format->num_channels,
                      priv->shift_bits);
   
   return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
@@ -201,7 +201,7 @@ metadata_callback(const FLAC__StreamDecoder *decoder,
   s = client_data;
   if(metadata->type == FLAC__METADATA_TYPE_STREAMINFO)
     {
-    s->data.audio.format.num_channels = metadata->data.stream_info.channels;
+    s->data.audio.format->num_channels = metadata->data.stream_info.channels;
     s->data.audio.bits_per_sample     = metadata->data.stream_info.bits_per_sample;
     }
   }
@@ -246,43 +246,43 @@ static int init_flac(bgav_stream_t * s)
     return 0;
     }
   
-  s->data.audio.format.interleave_mode = GAVL_INTERLEAVE_NONE;
+  s->data.audio.format->interleave_mode = GAVL_INTERLEAVE_NONE;
   
-  gavl_set_channel_setup(&s->data.audio.format);
+  gavl_set_channel_setup(s->data.audio.format);
 
-  if(!s->data.audio.format.samples_per_frame)
-    s->data.audio.format.samples_per_frame = 1024;
+  if(!s->data.audio.format->samples_per_frame)
+    s->data.audio.format->samples_per_frame = 1024;
   
   /* Set sample format stuff */
 
   if(s->data.audio.bits_per_sample <= 8)
     {
     priv->shift_bits = 8 - s->data.audio.bits_per_sample;
-    s->data.audio.format.sample_format = GAVL_SAMPLE_S8;
+    s->data.audio.format->sample_format = GAVL_SAMPLE_S8;
     priv->copy_samples = copy_samples_8;
     }
   else if(s->data.audio.bits_per_sample <= 16)
     {
     priv->shift_bits = 16 - s->data.audio.bits_per_sample;
-    s->data.audio.format.sample_format = GAVL_SAMPLE_S16;
+    s->data.audio.format->sample_format = GAVL_SAMPLE_S16;
     priv->copy_samples = copy_samples_16;
     }
   else
     {
     priv->shift_bits = 32 - s->data.audio.bits_per_sample;
-    s->data.audio.format.sample_format = GAVL_SAMPLE_S32;
+    s->data.audio.format->sample_format = GAVL_SAMPLE_S32;
     priv->copy_samples = copy_samples_32;
     }
   
   gavl_audio_format_copy(&frame_format,
-                         &s->data.audio.format);
+                         s->data.audio.format);
 
   frame_format.samples_per_frame = MAX_FRAME_SAMPLES;
   priv->frame = gavl_audio_frame_create(&frame_format);
 
-  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(s->m, GAVL_META_FORMAT,
                     "FLAC");
-  gavl_dictionary_set_int(&s->m, GAVL_META_BITRATE,
+  gavl_dictionary_set_int(s->m, GAVL_META_BITRATE,
                         GAVL_BITRATE_LOSSLESS);
   return 1;
   }
@@ -312,7 +312,7 @@ static gavl_source_status_t decode_frame_flac(bgav_stream_t * s)
       }
     if(priv->frame->valid_samples)
       {
-      gavl_audio_frame_copy_ptrs(&s->data.audio.format, 
+      gavl_audio_frame_copy_ptrs(s->data.audio.format, 
                                  s->data.audio.frame, priv->frame);
       return GAVL_SOURCE_OK;
       }

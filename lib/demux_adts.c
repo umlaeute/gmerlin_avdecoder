@@ -136,7 +136,7 @@ static int check_he_aac(bgav_demuxer_context_t * ctx,
         {
         /* Detected HE-AAC */
         bgav_log(ctx->opt, BGAV_LOG_INFO, LOG_DOMAIN, "Detected HE-AAC");
-        s->data.audio.format.samplerate *= 2;
+        s->data.audio.format->samplerate *= 2;
         priv->block_samples *= 2;
         s->ci.flags |= GAVL_COMPRESSION_SBR;
         }
@@ -148,7 +148,7 @@ static int check_he_aac(bgav_demuxer_context_t * ctx,
       }
     }
 
-  bgav_aac_frame_get_audio_format(frame, &s->data.audio.format);
+  bgav_aac_frame_get_audio_format(frame, s->data.audio.format);
   
   ret = 1;
   fail:
@@ -217,17 +217,17 @@ static int open_adts(bgav_demuxer_context_t * ctx)
     bgav_id3v2_2_metadata(ctx->input->id3v2, &id3v2_metadata);
     //    gavl_dictionary_dump(&id3v2_metadata);
 
-    gavl_dictionary_merge(&ctx->tt->cur->metadata,
+    gavl_dictionary_merge(ctx->tt->cur->metadata,
                         &id3v2_metadata, &id3v1_metadata);
     gavl_dictionary_free(&id3v1_metadata);
     gavl_dictionary_free(&id3v2_metadata);
     }
   else if(ctx->input->id3v2)
     bgav_id3v2_2_metadata(ctx->input->id3v2,
-                          &ctx->tt->cur->metadata);
+                          ctx->tt->cur->metadata);
   else if(id3v1)
     bgav_id3v1_2_metadata(id3v1,
-                          &ctx->tt->cur->metadata);
+                          ctx->tt->cur->metadata);
 
   if(ctx->input->total_bytes)
     priv->data_size = ctx->input->total_bytes - ctx->data_start;
@@ -265,9 +265,9 @@ static int open_adts(bgav_demuxer_context_t * ctx)
   else
     priv->block_samples = 1024;
   
-  s->data.audio.format.samplerate = adts.samplerate;
+  s->data.audio.format->samplerate = adts.samplerate;
   
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "ADTS");
 
   
@@ -281,13 +281,13 @@ static int open_adts(bgav_demuxer_context_t * ctx)
     goto fail;
 #endif
 
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata,
+  gavl_dictionary_set_string(ctx->tt->cur->metadata,
                     GAVL_META_FORMAT, "ADTS");
   if(priv->block_samples == 2048)
-    gavl_dictionary_set_string(&ctx->tt->cur->metadata,
+    gavl_dictionary_set_string(ctx->tt->cur->metadata,
                     GAVL_META_MIMETYPE, "audio/aacp");
   else
-    gavl_dictionary_set_string(&ctx->tt->cur->metadata,
+    gavl_dictionary_set_string(ctx->tt->cur->metadata,
                     GAVL_META_MIMETYPE, "audio/aac");
 
   gavl_dictionary_get_int(&ctx->input->metadata, GAVL_META_BITRATE, &s->container_bitrate);

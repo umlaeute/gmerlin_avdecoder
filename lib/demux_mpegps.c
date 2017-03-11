@@ -550,7 +550,7 @@ static int next_packet(bgav_demuxer_context_t * ctx,
           
           /* Set stream format */
 
-          if(stream && !stream->data.audio.format.samplerate)
+          if(stream && !stream->data.audio.format->samplerate)
             {
             if(!stream->priv)
               {
@@ -566,11 +566,11 @@ static int next_packet(bgav_demuxer_context_t * ctx,
             if(!bgav_input_read_data(input, &c, 1))
               return 0;
             
-            stream->data.audio.format.samplerate =
+            stream->data.audio.format->samplerate =
               lpcm_freq_tab[(c >> 4) & 0x03];
-            stream->data.audio.format.num_channels = 1 + (c & 7);
+            stream->data.audio.format->num_channels = 1 + (c & 7);
             stream->data.audio.bits_per_sample = 16;
-            stream->timescale = stream->data.audio.format.samplerate;
+            stream->timescale = stream->data.audio.format->samplerate;
             
             switch ((c>>6) & 3)
               {
@@ -579,30 +579,30 @@ static int next_packet(bgav_demuxer_context_t * ctx,
               case 2: stream->data.audio.bits_per_sample = 24; break;
               }
 
-            switch(stream->data.audio.format.num_channels)
+            switch(stream->data.audio.format->num_channels)
               {
               case 1:
-                stream->data.audio.format.channel_locations[0] =
+                stream->data.audio.format->channel_locations[0] =
                   GAVL_CHID_FRONT_CENTER;
                 break;
               case 2:
-                stream->data.audio.format.channel_locations[0] =
+                stream->data.audio.format->channel_locations[0] =
                   GAVL_CHID_FRONT_LEFT;
-                stream->data.audio.format.channel_locations[1] =
+                stream->data.audio.format->channel_locations[1] =
                   GAVL_CHID_FRONT_RIGHT;
                 break;
               case 6:
-                stream->data.audio.format.channel_locations[0] =
+                stream->data.audio.format->channel_locations[0] =
                   GAVL_CHID_FRONT_LEFT;
-                stream->data.audio.format.channel_locations[1] =
+                stream->data.audio.format->channel_locations[1] =
                   GAVL_CHID_FRONT_CENTER;
-                stream->data.audio.format.channel_locations[2] =
+                stream->data.audio.format->channel_locations[2] =
                   GAVL_CHID_FRONT_RIGHT;
-                stream->data.audio.format.channel_locations[3] =
+                stream->data.audio.format->channel_locations[3] =
                   GAVL_CHID_REAR_LEFT;
-                stream->data.audio.format.channel_locations[4] =
+                stream->data.audio.format->channel_locations[4] =
                   GAVL_CHID_REAR_RIGHT;
-                stream->data.audio.format.channel_locations[5] =
+                stream->data.audio.format->channel_locations[5] =
                   GAVL_CHID_LFE;
                 break;
               }
@@ -770,17 +770,17 @@ static int next_packet(bgav_demuxer_context_t * ctx,
               {
               case 16:
                 /* 4 bytes -> 2 samples */
-                p->duration = p->data_size / (stream->data.audio.format.num_channels*2);
+                p->duration = p->data_size / (stream->data.audio.format->num_channels*2);
                 break;
               case 20:
                 /* 5 bytes -> 2 samples */
                 /* http://lists.mplayerhq.hu/pipermail/ffmpeg-devel/2006-September/016319.html */
                 p->duration = (2 * p->data_size) /
-                  (stream->data.audio.format.num_channels*5);
+                  (stream->data.audio.format->num_channels*5);
                 break;
               case 24:
                 /* 6 bytes -> 2 samples */
-                p->duration = p->data_size / (stream->data.audio.format.num_channels*3);
+                p->duration = p->data_size / (stream->data.audio.format->num_channels*3);
                 break;
               }
             if(lp->out_pts == GAVL_TIME_UNDEFINED)
@@ -788,7 +788,7 @@ static int next_packet(bgav_demuxer_context_t * ctx,
               if(priv->pes_header.pts != GAVL_TIME_UNDEFINED)
                 {
                 lp->out_pts =
-                  gavl_time_rescale(90000, stream->data.audio.format.samplerate,
+                  gavl_time_rescale(90000, stream->data.audio.format->samplerate,
                                     priv->pes_header.pts + ctx->timestamp_offset);
                 }
               else
@@ -1122,14 +1122,14 @@ static int open_mpegps(bgav_demuxer_context_t * ctx)
   else
     priv->have_pts = 1;
 
-  gavl_dictionary_set_string_nocopy(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string_nocopy(ctx->tt->cur->metadata, 
                           GAVL_META_FORMAT,
                           bgav_sprintf("MPEG-%d",
                                        priv->pack_header.version));
   if(priv->pack_header.version == 1)
-    gavl_dictionary_set_string(&ctx->tt->cur->metadata, GAVL_META_MIMETYPE, "video/mpeg");
+    gavl_dictionary_set_string(ctx->tt->cur->metadata, GAVL_META_MIMETYPE, "video/mpeg");
   else
-    gavl_dictionary_set_string(&ctx->tt->cur->metadata, GAVL_META_MIMETYPE, "video/MP2P"); 
+    gavl_dictionary_set_string(ctx->tt->cur->metadata, GAVL_META_MIMETYPE, "video/MP2P"); 
  
   if(((ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE) && priv->have_pts) ||
      (ctx->input->input->seek_sector) ||

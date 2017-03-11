@@ -76,7 +76,7 @@ static int init_track(bgav_track_t * track,
   
   ph = gavf_get_program_header(dec);
   
-  gavl_dictionary_copy(&track->metadata, &ph->m);
+  gavl_dictionary_copy(track->metadata, &ph->m);
   
   for(i = 0; i < ph->num_streams; i++)
     {
@@ -101,6 +101,9 @@ static int init_track(bgav_track_t * track,
       case GAVF_STREAM_OVERLAY:
         s = bgav_track_add_overlay_stream(track, opt);
         vfmt = &ph->streams[i].format.video;
+        break;
+      case GAVF_STREAM_MSG:
+      case GAVF_STREAM_NONE:
         break;
       }
 
@@ -179,7 +182,7 @@ static int open_gavf(bgav_demuxer_context_t * ctx)
       ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
     }
   
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "GAVF");
 
   

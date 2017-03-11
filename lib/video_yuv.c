@@ -60,14 +60,14 @@ static void decode_yuv2(bgav_stream_t * s, bgav_packet_t * p, gavl_video_frame_t
 
   priv->frame->planes[0] = p->data;
   
-  for(i = 0; i < s->data.video.format.image_height; i++)
+  for(i = 0; i < s->data.video.format->image_height; i++)
     {
     src = priv->frame->planes[0] + i * priv->frame->strides[0];
     dst_y = f->planes[0]         + i * f->strides[0];
     dst_u = f->planes[1]         + i * f->strides[1];
     dst_v = f->planes[2]         + i * f->strides[2];
     
-    for(j = 0; j < s->data.video.format.image_width/2; j++)
+    for(j = 0; j < s->data.video.format->image_width/2; j++)
       {
       dst_y[0] = src[0];        /* Y */
       dst_u[0] = src[1] ^ 0x80; /* U */
@@ -87,14 +87,14 @@ static int init_yuv2(bgav_stream_t * s)
   
   init_common(s);
 
-  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(s->m, GAVL_META_FORMAT,
                     "Full scale YUV 4:2:2 packed (yuv2)");
 
   priv = s->decoder_priv;
 
-  priv->frame->strides[0] = PAD(s->data.video.format.image_width * 2, 4);
+  priv->frame->strides[0] = PAD(s->data.video.format->image_width * 2, 4);
   priv->decode_func = decode_yuv2;
-  s->data.video.format.pixelformat = GAVL_YUVJ_422_P;
+  s->data.video.format->pixelformat = GAVL_YUVJ_422_P;
   return 1;
   }
 
@@ -146,12 +146,12 @@ static void decode_v408(bgav_stream_t * s, bgav_packet_t * p, gavl_video_frame_t
 
   priv->frame->planes[0] = p->data;
   
-  for(i = 0; i < s->data.video.format.image_height; i++)
+  for(i = 0; i < s->data.video.format->image_height; i++)
     {
     src = priv->frame->planes[0] + i * priv->frame->strides[0];
     dst = f->planes[0]         + i * f->strides[0];
     
-    for(j = 0; j < s->data.video.format.image_width; j++)
+    for(j = 0; j < s->data.video.format->image_width; j++)
       {
       dst[0] = src[1];                    /* Y */
       dst[1] = src[0];                    /* U */
@@ -169,14 +169,14 @@ static int init_v408(bgav_stream_t * s)
   
   init_common(s);
 
-  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(s->m, GAVL_META_FORMAT,
                     "YUVA 4:4:4:4 (v408)");
 
   priv = s->decoder_priv;
 
-  priv->frame->strides[0] = s->data.video.format.image_width * 4;
+  priv->frame->strides[0] = s->data.video.format->image_width * 4;
   priv->decode_func = decode_v408;
-  s->data.video.format.pixelformat = GAVL_YUVA_32;
+  s->data.video.format->pixelformat = GAVL_YUVA_32;
   return 1;
   }
 
@@ -200,15 +200,15 @@ static int init_2vuy(bgav_stream_t * s)
   
   init_common(s);
   
-  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(s->m, GAVL_META_FORMAT,
                     "YUV 4:2:2 packed (2vuy)");
   
   priv = s->decoder_priv;
 
-  priv->frame->strides[0] = PAD(s->data.video.format.image_width * 2, 4);
+  priv->frame->strides[0] = PAD(s->data.video.format->image_width * 2, 4);
   priv->decode_func = decode_2vuy;
   s->vframe = priv->frame;
-  s->data.video.format.pixelformat = GAVL_UYVY;
+  s->data.video.format->pixelformat = GAVL_UYVY;
   return 1;
   }
 
@@ -230,15 +230,15 @@ static int init_VYUY(bgav_stream_t * s)
   
   init_common(s);
 
-  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(s->m, GAVL_META_FORMAT,
                     "YUV 4:2:2 packed (VYUY)");
   
   priv = s->decoder_priv;
 
-  priv->frame->strides[0] = PAD(s->data.video.format.image_width * 2, 4);
+  priv->frame->strides[0] = PAD(s->data.video.format->image_width * 2, 4);
   priv->decode_func = decode_VYUY;
   s->vframe = priv->frame;
-  s->data.video.format.pixelformat = GAVL_YUY2;
+  s->data.video.format->pixelformat = GAVL_YUY2;
   return 1;
   }
 
@@ -250,8 +250,8 @@ static void decode_yv12(bgav_stream_t * s, bgav_packet_t * p, gavl_video_frame_t
   priv = s->decoder_priv;
 
   priv->frame->planes[0] = p->data;
-  priv->frame->planes[1] = priv->frame->planes[0] + s->data.video.format.image_height * priv->frame->strides[0];
-  priv->frame->planes[2] = priv->frame->planes[1] + s->data.video.format.image_height/2 * priv->frame->strides[1];
+  priv->frame->planes[1] = priv->frame->planes[0] + s->data.video.format->image_height * priv->frame->strides[0];
+  priv->frame->planes[2] = priv->frame->planes[1] + s->data.video.format->image_height/2 * priv->frame->strides[1];
   }
 
 static int init_yv12(bgav_stream_t * s)
@@ -260,17 +260,17 @@ static int init_yv12(bgav_stream_t * s)
   
   init_common(s);
 
-  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(s->m, GAVL_META_FORMAT,
                     "YUV 4:2:0 planar (yv12)");
 
   priv = s->decoder_priv;
 
-  priv->frame->strides[0] = PAD(s->data.video.format.image_width, 2);
+  priv->frame->strides[0] = PAD(s->data.video.format->image_width, 2);
   priv->frame->strides[1] = priv->frame->strides[0]/2;
   priv->frame->strides[2] = priv->frame->strides[1];
   
   priv->decode_func = decode_yv12;
-  s->data.video.format.pixelformat = GAVL_YUV_420_P;
+  s->data.video.format->pixelformat = GAVL_YUV_420_P;
   s->vframe = priv->frame;
   
   return 1;
@@ -282,9 +282,9 @@ static void decode_YV12(bgav_stream_t * s, bgav_packet_t * p, gavl_video_frame_t
   priv = s->decoder_priv;
 
   priv->frame->planes[0] = p->data;
-  priv->frame->planes[2] = priv->frame->planes[0] + s->data.video.format.image_height * priv->frame->strides[0];
-  priv->frame->planes[1] = priv->frame->planes[2] + s->data.video.format.image_height/2 * priv->frame->strides[1];
-  gavl_video_frame_copy(&s->data.video.format, f, priv->frame);
+  priv->frame->planes[2] = priv->frame->planes[0] + s->data.video.format->image_height * priv->frame->strides[0];
+  priv->frame->planes[1] = priv->frame->planes[2] + s->data.video.format->image_height/2 * priv->frame->strides[1];
+  gavl_video_frame_copy(s->data.video.format, f, priv->frame);
   }
 
 static int init_YV12(bgav_stream_t * s)
@@ -293,17 +293,17 @@ static int init_YV12(bgav_stream_t * s)
   
   init_common(s);
 
-  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(s->m, GAVL_META_FORMAT,
                     "YUV 4:2:0 planar (YV12)");
 
   priv = s->decoder_priv;
 
-  priv->frame->strides[0] = PAD(s->data.video.format.image_width, 2);
+  priv->frame->strides[0] = PAD(s->data.video.format->image_width, 2);
   priv->frame->strides[1] = priv->frame->strides[0]/2;
   priv->frame->strides[2] = priv->frame->strides[1];
   
   priv->decode_func = decode_YV12;
-  s->data.video.format.pixelformat = GAVL_YUV_420_P;
+  s->data.video.format->pixelformat = GAVL_YUV_420_P;
   return 1;
   }
 
@@ -317,8 +317,8 @@ static void decode_YVU9(bgav_stream_t * s, bgav_packet_t * p, gavl_video_frame_t
   priv = s->decoder_priv;
 
   priv->frame->planes[0] = p->data;
-  priv->frame->planes[2] = priv->frame->planes[0] + s->data.video.format.image_height * priv->frame->strides[0];
-  priv->frame->planes[1] = priv->frame->planes[2] + (s->data.video.format.image_height)/4 * priv->frame->strides[1];
+  priv->frame->planes[2] = priv->frame->planes[0] + s->data.video.format->image_height * priv->frame->strides[0];
+  priv->frame->planes[1] = priv->frame->planes[2] + (s->data.video.format->image_height)/4 * priv->frame->strides[1];
   }
 
 static int init_YVU9(bgav_stream_t * s)
@@ -327,17 +327,17 @@ static int init_YVU9(bgav_stream_t * s)
   
   init_common(s);
 
-  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(s->m, GAVL_META_FORMAT,
                     "YVU9");
   
   priv = s->decoder_priv;
 
-  priv->frame->strides[0] = PAD(s->data.video.format.image_width, 8);
+  priv->frame->strides[0] = PAD(s->data.video.format->image_width, 8);
   priv->frame->strides[1] = priv->frame->strides[0]/4;
   priv->frame->strides[2] = priv->frame->strides[1];
   
   priv->decode_func = decode_YVU9;
-  s->data.video.format.pixelformat = GAVL_YUV_410_P;
+  s->data.video.format->pixelformat = GAVL_YUV_410_P;
   s->vframe = priv->frame;
   return 1;
   }
@@ -354,7 +354,7 @@ static void decode_v308(bgav_stream_t * s, bgav_packet_t * p, gavl_video_frame_t
 
   priv->frame->planes[0] = p->data;
   
-  for(i = 0; i < s->data.video.format.image_height; i++)
+  for(i = 0; i < s->data.video.format->image_height; i++)
     {
     src = priv->frame->planes[0] + i * priv->frame->strides[0];
 
@@ -362,7 +362,7 @@ static void decode_v308(bgav_stream_t * s, bgav_packet_t * p, gavl_video_frame_t
     dst_u = f->planes[1] + i * f->strides[1];
     dst_v = f->planes[2] + i * f->strides[2];
     
-    for(j = 0; j < s->data.video.format.image_width; j++)
+    for(j = 0; j < s->data.video.format->image_width; j++)
       {
       *dst_y = src[1];
       *dst_u = src[2];
@@ -383,14 +383,14 @@ static int init_v308(bgav_stream_t * s)
   
   init_common(s);
 
-  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(s->m, GAVL_META_FORMAT,
                     "YUV 4:4:4 packed (v308)");
 
   priv = s->decoder_priv;
 
-  priv->frame->strides[0] = s->data.video.format.image_width * 3;
+  priv->frame->strides[0] = s->data.video.format->image_width * 3;
   priv->decode_func = decode_v308;
-  s->data.video.format.pixelformat = GAVL_YUV_444_P;
+  s->data.video.format->pixelformat = GAVL_YUV_444_P;
   return 1;
   }
 
@@ -410,7 +410,7 @@ static void decode_v410(bgav_stream_t * s, bgav_packet_t * p, gavl_video_frame_t
 
   priv->frame->planes[0] = p->data;
   
-  for(i = 0; i < s->data.video.format.image_height; i++)
+  for(i = 0; i < s->data.video.format->image_height; i++)
     {
     src = priv->frame->planes[0] + i * priv->frame->strides[0];
 
@@ -418,7 +418,7 @@ static void decode_v410(bgav_stream_t * s, bgav_packet_t * p, gavl_video_frame_t
     dst_u = (uint16_t*)(f->planes[1] + i * f->strides[1]);
     dst_v = (uint16_t*)(f->planes[2] + i * f->strides[2]);
     
-    for(j = 0; j < s->data.video.format.image_width; j++)
+    for(j = 0; j < s->data.video.format->image_width; j++)
       {
       src_i = BGAV_PTR_2_32LE(src);
 
@@ -437,14 +437,14 @@ static int init_v410(bgav_stream_t * s)
   
   init_common(s);
   
-  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(s->m, GAVL_META_FORMAT,
                     "YUV 4:4:4 packed (v410)");
 
   priv = s->decoder_priv;
 
-  priv->frame->strides[0] = s->data.video.format.image_width * 4;
+  priv->frame->strides[0] = s->data.video.format->image_width * 4;
   priv->decode_func = decode_v410;
-  s->data.video.format.pixelformat = GAVL_YUV_444_P_16;
+  s->data.video.format->pixelformat = GAVL_YUV_444_P_16;
   return 1;
   }
 
@@ -464,7 +464,7 @@ static void decode_v210(bgav_stream_t * s, bgav_packet_t * p, gavl_video_frame_t
 
   priv->frame->planes[0] = p->data;
   
-  for(i = 0; i < s->data.video.format.image_height; i++)
+  for(i = 0; i < s->data.video.format->image_height; i++)
     {
     src = priv->frame->planes[0] + i * priv->frame->strides[0];
 
@@ -472,7 +472,7 @@ static void decode_v210(bgav_stream_t * s, bgav_packet_t * p, gavl_video_frame_t
     dst_u = (uint16_t*)(f->planes[1] + i * f->strides[1]);
     dst_v = (uint16_t*)(f->planes[2] + i * f->strides[2]);
     
-    for(j = 0; j < s->data.video.format.image_width/6; j++)
+    for(j = 0; j < s->data.video.format->image_width/6; j++)
       {
       i1 = BGAV_PTR_2_32LE(src);src+=4;
       i2 = BGAV_PTR_2_32LE(src);src+=4;
@@ -498,7 +498,7 @@ static void decode_v210(bgav_stream_t * s, bgav_packet_t * p, gavl_video_frame_t
       }
 
     /* Handle the 2 or 4 pixels possibly remaining */
-    j = (s->data.video.format.image_width - ((s->data.video.format.image_width / 6) * 6));
+    j = (s->data.video.format->image_width - ((s->data.video.format->image_width / 6) * 6));
     if (j != 0)
       {
       i1 = BGAV_PTR_2_32LE(src);src+=4;
@@ -527,14 +527,14 @@ static int init_v210(bgav_stream_t * s)
   
   init_common(s);
 
-  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(s->m, GAVL_META_FORMAT,
                     "YUV 4:2:2 packed (v210)");
 
   priv = s->decoder_priv;
 
-  priv->frame->strides[0] = (PAD(s->data.video.format.image_width, 48) * 8) / 3;
+  priv->frame->strides[0] = (PAD(s->data.video.format->image_width, 48) * 8) / 3;
   priv->decode_func = decode_v210;
-  s->data.video.format.pixelformat = GAVL_YUV_422_P_16;
+  s->data.video.format->pixelformat = GAVL_YUV_422_P_16;
   return 1;
   }
 
@@ -556,14 +556,14 @@ static void decode_yuv4(bgav_stream_t * s, bgav_packet_t * p, gavl_video_frame_t
 
   /* Packing order for one macropixel is U0V0Y0Y1Y2Y3 */
 
-  for(i = 0; i < s->data.video.format.image_height/2; i++)
+  for(i = 0; i < s->data.video.format->image_height/2; i++)
     {
     src = priv->frame->planes[0] + i * priv->frame->strides[0];
     dst_y = f->planes[0] + 2 * i * f->strides[0];
     dst_u = f->planes[1] + i * f->strides[1];
     dst_v = f->planes[2] + i * f->strides[2];
     
-    for(j = 0; j < s->data.video.format.image_width/2; j++)
+    for(j = 0; j < s->data.video.format->image_width/2; j++)
       {
       dst_u[0]               = src[0] ^ 0x80;
       dst_v[0]               = src[1] ^ 0x80;
@@ -588,15 +588,15 @@ static int init_yuv4(bgav_stream_t * s)
   
   init_common(s);
 
-  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(s->m, GAVL_META_FORMAT,
                     "YUV 4:2:0 packed (yuv4)");
   s->ci.flags &= ~GAVL_COMPRESSION_HAS_P_FRAMES;
   
   priv = s->decoder_priv;
 
-  priv->frame->strides[0] = PAD(s->data.video.format.image_width, 2) * 3;
+  priv->frame->strides[0] = PAD(s->data.video.format->image_width, 2) * 3;
   priv->decode_func = decode_yuv4;
-  s->data.video.format.pixelformat = GAVL_YUV_420_P;
+  s->data.video.format->pixelformat = GAVL_YUV_420_P;
   return 1;
   }
 

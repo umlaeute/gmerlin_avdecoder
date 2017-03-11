@@ -122,39 +122,39 @@ static int init_theora(bgav_stream_t * s)
   
   /* Get format */
 
-  s->data.video.format.image_width  = priv->ti.pic_width;
-  s->data.video.format.image_height = priv->ti.pic_height;
+  s->data.video.format->image_width  = priv->ti.pic_width;
+  s->data.video.format->image_height = priv->ti.pic_height;
 
-  s->data.video.format.frame_width  = priv->ti.frame_width;
-  s->data.video.format.frame_height = priv->ti.frame_height;
+  s->data.video.format->frame_width  = priv->ti.frame_width;
+  s->data.video.format->frame_height = priv->ti.frame_height;
   
   if(!priv->ti.aspect_numerator || !priv->ti.aspect_denominator)
     {
-    s->data.video.format.pixel_width  = 1;
-    s->data.video.format.pixel_height = 1;
+    s->data.video.format->pixel_width  = 1;
+    s->data.video.format->pixel_height = 1;
     }
   else
     {
-    s->data.video.format.pixel_width  = priv->ti.aspect_numerator;
-    s->data.video.format.pixel_height = priv->ti.aspect_denominator;
+    s->data.video.format->pixel_width  = priv->ti.aspect_numerator;
+    s->data.video.format->pixel_height = priv->ti.aspect_denominator;
     }
 
-  if(!s->data.video.format.timescale)
+  if(!s->data.video.format->timescale)
     {
-    s->data.video.format.timescale      = priv->ti.fps_numerator;
-    s->data.video.format.frame_duration = priv->ti.fps_denominator;
+    s->data.video.format->timescale      = priv->ti.fps_numerator;
+    s->data.video.format->frame_duration = priv->ti.fps_denominator;
     }
   
   switch(priv->ti.pixel_fmt)
     {
     case TH_PF_420:
-      s->data.video.format.pixelformat = GAVL_YUV_420_P;
+      s->data.video.format->pixelformat = GAVL_YUV_420_P;
       break;
     case TH_PF_422:
-      s->data.video.format.pixelformat = GAVL_YUV_422_P;
+      s->data.video.format->pixelformat = GAVL_YUV_422_P;
       break;
     case TH_PF_444:
-      s->data.video.format.pixelformat = GAVL_YUV_444_P;
+      s->data.video.format->pixelformat = GAVL_YUV_444_P;
       break;
     default:
       bgav_log(s->opt, BGAV_LOG_ERROR, LOG_DOMAIN,
@@ -165,7 +165,7 @@ static int init_theora(bgav_stream_t * s)
 
   /* Get offsets */
 
-  gavl_pixelformat_chroma_sub(s->data.video.format.pixelformat,
+  gavl_pixelformat_chroma_sub(s->data.video.format->pixelformat,
                               &sub_h, &sub_v);
   
   priv->offset_x = priv->ti.pic_x;
@@ -180,7 +180,7 @@ static int init_theora(bgav_stream_t * s)
   //  if(!priv->offset_x && !priv->offset_y)
   s->vframe = priv->frame;
   
-  gavl_dictionary_set_string_nocopy(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string_nocopy(s->m, GAVL_META_FORMAT,
                            bgav_sprintf("Theora (Version %d.%d.%d)",
                                         priv->ti.version_major,
                                         priv->ti.version_minor,

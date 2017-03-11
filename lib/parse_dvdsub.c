@@ -211,27 +211,27 @@ void bgav_video_parser_init_dvdsub(bgav_video_parser_t * parser)
   if(parser->s->data.subtitle.video_stream)
     {
     gavl_video_format_t * video_stream_format;
-    video_stream_format = &parser->s->data.subtitle.video_stream->data.video.format;
+    video_stream_format = parser->s->data.subtitle.video_stream->data.video.format;
 
     /* Copy missing fields from the video stream */
-    if(!parser->s->data.subtitle.video.format.image_width)
+    if(!parser->s->data.subtitle.video.format->image_width)
       {
-      parser->s->data.subtitle.video.format.image_width = video_stream_format->image_width;
-      parser->s->data.subtitle.video.format.image_height = video_stream_format->image_height;
-      parser->s->data.subtitle.video.format.frame_width = video_stream_format->frame_width;
-      parser->s->data.subtitle.video.format.frame_height = video_stream_format->frame_height;
+      parser->s->data.subtitle.video.format->image_width = video_stream_format->image_width;
+      parser->s->data.subtitle.video.format->image_height = video_stream_format->image_height;
+      parser->s->data.subtitle.video.format->frame_width = video_stream_format->frame_width;
+      parser->s->data.subtitle.video.format->frame_height = video_stream_format->frame_height;
       }
-    if(!parser->s->data.subtitle.video.format.pixel_width)
+    if(!parser->s->data.subtitle.video.format->pixel_width)
       {
-      parser->s->data.subtitle.video.format.pixel_width = video_stream_format->pixel_width;
-      parser->s->data.subtitle.video.format.pixel_height = video_stream_format->pixel_height;
+      parser->s->data.subtitle.video.format->pixel_width = video_stream_format->pixel_width;
+      parser->s->data.subtitle.video.format->pixel_height = video_stream_format->pixel_height;
       }
     }
   
-  parser->s->data.subtitle.video.format.pixelformat = GAVL_YUVA_32;
-  parser->s->data.subtitle.video.format.timescale = parser->s->timescale;
-  parser->s->data.subtitle.video.format.frame_duration = 0;
-  parser->s->data.subtitle.video.format.framerate_mode = GAVL_FRAMERATE_VARIABLE;
+  parser->s->data.subtitle.video.format->pixelformat = GAVL_YUVA_32;
+  parser->s->data.subtitle.video.format->timescale = parser->s->timescale;
+  parser->s->data.subtitle.video.format->frame_duration = 0;
+  parser->s->data.subtitle.video.format->framerate_mode = GAVL_FRAMERATE_VARIABLE;
   
   parser->parse_frame = parse_frame_dvdsub;
   parser->cleanup = cleanup_dvdsub;

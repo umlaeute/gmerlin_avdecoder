@@ -40,55 +40,55 @@ static const stream_type_t stream_types[] =
   {
     {
       .ts_type =     STREAM_TYPE_VIDEO_MPEG1,
-      .bgav_type =   BGAV_STREAM_VIDEO,
+      .bgav_type =   GAVF_STREAM_VIDEO,
       .fourcc =      BGAV_MK_FOURCC('m', 'p', 'v', '1'),
       .description = "MPEG-1 Video",
     },
     {
       .ts_type =     STREAM_TYPE_VIDEO_MPEG2,
-      .bgav_type =   BGAV_STREAM_VIDEO,
+      .bgav_type =   GAVF_STREAM_VIDEO,
       .fourcc =      BGAV_MK_FOURCC('m', 'p', 'v', '2'),
       .description = "MPEG-2 Video",
     },
     {
       .ts_type =     STREAM_TYPE_AUDIO_MPEG1,
-      .bgav_type =   BGAV_STREAM_AUDIO,
+      .bgav_type =   GAVF_STREAM_AUDIO,
       .fourcc =      BGAV_MK_FOURCC('.', 'm', 'p', '2'),
       .description = "MPEG-1 Audio",
     },
     {
       .ts_type =     STREAM_TYPE_AUDIO_MPEG2,
-      .bgav_type =   BGAV_STREAM_AUDIO,
+      .bgav_type =   GAVF_STREAM_AUDIO,
       .fourcc =      BGAV_MK_FOURCC('m', 'p', 'g', 'a'),
       .description = "MPEG-2 Audio",
     },
     {
       .ts_type =     STREAM_TYPE_AUDIO_AAC,
-      .bgav_type =   BGAV_STREAM_AUDIO,
+      .bgav_type =   GAVF_STREAM_AUDIO,
       .fourcc =      BGAV_MK_FOURCC('A', 'D', 'T', 'S'),
       .description = "MPEG-4 Audio (AAC)",
     },
     {
       .ts_type =     STREAM_TYPE_VIDEO_MPEG4,
-      .bgav_type =   BGAV_STREAM_VIDEO,
+      .bgav_type =   GAVF_STREAM_VIDEO,
       .fourcc =      BGAV_MK_FOURCC('m', 'p', '4', 'v'),
       .description = "MPEG-4 Video",
     },
     {
       .ts_type =     STREAM_TYPE_VIDEO_H264,
-      .bgav_type =   BGAV_STREAM_VIDEO,
+      .bgav_type =   GAVF_STREAM_VIDEO,
       .fourcc =      BGAV_MK_FOURCC('H', '2', '6', '4'),
       .description = "H264 Video",
     },
     {
       .ts_type =     STREAM_TYPE_AUDIO_AC3,
-      .bgav_type =   BGAV_STREAM_AUDIO,
+      .bgav_type =   GAVF_STREAM_AUDIO,
       .fourcc =      BGAV_MK_FOURCC('.', 'a', 'c', '3'),
       .description = "AC3 Audio",
     },
     {
       .ts_type =     STREAM_TYPE_AUDIO_DTS,
-      .bgav_type =   BGAV_STREAM_AUDIO,
+      .bgav_type =   GAVF_STREAM_AUDIO,
       .fourcc =      BGAV_MK_FOURCC('.', 'd', 't', 's'),
       .description = "DTS Audio",
     },
@@ -421,7 +421,7 @@ int bgav_pmt_section_setup_track(pmt_section_t * pmts,
     
     st = get_stream_type(pmts->streams[i].type);
     
-    if(st && (st->bgav_type == BGAV_STREAM_AUDIO) &&
+    if(st && (st->bgav_type == GAVF_STREAM_AUDIO) &&
        ((max_audio_streams < 0) ||
         (track->num_audio_streams < max_audio_streams)))
       {
@@ -431,7 +431,7 @@ int bgav_pmt_section_setup_track(pmt_section_t * pmts,
 
 
       }
-    else if(st && (st->bgav_type == BGAV_STREAM_VIDEO) &&
+    else if(st && (st->bgav_type == GAVF_STREAM_VIDEO) &&
        ((max_video_streams < 0) ||
         (track->num_video_streams < max_video_streams)))
       {
@@ -492,7 +492,7 @@ int bgav_pmt_section_setup_track(pmt_section_t * pmts,
     
     if(s)
       {
-      if(s->type == BGAV_STREAM_AUDIO)
+      if(s->type == GAVF_STREAM_AUDIO)
         {
         desc = find_descriptor(pmts->streams[i].descriptor,
                                pmts->streams[i].descriptor_len,
@@ -506,7 +506,7 @@ int bgav_pmt_section_setup_track(pmt_section_t * pmts,
           language[2] = desc[4];
           language[3] = '\0';
           bgav_correct_language(language);
-          gavl_dictionary_set_string(&s->m, GAVL_META_LANGUAGE,
+          gavl_dictionary_set_string(s->m, GAVL_META_LANGUAGE,
                            language);
           }
         }

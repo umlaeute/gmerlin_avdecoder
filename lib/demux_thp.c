@@ -171,29 +171,29 @@ static int open_thp(bgav_demuxer_context_t * ctx)
       s->fourcc = BGAV_MK_FOURCC('T','H','P','V');
       s->stream_id = VIDEO_ID;
       
-      s->data.video.format.timescale      = (int)(priv->h.fps * 1000000.0 + 0.5);
-      s->data.video.format.frame_duration = 1000000;
+      s->data.video.format->timescale      = (int)(priv->h.fps * 1000000.0 + 0.5);
+      s->data.video.format->frame_duration = 1000000;
 
       if(!bgav_input_read_32_be(ctx->input, &width) ||
          !bgav_input_read_32_be(ctx->input, &height))
         return 0;
 
-      s->data.video.format.image_width = width;
-      s->data.video.format.frame_width = width;
+      s->data.video.format->image_width = width;
+      s->data.video.format->frame_width = width;
 
-      s->data.video.format.image_height = height;
-      s->data.video.format.frame_height = height;
+      s->data.video.format->image_height = height;
+      s->data.video.format->frame_height = height;
 
-      s->data.video.format.pixel_width  = 1;
-      s->data.video.format.pixel_height = 1;
+      s->data.video.format->pixel_width  = 1;
+      s->data.video.format->pixel_height = 1;
 
       if(priv->h.version == VERSION_1_1)
         bgav_input_skip(ctx->input, 4); // unknown
 
       ctx->tt->cur->duration =
-        gavl_time_unscale(s->data.video.format.timescale,
+        gavl_time_unscale(s->data.video.format->timescale,
                           (int64_t)(priv->h.numFrames) * 
-                          s->data.video.format.frame_duration);
+                          s->data.video.format->frame_duration);
 
       }
     else if(components[i] == 1) // Audio
@@ -210,8 +210,8 @@ static int open_thp(bgav_demuxer_context_t * ctx)
          !bgav_input_read_32_be(ctx->input, &samplerate))
         return 0;
       
-      s->data.audio.format.samplerate   = samplerate;
-      s->data.audio.format.num_channels = num_channels;
+      s->data.audio.format->samplerate   = samplerate;
+      s->data.audio.format->num_channels = num_channels;
 
       bgav_input_skip(ctx->input, 4); // numSamples
       if(priv->h.version == VERSION_1_1)
@@ -221,7 +221,7 @@ static int open_thp(bgav_demuxer_context_t * ctx)
   priv->next_frame_offset = priv->h.firstFrameOffset;
   priv->next_frame_size   = priv->h.firstFrameSize;
 
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "THP");
   
   return 1;
@@ -266,7 +266,7 @@ static int next_packet_thp(bgav_demuxer_context_t * ctx)
     if(p->data_size < video_size)
       return 0;
 
-    p->pts = priv->next_frame * s->data.video.format.frame_duration;
+    p->pts = priv->next_frame * s->data.video.format->frame_duration;
     
     bgav_stream_done_packet_write(s, p);
     }

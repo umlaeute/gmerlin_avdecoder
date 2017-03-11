@@ -93,31 +93,31 @@ static void get_url(bgav_yml_node_t * n, bgav_track_table_t * tt,
     if(!sc(n->name, "Title") && n->children)
       {
       if(title)
-        gavl_dictionary_set_string_nocopy(&ret->metadata,
+        gavl_dictionary_set_string_nocopy(ret->metadata,
                                 GAVL_META_LABEL,
                                 bgav_sprintf("%s (%s)",
                                              title, n->children->str));
       else
-        gavl_dictionary_set_string(&ret->metadata,
+        gavl_dictionary_set_string(ret->metadata,
                           GAVL_META_LABEL,
                           n->children->str);
       }
     else if(!sc(n->name, "Ref"))
       {
-      gavl_dictionary_set_string(&ret->metadata,
+      gavl_dictionary_set_string(ret->metadata,
                         GAVL_META_REFURL,
                         bgav_yml_get_attribute_i(n, "href"));
       }
     n = n->next;
     }
 
-  if(!gavl_dictionary_get_string(&ret->metadata, GAVL_META_LABEL))
+  if(!gavl_dictionary_get_string(ret->metadata, GAVL_META_LABEL))
     {
-    gavl_dictionary_set_string_nocopy(&ret->metadata,
+    gavl_dictionary_set_string_nocopy(ret->metadata,
                             GAVL_META_LABEL,
                             bgav_sprintf("Stream %d (%s)",
                                          (*index)+1,
-                                         gavl_dictionary_get_string(&ret->metadata,
+                                         gavl_dictionary_get_string(ret->metadata,
                                                            GAVL_META_REFURL)));
     }
   (*index)++;

@@ -19,7 +19,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * *****************************************************************/
 
+
+
 #include <avdec_private.h>
+
+#include <gavl/trackinfo.h>
+
 #include <parser.h>
 
 #include <stdlib.h>
@@ -54,8 +59,12 @@ bgav_track_add_audio_stream(bgav_track_t * t, const bgav_options_t * opt)
   bgav_stream_create_packet_buffer(ret);
 
   // ret->data.audio.bits_per_sample = 16;
-  ret->type = BGAV_STREAM_AUDIO;
+  ret->type = GAVF_STREAM_AUDIO;
   ret->track = t;
+  
+  ret->info = gavl_track_append_audio_stream(t->info);
+  ret->data.audio.format = gavl_stream_get_audio_format_nc(ret->info);
+  ret->m = gavl_stream_get_metadata_nc(ret->info);
   
   return ret;
   }
@@ -72,11 +81,16 @@ bgav_track_add_video_stream(bgav_track_t * t, const bgav_options_t * opt)
   bgav_stream_init(ret, opt);
   bgav_stream_create_packet_pool(ret);
   bgav_stream_create_packet_buffer(ret);
-  ret->type = BGAV_STREAM_VIDEO;
+  ret->type = GAVF_STREAM_VIDEO;
   ret->opt = opt;
   ret->track = t;
-  ret->data.video.format.interlace_mode = GAVL_INTERLACE_UNKNOWN;
-  ret->data.video.format.framerate_mode = GAVL_FRAMERATE_UNKNOWN;
+  ret->info = gavl_track_append_video_stream(t->info);
+  
+  ret->data.video.format = gavl_stream_get_video_format_nc(ret->info);
+  ret->m = gavl_stream_get_metadata_nc(ret->info);
+  
+  ret->data.video.format->interlace_mode = GAVL_INTERLACE_UNKNOWN;
+  ret->data.video.format->framerate_mode = GAVL_FRAMERATE_UNKNOWN;
   
   ret->ci.flags = GAVL_COMPRESSION_HAS_P_FRAMES;
   return ret;
@@ -105,7 +119,7 @@ static bgav_stream_t * add_text_stream(bgav_track_t * t,
     ret->data.subtitle.subreader = r;
     ret->flags |= STREAM_SUBREADER;
     }
-  ret->type = BGAV_STREAM_SUBTITLE_TEXT;
+  ret->type = GAVF_STREAM_TEXT;
   if(charset)
     ret->data.subtitle.charset =
       gavl_strdup(charset);
@@ -116,6 +130,10 @@ static bgav_stream_t * add_text_stream(bgav_track_t * t,
   else
     ret->data.subtitle.charset =
       gavl_strdup(ret->opt->default_subtitle_encoding);
+
+  ret->info = gavl_track_append_text_stream(t->info);
+  ret->data.subtitle.video.format = gavl_stream_get_video_format_nc(ret->info);
+  ret->m = gavl_stream_get_metadata_nc(ret->info);
   
   ret->track = t;
   return ret;
@@ -144,8 +162,13 @@ static bgav_stream_t * add_overlay_stream(bgav_track_t * t,
     ret->data.subtitle.subreader = r;
     ret->flags |= STREAM_SUBREADER;
     }
-  ret->type = BGAV_STREAM_SUBTITLE_OVERLAY;
+  ret->type = GAVF_STREAM_OVERLAY;
   ret->track = t;
+
+  ret->info = gavl_track_append_overlay_stream(t->info);
+  ret->data.subtitle.video.format = gavl_stream_get_video_format_nc(ret->info);
+  ret->m = gavl_stream_get_metadata_nc(ret->info);
+
   return ret;
   }
 
@@ -169,7 +192,7 @@ bgav_track_attach_subtitle_reader(bgav_track_t * t,
   {
   bgav_stream_t * ret;
 
-  if(r->reader->type == BGAV_STREAM_SUBTITLE_TEXT)
+  if(r->reader->type == GAVF_STREAM_TEXT)
     ret = add_text_stream(t, opt, NULL, r);
   else
     ret = add_overlay_stream(t, opt, r);
@@ -178,7 +201,7 @@ bgav_track_attach_subtitle_reader(bgav_track_t * t,
     r->reader->setup_stream(ret);
   
   if(r->info)
-    gavl_dictionary_set_string(&ret->m, GAVL_META_LABEL, r->info);
+    gavl_dictionary_set_string(ret->m, GAVL_META_LABEL, r->info);
   return ret;
   }
 
@@ -303,7 +326,7 @@ static int start_subtitle(void * data, bgav_stream_t * s)
   video_stream = s->data.subtitle.video_stream;
     
   /* Check, if we must get the video format from the decoder */
-  video_format =  &video_stream->data.video.format;
+  video_format = video_stream->data.video.format;
 
   if((video_stream->action == BGAV_STREAM_MUTE) &&
      !video_stream->initialized)
@@ -330,9 +353,9 @@ static int start_subtitle(void * data, bgav_stream_t * s)
    *  TODO: This shouldn't be necessary!!
    */
     
-  if(s->type == BGAV_STREAM_SUBTITLE_TEXT)
+  if(s->type == GAVF_STREAM_TEXT)
     {
-    gavl_video_format_copy(&s->data.subtitle.video.format,
+    gavl_video_format_copy(s->data.subtitle.video.format,
                            video_format);
     }
     
@@ -420,7 +443,7 @@ void bgav_track_dump(bgav_t * b, bgav_track_t * t)
     bgav_dprintf( "Not specified (maybe live)\n");
 
   bgav_diprintf(2, "Metadata\n");
-  gavl_dictionary_dump(&t->metadata, 4);
+  gavl_dictionary_dump(t->metadata, 4);
   bgav_dprintf("\n");
 
   for(i = 0; i < t->num_audio_streams; i++)
@@ -450,7 +473,7 @@ void bgav_track_free(bgav_track_t * t)
   {
   int i;
   
-  gavl_dictionary_free(&t->metadata);
+  gavl_dictionary_free(t->metadata);
   
   if(t->audio_streams)
     {
@@ -719,7 +742,7 @@ static int calc_duration_audio(void * priv, bgav_stream_t * s)
   calc_duration_t * cd = priv;
   
   test_duration =
-      gavl_time_unscale(s->data.audio.format.samplerate,
+      gavl_time_unscale(s->data.audio.format->samplerate,
                         s->duration);
   if(cd->t->duration < test_duration)
     cd->t->duration = test_duration;
@@ -733,7 +756,7 @@ static int calc_duration_video(void * priv, bgav_stream_t * s)
   calc_duration_t * cd = priv;
   
   test_duration =
-      gavl_time_unscale(s->data.video.format.timescale,
+      gavl_time_unscale(s->data.video.format->timescale,
                         s->duration);
   if(cd->t->duration < test_duration)
     cd->t->duration = test_duration;
@@ -867,13 +890,13 @@ int64_t bgav_track_out_time(bgav_track_t * t, int scale)
   for(i = 0; i < t->num_audio_streams; i++)
     {
     s = &t->audio_streams[i];
-    if(!check_out_time(s, &ret, scale, s->data.audio.format.samplerate))
+    if(!check_out_time(s, &ret, scale, s->data.audio.format->samplerate))
       return GAVL_TIME_UNDEFINED;
     }
   for(i = 0; i < t->num_video_streams; i++)
     {
     s = &t->video_streams[i];
-    if(!check_out_time(s, &ret, scale, s->data.video.format.timescale))
+    if(!check_out_time(s, &ret, scale, s->data.video.format->timescale))
       return GAVL_TIME_UNDEFINED;
     }
   return ret;

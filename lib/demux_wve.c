@@ -106,7 +106,7 @@ static int open_wve(bgav_demuxer_context_t * ctx)
       case 0xFD: // Audio subheader
         in_subheader = 1;
         as = bgav_track_add_audio_stream(ctx->tt->cur, ctx->opt);
-        as->data.audio.format.samplerate = EA_SAMPLE_RATE;
+        as->data.audio.format->samplerate = EA_SAMPLE_RATE;
         as->data.audio.bits_per_sample = EA_BITS_PER_SAMPLE;
         as->stream_id = AUDIO_ID;
         while(in_subheader)
@@ -120,7 +120,7 @@ static int open_wve(bgav_demuxer_context_t * ctx)
               if(!read_arbitrary(ctx->input, &arbitrary))
                 return 0;
               
-              as->data.audio.format.num_channels = arbitrary;
+              as->data.audio.format->num_channels = arbitrary;
               break;
             case 0x83: // Compression type
               if(!read_arbitrary(ctx->input, &arbitrary))
@@ -137,7 +137,7 @@ static int open_wve(bgav_demuxer_context_t * ctx)
               if(!read_arbitrary(ctx->input, &arbitrary))
                 return 0;
               ctx->tt->cur->duration =
-                gavl_time_unscale(as->data.audio.format.samplerate,
+                gavl_time_unscale(as->data.audio.format->samplerate,
                                   arbitrary);
               break;
             case 0x8a: // End of subheader
@@ -172,7 +172,7 @@ static int open_wve(bgav_demuxer_context_t * ctx)
   if(header_size > ctx->input->position)
     bgav_input_skip(ctx->input, header_size - ctx->input->position);
 
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "Electronicarts WVE");
   
   return 1;

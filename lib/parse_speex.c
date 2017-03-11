@@ -98,11 +98,11 @@ void bgav_audio_parser_init_speex(bgav_audio_parser_t * parser)
   
   priv->packet_samples = header->frames_per_packet * frame_size;
 
-  parser->s->data.audio.format.samplerate = header->rate;
+  parser->s->data.audio.format->samplerate = header->rate;
   parser->s->timescale = header->rate;
 
-  parser->s->data.audio.format.num_channels = header->nb_channels;
-  gavl_set_channel_setup(&parser->s->data.audio.format);
+  parser->s->data.audio.format->num_channels = header->nb_channels;
+  gavl_set_channel_setup(parser->s->data.audio.format);
 
   priv->pts_offset = -parser->s->ci.pre_skip;
   

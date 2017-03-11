@@ -170,11 +170,11 @@ static int open_flac(bgav_demuxer_context_t * ctx)
         if(bgav_vorbis_comment_read(&vc, input_mem))
           {
           bgav_vorbis_comment_2_metadata(&vc,
-                                         &ctx->tt->cur->metadata);
+                                         ctx->tt->cur->metadata);
           }
 
         if(ctx->tt->cur->audio_streams)
-          gavl_dictionary_set_string(&ctx->tt->cur->audio_streams->m, 
+          gavl_dictionary_set_string(ctx->tt->cur->audio_streams->m, 
                             GAVL_META_SOFTWARE, vc.vendor);
         
         if(ctx->opt->dump_headers)
@@ -221,7 +221,7 @@ static int open_flac(bgav_demuxer_context_t * ctx)
         if(!bgav_input_read_32_be(ctx->input, &len)) // Data len
           goto image_fail;
 
-        gavl_metadata_add_image_embedded(&ctx->tt->cur->metadata,
+        gavl_metadata_add_image_embedded(ctx->tt->cur->metadata,
                                          GAVL_META_COVER_EMBEDDED,
                                          width, height,
                                          mimetype,
@@ -247,9 +247,9 @@ static int open_flac(bgav_demuxer_context_t * ctx)
   ctx->data_start = ctx->input->position;
   ctx->flags |= BGAV_DEMUXER_HAS_DATA_START;
   
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                              GAVL_META_FORMAT, "FLAC");
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata,
+  gavl_dictionary_set_string(ctx->tt->cur->metadata,
                              GAVL_META_MIMETYPE, "audio/flac");
 
   ctx->index_mode = INDEX_MODE_SIMPLE;

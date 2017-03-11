@@ -111,18 +111,18 @@ static int open_nuv(bgav_demuxer_context_t * ctx)
     vs->stream_id = VIDEO_ID;
     vs->fourcc = BGAV_MK_FOURCC('N', 'U', 'V', ' ');
     vs->timescale = 1000;
-    vs->data.video.format.image_width = width;
-    vs->data.video.format.frame_width = width;
-    vs->data.video.format.image_height = height;
-    vs->data.video.format.frame_height = height;
-    vs->data.video.format.pixel_width  = aspect * 10000;
-    vs->data.video.format.pixel_height = 10000;
-    vs->data.video.format.timescale      = 1000;
-    vs->data.video.format.frame_duration = 1000.0 / fps;
+    vs->data.video.format->image_width = width;
+    vs->data.video.format->frame_width = width;
+    vs->data.video.format->image_height = height;
+    vs->data.video.format->frame_height = height;
+    vs->data.video.format->pixel_width  = aspect * 10000;
+    vs->data.video.format->pixel_height = 10000;
+    vs->data.video.format->timescale      = 1000;
+    vs->data.video.format->frame_duration = 1000.0 / fps;
     vs->flags |= STREAM_NO_DURATIONS;
 
     if(interlaced)
-      vs->data.video.format.interlace_mode = GAVL_INTERLACE_BOTTOM_FIRST;
+      vs->data.video.format->interlace_mode = GAVL_INTERLACE_BOTTOM_FIRST;
     }
 
   if(a_packs)
@@ -132,11 +132,11 @@ static int open_nuv(bgav_demuxer_context_t * ctx)
     as->fourcc = BGAV_WAVID_2_FOURCC(0x0001);
     as->timescale = 1000;
     as->data.audio.bits_per_sample = 16;
-    as->data.audio.format.num_channels = 2;
-    as->data.audio.format.samplerate = 44100;
-    as->container_bitrate = as->data.audio.format.samplerate *
-      as->data.audio.format.num_channels * as->data.audio.bits_per_sample;
-    as->data.audio.block_align = as->data.audio.format.num_channels * 2;
+    as->data.audio.format->num_channels = 2;
+    as->data.audio.format->samplerate = 44100;
+    as->container_bitrate = as->data.audio.format->samplerate *
+      as->data.audio.format->num_channels * as->data.audio.bits_per_sample;
+    as->data.audio.block_align = as->data.audio.format->num_channels * 2;
     }
   
   /* Get codec data */
@@ -199,7 +199,7 @@ static int open_nuv(bgav_demuxer_context_t * ctx)
           
           if(!bgav_input_read_32_le(ctx->input, &tmp_32))
             return 0;
-          as->data.audio.format.samplerate = tmp_32;
+          as->data.audio.format->samplerate = tmp_32;
 
           if(!bgav_input_read_32_le(ctx->input, &tmp_32))
             return 0;
@@ -207,7 +207,7 @@ static int open_nuv(bgav_demuxer_context_t * ctx)
 
           if(!bgav_input_read_32_le(ctx->input, &tmp_32))
             return 0;
-          as->data.audio.format.num_channels = tmp_32;
+          as->data.audio.format->num_channels = tmp_32;
           as->container_bitrate = 0;
           }
         else
@@ -233,10 +233,10 @@ static int open_nuv(bgav_demuxer_context_t * ctx)
   
   /* Set description */
   if(is_mythtv)
-    gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+    gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                       GAVL_META_FORMAT, "MythTV");
   else
-    gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+    gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                       GAVL_META_FORMAT, "NuppelVideo");
   
   ctx->data_start = ctx->input->position;

@@ -174,12 +174,12 @@ static int setup_audio_stream(bgav_demuxer_context_t * ctx,
         // bytes 36-39  number of audio channels
         if(!bgav_input_read_32_le(ctx->input, &tmp_32))
           return 0;
-        s->data.audio.format.num_channels = tmp_32;
+        s->data.audio.format->num_channels = tmp_32;
 
         // bytes 40-43  audio sample rate
         if(!bgav_input_read_32_le(ctx->input, &tmp_32))
           return 0;
-        s->data.audio.format.samplerate = tmp_32;
+        s->data.audio.format->samplerate = tmp_32;
        
         // bytes 44-47  audio sample resolution (8 or 16 bits)
         if(!bgav_input_read_32_le(ctx->input, &tmp_32))
@@ -226,20 +226,20 @@ static int setup_video_stream(bgav_demuxer_context_t * ctx,
            !bgav_input_read_32_le(ctx->input, &height))
           return 0;
 
-        s->data.video.format.image_width = width;
-        s->data.video.format.frame_width = width;
+        s->data.video.format->image_width = width;
+        s->data.video.format->frame_width = width;
 
-        s->data.video.format.image_height = height;
-        s->data.video.format.frame_height = height;
+        s->data.video.format->image_height = height;
+        s->data.video.format->frame_height = height;
 
-        s->data.video.format.pixel_width  = 1;
-        s->data.video.format.pixel_height = 1;
+        s->data.video.format->pixel_width  = 1;
+        s->data.video.format->pixel_height = 1;
 
-        s->data.video.format.timescale      = 1000000;
-        s->data.video.format.frame_duration = 1000000.0/framerate;
+        s->data.video.format->timescale      = 1000000;
+        s->data.video.format->frame_duration = 1000000.0/framerate;
         
         /* Will be increased before the first frame is read */
-        priv->video_pts = - s->data.video.format.frame_duration;
+        priv->video_pts = - s->data.video.format->frame_duration;
         s->fourcc = BGAV_MK_FOURCC('4','X','M','V');
 
         //        skip_chunk(ctx->input, &chunk);
@@ -315,7 +315,7 @@ static int open_4xm(bgav_demuxer_context_t * ctx)
                       free(tmp_string);
                       return 0;
                       }
-                    gavl_dictionary_set_string_nocopy(&ctx->tt->cur->metadata,
+                    gavl_dictionary_set_string_nocopy(ctx->tt->cur->metadata,
                                             GAVL_META_COMMENT, tmp_string);
                     }
                     break;
@@ -371,7 +371,7 @@ static int open_4xm(bgav_demuxer_context_t * ctx)
     }
   ctx->data_start = ctx->input->position;
   ctx->flags |= BGAV_DEMUXER_HAS_DATA_START;
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "4XM");
   return 1;
   }
@@ -381,7 +381,7 @@ static int select_track_4xm(bgav_demuxer_context_t * ctx, int track)
   fourxm_priv_t * priv;
   priv = ctx->priv;
   priv->video_pts =
-    - ctx->tt->cur->video_streams[0].data.video.format.frame_duration;
+    - ctx->tt->cur->video_streams[0].data.video.format->frame_duration;
   return 1;
   }
 
@@ -417,7 +417,7 @@ static int next_packet_4xm(bgav_demuxer_context_t * ctx)
       case ID_LIST:
         bgav_input_skip(ctx->input, 4); // FRAM
         priv->video_pts +=
-          ctx->tt->cur->video_streams[0].data.video.format.frame_duration;
+          ctx->tt->cur->video_streams[0].data.video.format->frame_duration;
         break;
       case ID_ifrm:
       case ID_pfrm:

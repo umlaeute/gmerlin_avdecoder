@@ -160,7 +160,7 @@ static int parse_frame(bgav_audio_parser_t * parser,
     {
     if(p->pts != GAVL_TIME_UNDEFINED)
       parser->timestamp = gavl_time_rescale(parser->s->timescale,
-                                            parser->s->data.audio.format.samplerate,
+                                            parser->s->data.audio.format->samplerate,
                                             p->pts);
     else
       parser->timestamp = 0;
@@ -497,7 +497,7 @@ void bgav_audio_parser_reset(bgav_audio_parser_t * parser,
     parser->timestamp = out_pts;
   else if(in_pts != GAVL_TIME_UNDEFINED)
     parser->timestamp = gavl_time_rescale(parser->s->timescale,
-                                          parser->s->data.audio.format.samplerate,
+                                          parser->s->data.audio.format->samplerate,
                                           in_pts);
   else
     parser->timestamp = GAVL_TIME_UNDEFINED;
@@ -576,7 +576,7 @@ void bgav_audio_parser_set_frame(bgav_audio_parser_t * parser,
 
         if(parser->packets[i].pts != GAVL_TIME_UNDEFINED) 
           parser->frame_pts      = gavl_time_rescale(parser->s->timescale,
-                                                     parser->s->data.audio.format.samplerate,
+                                                     parser->s->data.audio.format->samplerate,
                                                      parser->packets[i].pts);
         else
           parser->frame_pts      = GAVL_TIME_UNDEFINED;

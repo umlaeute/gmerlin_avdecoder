@@ -41,7 +41,7 @@ static int parse_mpa(bgav_audio_parser_t * parser)
       {
       if(!parser->have_format)
         {
-        bgav_mpa_header_get_format(&h, &parser->s->data.audio.format);
+        bgav_mpa_header_get_format(&h, parser->s->data.audio.format);
         parser->have_format = 1;
 
         if(parser->s->fourcc == BGAV_MK_FOURCC('m', 'p', 'g', 'a'))

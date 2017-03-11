@@ -194,7 +194,7 @@ static int next_packet_avs(bgav_demuxer_context_t * ctx)
           as->stream_id = AUDIO_ID;
           as->fourcc = BGAV_WAVID_2_FOURCC(0x0001);
           as->data.audio.bits_per_sample = 8;
-          as->data.audio.format.num_channels = 1;
+          as->data.audio.format->num_channels = 1;
           }
         if(!as)
           {
@@ -216,8 +216,8 @@ static int next_packet_avs(bgav_demuxer_context_t * ctx)
             read_audio_header(ctx->input, &ah);
             block_size -= 6;
             
-            if(!as->data.audio.format.samplerate)
-              as->data.audio.format.samplerate =
+            if(!as->data.audio.format->samplerate)
+              as->data.audio.format->samplerate =
                 1000000 / (256 - ah.frequency_divisor);
             else
               {
@@ -287,21 +287,21 @@ static int open_avs(bgav_demuxer_context_t * ctx)
   s = bgav_track_add_video_stream(ctx->tt->cur, ctx->opt);
   s->stream_id = VIDEO_ID;
   s->fourcc = BGAV_MK_FOURCC('A','V','S',' ');
-  s->data.video.format.image_width = 318;
-  s->data.video.format.frame_width = 318;
+  s->data.video.format->image_width = 318;
+  s->data.video.format->frame_width = 318;
 
-  s->data.video.format.image_height = 198;
-  s->data.video.format.frame_height = 198;
+  s->data.video.format->image_height = 198;
+  s->data.video.format->frame_height = 198;
 
-  s->data.video.format.pixel_width  = 1;
-  s->data.video.format.pixel_height = 1;
+  s->data.video.format->pixel_width  = 1;
+  s->data.video.format->pixel_height = 1;
 
-  s->data.video.format.timescale = BGAV_PTR_2_16LE(&header[10]);
-  s->data.video.format.frame_duration = 1;
+  s->data.video.format->timescale = BGAV_PTR_2_16LE(&header[10]);
+  s->data.video.format->frame_duration = 1;
   s->data.video.depth = 8;
   
   ctx->tt->cur->duration =
-    gavl_time_unscale(s->data.video.format.timescale,
+    gavl_time_unscale(s->data.video.format->timescale,
                       BGAV_PTR_2_32LE(&header[12]));
 
   ctx->data_start = ctx->input->position;

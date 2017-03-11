@@ -525,7 +525,7 @@ int bgav_demuxer_next_packet_interleaved(bgav_demuxer_context_t * ctx)
     return 1;
     }
 #if 0
-  if(stream->type == BGAV_STREAM_SUBTITLE_TEXT)
+  if(stream->type == GAVF_STREAM_TEXT)
     {
     fprintf(stderr, "Got subtitle packet\n");
     }

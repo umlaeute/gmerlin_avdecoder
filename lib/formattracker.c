@@ -53,9 +53,9 @@ static void set_eof(bgav_video_format_tracker_t * ft)
 
   if(ft->do_track & TRACK_FRAMERATE)
     {
-    ft->s->data.video.format.framerate_mode = ft->fps_mode;
+    ft->s->data.video.format->framerate_mode = ft->fps_mode;
     if(ft->fps_mode == GAVL_FRAMERATE_CONSTANT)
-      ft->s->data.video.format.frame_duration = ft->last_frame_duration;
+      ft->s->data.video.format->frame_duration = ft->last_frame_duration;
     }
   
   if(ft->do_track & TRACK_INTERLACING)
@@ -67,12 +67,12 @@ static void set_eof(bgav_video_format_tracker_t * ft)
         if(ft->have_bottom)
           {
           /* progressive + top + bottom  */
-          ft->s->data.video.format.interlace_mode = GAVL_INTERLACE_MIXED;
+          ft->s->data.video.format->interlace_mode = GAVL_INTERLACE_MIXED;
           }
         else
           {
           /* progressive + top + !bottom  */
-          ft->s->data.video.format.interlace_mode = GAVL_INTERLACE_MIXED_TOP;
+          ft->s->data.video.format->interlace_mode = GAVL_INTERLACE_MIXED_TOP;
           }
         }
       else /* !ft->have_top */
@@ -80,12 +80,12 @@ static void set_eof(bgav_video_format_tracker_t * ft)
         if(ft->have_bottom)
           {
           /* progressive + !top + bottom  */
-          ft->s->data.video.format.interlace_mode = GAVL_INTERLACE_MIXED_BOTTOM;
+          ft->s->data.video.format->interlace_mode = GAVL_INTERLACE_MIXED_BOTTOM;
           }
         else
           {
           /* progressive + !top + !bottom  */
-          ft->s->data.video.format.interlace_mode = GAVL_INTERLACE_NONE;
+          ft->s->data.video.format->interlace_mode = GAVL_INTERLACE_NONE;
           }
         }
       }
@@ -96,12 +96,12 @@ static void set_eof(bgav_video_format_tracker_t * ft)
         if(ft->have_bottom)
           {
           /* !progressive + top + bottom  */
-          ft->s->data.video.format.interlace_mode = GAVL_INTERLACE_MIXED;
+          ft->s->data.video.format->interlace_mode = GAVL_INTERLACE_MIXED;
           }
         else
           {
           /* !progressive + top + !bottom  */
-          ft->s->data.video.format.interlace_mode = GAVL_INTERLACE_TOP_FIRST;
+          ft->s->data.video.format->interlace_mode = GAVL_INTERLACE_TOP_FIRST;
           }
         }
       else /* !ft->have_top */
@@ -109,12 +109,12 @@ static void set_eof(bgav_video_format_tracker_t * ft)
         if(ft->have_bottom)
           {
           /* !progressive + !top + bottom  */
-          ft->s->data.video.format.interlace_mode = GAVL_INTERLACE_BOTTOM_FIRST;
+          ft->s->data.video.format->interlace_mode = GAVL_INTERLACE_BOTTOM_FIRST;
           }
         else
           {
           /* !progressive + !top + !bottom  */
-          ft->s->data.video.format.interlace_mode = GAVL_INTERLACE_MIXED;
+          ft->s->data.video.format->interlace_mode = GAVL_INTERLACE_MIXED;
           }
         }
       }
@@ -197,7 +197,7 @@ bgav_video_format_tracker_create(bgav_stream_t * s)
   s->src.peek_func = peek_func;
   s->src.data = ret;
   
-  switch(s->data.video.format.interlace_mode)
+  switch(s->data.video.format->interlace_mode)
     {
     case GAVL_INTERLACE_MIXED:        /*!< Use interlace_mode of the frames */
     case GAVL_INTERLACE_MIXED_TOP:    /*!< Progressive + top    */
@@ -208,7 +208,7 @@ bgav_video_format_tracker_create(bgav_stream_t * s)
       break;
     }
 
-  if(s->data.video.format.framerate_mode == GAVL_FRAMERATE_VARIABLE)
+  if(s->data.video.format->framerate_mode == GAVL_FRAMERATE_VARIABLE)
     {
     ret->do_track |= TRACK_FRAMERATE;
     ret->last_frame_duration = -1;

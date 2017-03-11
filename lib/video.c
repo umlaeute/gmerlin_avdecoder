@@ -39,24 +39,24 @@ int bgav_num_video_streams(bgav_t *  bgav, int track)
 
 const gavl_video_format_t * bgav_get_video_format(bgav_t * bgav, int stream)
   {
-  return &bgav->tt->cur->video_streams[stream].data.video.format;
+  return bgav->tt->cur->video_streams[stream].data.video.format;
   }
 
 const gavl_video_format_t * bgav_get_video_format_t(bgav_t * bgav, int t, int stream)
   {
-  return &bgav->tt->tracks[t].video_streams[stream].data.video.format;
+  return bgav->tt->tracks[t].video_streams[stream].data.video.format;
   }
 
 const bgav_metadata_t *
 bgav_get_video_metadata(bgav_t * b, int s)
   {
-  return &b->tt->cur->video_streams[s].m;
+  return b->tt->cur->video_streams[s].m;
   }
 
 const bgav_metadata_t *
 bgav_get_video_metadata_t(bgav_t * b, int t, int s)
   {
-  return &b->tt->tracks[t].video_streams[s].m;
+  return b->tt->tracks[t].video_streams[s].m;
   }
 
 int bgav_set_video_stream(bgav_t * b, int stream, bgav_stream_action_t action)
@@ -146,8 +146,8 @@ int bgav_video_start(bgav_stream_t * s)
   int src_flags;
   bgav_video_decoder_t * dec;
 
-  if(!s->timescale && s->data.video.format.timescale)
-    s->timescale = s->data.video.format.timescale;
+  if(!s->timescale && s->data.video.format->timescale)
+    s->timescale = s->data.video.format->timescale;
 
   /* Some streams need to be parsed generically for extracting
      format values and/or timecodes */
@@ -245,8 +245,8 @@ int bgav_video_start(bgav_stream_t * s)
     }
   
   if((s->action == BGAV_STREAM_PARSE) &&
-     ((s->data.video.format.framerate_mode == GAVL_FRAMERATE_VARIABLE) ||
-      (s->data.video.format.interlace_mode == GAVL_INTERLACE_MIXED)))
+     ((s->data.video.format->framerate_mode == GAVL_FRAMERATE_VARIABLE) ||
+      (s->data.video.format->interlace_mode == GAVL_INTERLACE_MIXED)))
     {
     s->data.video.ft = bgav_video_format_tracker_create(s);
     }
@@ -284,10 +284,10 @@ int bgav_video_start(bgav_stream_t * s)
     if(!result)
       return 0;
 
-    if(s->data.video.format.interlace_mode == GAVL_INTERLACE_UNKNOWN)
-      s->data.video.format.interlace_mode = GAVL_INTERLACE_NONE;
-    if(s->data.video.format.framerate_mode == GAVL_FRAMERATE_UNKNOWN)
-      s->data.video.format.framerate_mode = GAVL_FRAMERATE_CONSTANT;
+    if(s->data.video.format->interlace_mode == GAVL_INTERLACE_UNKNOWN)
+      s->data.video.format->interlace_mode = GAVL_INTERLACE_NONE;
+    if(s->data.video.format->framerate_mode == GAVL_FRAMERATE_UNKNOWN)
+      s->data.video.format->framerate_mode = GAVL_FRAMERATE_CONSTANT;
 
     src_flags = s->src_flags;
     
@@ -298,33 +298,33 @@ int bgav_video_start(bgav_stream_t * s)
       s->data.video.vsrc =
         gavl_video_source_create(read_video_nocopy,
                                  s, src_flags,
-                                 &s->data.video.format);
+                                 s->data.video.format);
     else
       s->data.video.vsrc =
         gavl_video_source_create(read_video_copy,
                                  s, 0,
-                                 &s->data.video.format);
+                                 s->data.video.format);
     }
   else if(s->action == BGAV_STREAM_READRAW)
     {
-    if(s->data.video.format.interlace_mode == GAVL_INTERLACE_UNKNOWN)
-      s->data.video.format.interlace_mode = GAVL_INTERLACE_NONE;
-    if(s->data.video.format.framerate_mode == GAVL_FRAMERATE_UNKNOWN)
-      s->data.video.format.framerate_mode = GAVL_FRAMERATE_CONSTANT;
+    if(s->data.video.format->interlace_mode == GAVL_INTERLACE_UNKNOWN)
+      s->data.video.format->interlace_mode = GAVL_INTERLACE_NONE;
+    if(s->data.video.format->framerate_mode == GAVL_FRAMERATE_UNKNOWN)
+      s->data.video.format->framerate_mode = GAVL_FRAMERATE_CONSTANT;
     
     s->psrc =
       gavl_packet_source_create_video(bgav_stream_read_packet_func, // get_packet,
-                                      s, GAVL_SOURCE_SRC_ALLOC, &s->ci, &s->data.video.format);
+                                      s, GAVL_SOURCE_SRC_ALLOC, &s->ci, s->data.video.format);
     }
 
   if(s->codec_bitrate)
-    gavl_dictionary_set_int(&s->m, GAVL_META_BITRATE,
+    gavl_dictionary_set_int(s->m, GAVL_META_BITRATE,
                           s->codec_bitrate);
   else if(s->container_bitrate)
-    gavl_dictionary_set_int(&s->m, GAVL_META_BITRATE,
+    gavl_dictionary_set_int(s->m, GAVL_META_BITRATE,
                           s->container_bitrate);
   
-  if(s->data.video.format.framerate_mode == GAVL_FRAMERATE_STILL)
+  if(s->data.video.format->framerate_mode == GAVL_FRAMERATE_STILL)
     s->flags = STREAM_DISCONT;
 
   return 1;
@@ -332,7 +332,7 @@ int bgav_video_start(bgav_stream_t * s)
 
 const char * bgav_get_video_description(bgav_t * b, int s)
   {
-  return gavl_dictionary_get_string(&b->tt->cur->video_streams[s].m,
+  return gavl_dictionary_get_string(b->tt->cur->video_streams[s].m,
                            GAVL_META_FORMAT);
   }
 
@@ -356,7 +356,7 @@ void bgav_video_dump(bgav_stream_t * s)
   {
   bgav_dprintf("  Depth:             %d\n", s->data.video.depth);
   bgav_dprintf("Format:\n");
-  gavl_video_format_dump(&s->data.video.format);
+  gavl_video_format_dump(s->data.video.format);
   }
 
 void bgav_video_stop(bgav_stream_t * s)
@@ -414,7 +414,7 @@ void bgav_video_resync(bgav_stream_t * s)
     {
     s->out_time =
       gavl_time_rescale(s->timescale,
-                        s->data.video.format.timescale,
+                        s->data.video.format->timescale,
                         STREAM_GET_SYNC(s));
     }
 
@@ -486,7 +486,7 @@ int bgav_video_skipto(bgav_stream_t * s, int64_t * time, int scale)
   int64_t time_scaled;
   
   time_scaled =
-    gavl_time_rescale(scale, s->data.video.format.timescale, *time);
+    gavl_time_rescale(scale, s->data.video.format->timescale, *time);
   
   if(STREAM_IS_STILL(s))
     {
@@ -526,7 +526,7 @@ int bgav_video_skipto(bgav_stream_t * s, int64_t * time, int scale)
       bgav_stream_get_packet_read(s, &p);
       bgav_stream_done_packet_read(s, p);
       }
-    *time = gavl_time_rescale(s->data.video.format.timescale, scale, s->out_time);
+    *time = gavl_time_rescale(s->data.video.format->timescale, scale, s->out_time);
     return 1;
     }
   
@@ -563,7 +563,7 @@ int bgav_video_skipto(bgav_stream_t * s, int64_t * time, int scale)
       }
     }
 
-  *time = gavl_time_rescale(s->data.video.format.timescale, scale, s->out_time);
+  *time = gavl_time_rescale(s->data.video.format->timescale, scale, s->out_time);
   
   return 1;
   }
@@ -899,7 +899,7 @@ int bgav_get_video_compression_info(bgav_t * bgav, int stream,
     return 0;
     }
   if(gavl_compression_need_pixelformat(id) &&
-     s->data.video.format.pixelformat == GAVL_PIXELFORMAT_NONE)
+     s->data.video.format->pixelformat == GAVL_PIXELFORMAT_NONE)
     {
     bgav_log(&bgav->opt, BGAV_LOG_WARNING, LOG_DOMAIN,
              "Video compression format needs pixelformat for compressed output");

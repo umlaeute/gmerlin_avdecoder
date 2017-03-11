@@ -278,7 +278,7 @@ typedef struct
 static void cleanup_stream_asf(bgav_stream_t * s)
   {
   asf_audio_stream_t * as;
-  if(s->type == BGAV_STREAM_AUDIO)
+  if(s->type == GAVF_STREAM_AUDIO)
     {
     as = s->priv;
     
@@ -410,7 +410,7 @@ static int read_metadata(bgav_demuxer_context_t * ctx)
     {
     if(bgav_input_read_data(ctx->input, (uint8_t*)str, len1) < len1)
       goto fail;
-    gavl_dictionary_set_string_nocopy(&ctx->tt->cur->metadata,
+    gavl_dictionary_set_string_nocopy(ctx->tt->cur->metadata,
                             GAVL_META_TITLE, bgav_convert_string(cnv, str, len1,
                                                                  NULL));
     }
@@ -421,7 +421,7 @@ static int read_metadata(bgav_demuxer_context_t * ctx)
     {
     if(bgav_input_read_data(ctx->input, (uint8_t*)str, len2) < len2)
       goto fail;
-    gavl_dictionary_set_string_nocopy(&ctx->tt->cur->metadata,
+    gavl_dictionary_set_string_nocopy(ctx->tt->cur->metadata,
                             GAVL_META_AUTHOR, bgav_convert_string(cnv, str, len2,
                                                                   NULL));
     }
@@ -432,7 +432,7 @@ static int read_metadata(bgav_demuxer_context_t * ctx)
     {
     if(bgav_input_read_data(ctx->input, (uint8_t*)str, len3) < len3)
       goto fail;
-    gavl_dictionary_set_string_nocopy(&ctx->tt->cur->metadata,
+    gavl_dictionary_set_string_nocopy(ctx->tt->cur->metadata,
                             GAVL_META_COPYRIGHT, bgav_convert_string(cnv, str, len3,
                                                                      NULL));
     }
@@ -443,7 +443,7 @@ static int read_metadata(bgav_demuxer_context_t * ctx)
     {
     if(bgav_input_read_data(ctx->input, (uint8_t*)str, len4) < len4)
       goto fail;
-    gavl_dictionary_set_string_nocopy(&ctx->tt->cur->metadata,
+    gavl_dictionary_set_string_nocopy(ctx->tt->cur->metadata,
                             GAVL_META_COMMENT, bgav_convert_string(cnv, str, len4,
                                                                    NULL));
     }
@@ -662,8 +662,8 @@ static int open_asf(bgav_demuxer_context_t * ctx)
         bgav_BITMAPINFOHEADER_get_format(&bh, bgav_vs);
         /* Fill in the remeaining values */
         
-        bgav_vs->data.video.format.timescale = 1000;
-        bgav_vs->data.video.format.framerate_mode = GAVL_FRAMERATE_VARIABLE;
+        bgav_vs->data.video.format->timescale = 1000;
+        bgav_vs->data.video.format->framerate_mode = GAVL_FRAMERATE_VARIABLE;
         
         //        gavl_video_format_dump(&bgav_vs->format);
         if(pos - buf < type_specific_size)
@@ -737,7 +737,7 @@ static int open_asf(bgav_demuxer_context_t * ctx)
   if((ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE) && asf->hdr.packets_count)
     ctx->flags |= (BGAV_DEMUXER_CAN_SEEK | BGAV_DEMUXER_SEEK_ITERATIVE);
   
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "ASF");
 
   return 1;
@@ -983,10 +983,10 @@ static void add_packet(bgav_demuxer_context_t * ctx,
   
   if(asf->do_sync)
     {
-    if((s->type == BGAV_STREAM_VIDEO) &&
+    if((s->type == GAVF_STREAM_VIDEO) &&
        !STREAM_HAS_SYNC(s) && (!keyframe || (offs > 0)))
       return;
-    else if((s->type == BGAV_STREAM_AUDIO) &&
+    else if((s->type == GAVF_STREAM_AUDIO) &&
             !STREAM_HAS_SYNC(s) && (offs > 0))
       return;
     }
@@ -995,7 +995,7 @@ static void add_packet(bgav_demuxer_context_t * ctx,
     {
     if(s->packet_seq != seq)
       {
-      if(s->type == BGAV_STREAM_AUDIO)
+      if(s->type == GAVF_STREAM_AUDIO)
         {
         as = s->priv;
         if((as->descramble_w > 1) && (as->descramble_h > 1))
@@ -1004,7 +1004,7 @@ static void add_packet(bgav_demuxer_context_t * ctx,
                          s->packet->data_size);
         }
 #if 0
-      if(s->type == BGAV_STREAM_AUDIO)
+      if(s->type == GAVF_STREAM_AUDIO)
         {
         fprintf(stderr, "Got audio packet: ");
         bgav_packet_dump(s->packet);

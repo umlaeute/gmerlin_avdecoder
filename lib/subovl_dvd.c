@@ -49,21 +49,21 @@ static int init_dvdsub(bgav_stream_t * s)
   s->decoder_priv = priv;
 
   /* Initialize format */
-  video_stream_format = &s->data.subtitle.video_stream->data.video.format;
+  video_stream_format = s->data.subtitle.video_stream->data.video.format;
 
-  if(!s->data.subtitle.video.format.image_width ||
-     !s->data.subtitle.video.format.image_height)
-    gavl_video_format_copy(&s->data.subtitle.video.format, video_stream_format);
+  if(!s->data.subtitle.video.format->image_width ||
+     !s->data.subtitle.video.format->image_height)
+    gavl_video_format_copy(s->data.subtitle.video.format, video_stream_format);
 
   // gavl_video_format_copy(&priv->vs_format, video_stream_format);
   
-  s->data.subtitle.video.format.pixelformat = GAVL_YUVA_32;
-  s->data.subtitle.video.format.timescale = s->timescale;
-  s->data.subtitle.video.format.frame_duration = 0;
-  s->data.subtitle.video.format.framerate_mode = GAVL_FRAMERATE_VARIABLE;
+  s->data.subtitle.video.format->pixelformat = GAVL_YUVA_32;
+  s->data.subtitle.video.format->timescale = s->timescale;
+  s->data.subtitle.video.format->frame_duration = 0;
+  s->data.subtitle.video.format->framerate_mode = GAVL_FRAMERATE_VARIABLE;
   
   priv->pts_mult = s->timescale / 100;
-  priv->field_height = s->data.subtitle.video.format.image_height / 2;
+  priv->field_height = s->data.subtitle.video.format->image_height / 2;
   
   return 1;
   }
@@ -173,7 +173,7 @@ static gavl_source_status_t decode_dvdsub(bgav_stream_t * s, gavl_overlay_t * ov
   fprintf(stderr, "Got overlay\n");
   bgav_packet_dump(p);
 
-  gavl_video_frame_fill(ovl, &s->data.subtitle.video.format,
+  gavl_video_frame_fill(ovl, s->data.subtitle.video.format,
                         fill_color);
   
   /* Data size */
@@ -310,11 +310,11 @@ static gavl_source_status_t decode_dvdsub(bgav_stream_t * s, gavl_overlay_t * ov
   ovl->dst_y = y1;
 
   /* Shift the overlays (can happen in some pathological cases) */
-  if(ovl->dst_x + ovl->src_rect.w > s->data.subtitle.video.format.image_width)
-    ovl->dst_x = s->data.subtitle.video.format.image_width - ovl->src_rect.w;
+  if(ovl->dst_x + ovl->src_rect.w > s->data.subtitle.video.format->image_width)
+    ovl->dst_x = s->data.subtitle.video.format->image_width - ovl->src_rect.w;
 
-  if(ovl->dst_y + ovl->src_rect.h > s->data.subtitle.video.format.image_height)
-    ovl->dst_y = s->data.subtitle.video.format.image_height - ovl->src_rect.h;
+  if(ovl->dst_y + ovl->src_rect.h > s->data.subtitle.video.format->image_height)
+    ovl->dst_y = s->data.subtitle.video.format->image_height - ovl->src_rect.h;
 
 #if 0
   fprintf(stderr, "Got overlay ");

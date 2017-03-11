@@ -348,7 +348,7 @@ static void build_superindex(bgav_demuxer_context_t * ctx)
       /* Add video packet */
       s = ctx->tt->cur->video_streams;
       offset = 12+8;
-      duration = s->data.video.format.frame_duration;
+      duration = s->data.video.format->frame_duration;
       bgav_superindex_add_packet(ctx->si,
                                  s, priv->rdvo[video_pos] + offset,
                                  priv->rdvs[video_pos] - offset,
@@ -447,14 +447,14 @@ static int open_r3d(bgav_demuxer_context_t * ctx)
     {
     s = bgav_track_add_video_stream(ctx->tt->cur, ctx->opt);
     s->ci.flags &= ~GAVL_COMPRESSION_HAS_P_FRAMES;
-    s->data.video.format.image_width = priv->red1.width;
-    s->data.video.format.image_height = priv->red1.height;
-    s->data.video.format.frame_width = priv->red1.width;
-    s->data.video.format.frame_height = priv->red1.height;
-    s->data.video.format.pixel_width = 1;
-    s->data.video.format.pixel_height = 1;
-    s->data.video.format.timescale = priv->red1.video_timescale;
-    s->data.video.format.frame_duration = priv->red1.frame_duration;
+    s->data.video.format->image_width = priv->red1.width;
+    s->data.video.format->image_height = priv->red1.height;
+    s->data.video.format->frame_width = priv->red1.width;
+    s->data.video.format->frame_height = priv->red1.height;
+    s->data.video.format->pixel_width = 1;
+    s->data.video.format->pixel_height = 1;
+    s->data.video.format->timescale = priv->red1.video_timescale;
+    s->data.video.format->frame_duration = priv->red1.frame_duration;
     s->fourcc = BGAV_MK_FOURCC('R', '3', 'D', '1');
     //    s->fourcc = BGAV_MK_FOURCC('j','p','e','g');
     s->stream_id = VIDEO_ID;
@@ -463,8 +463,8 @@ static int open_r3d(bgav_demuxer_context_t * ctx)
   if(priv->reob.audio_packets)
     {
     s = bgav_track_add_audio_stream(ctx->tt->cur, ctx->opt);
-    s->data.audio.format.samplerate = 48000;
-    s->data.audio.format.num_channels = 4;
+    s->data.audio.format->samplerate = 48000;
+    s->data.audio.format->num_channels = 4;
     s->data.audio.block_align = 16;
     s->data.audio.bits_per_sample = 32; // 24 actually, the lowest byte is 0
     s->fourcc = BGAV_MK_FOURCC('t','w','o','s');

@@ -36,12 +36,12 @@ int bgav_num_audio_streams(bgav_t * bgav, int track)
 
 const gavl_audio_format_t * bgav_get_audio_format(bgav_t *  bgav, int stream)
   {
-  return &bgav->tt->cur->audio_streams[stream].data.audio.format;
+  return bgav->tt->cur->audio_streams[stream].data.audio.format;
   }
 
 const gavl_audio_format_t * bgav_get_audio_format_t(bgav_t *  bgav, int track, int stream)
   {
-  return &bgav->tt->tracks[track].audio_streams[stream].data.audio.format;
+  return bgav->tt->tracks[track].audio_streams[stream].data.audio.format;
   }
 
 int bgav_set_audio_stream(bgav_t * b, int stream, bgav_stream_action_t action)
@@ -133,8 +133,8 @@ int bgav_audio_start(bgav_stream_t * s)
 
   s->out_time = s->stats.pts_start;
   
-  if(!s->timescale && s->data.audio.format.samplerate)
-    s->timescale = s->data.audio.format.samplerate;
+  if(!s->timescale && s->data.audio.format->samplerate)
+    s->timescale = s->data.audio.format->samplerate;
   
   if(s->action == BGAV_STREAM_DECODE)
     {
@@ -164,13 +164,13 @@ int bgav_audio_start(bgav_stream_t * s)
     s->data.audio.frame_samples = s->data.audio.frame->valid_samples;
     
     if(!s->timescale)
-      s->timescale = s->data.audio.format.samplerate;
+      s->timescale = s->data.audio.format->samplerate;
 
     //    s->out_time -= s->data.audio.pre_skip;
     }
 
   if(s->data.audio.bits_per_sample)
-    gavl_dictionary_set_int(&s->m, GAVL_META_AUDIO_BITS ,
+    gavl_dictionary_set_int(s->m, GAVL_META_AUDIO_BITS ,
                           s->data.audio.bits_per_sample);
 
 
@@ -178,23 +178,23 @@ int bgav_audio_start(bgav_stream_t * s)
   //    gavl_dictionary_set_string(&s->m, GAVL_META_BITRATE,
   //                      "VBR");
   else if(s->codec_bitrate)
-    gavl_dictionary_set_int(&s->m, GAVL_META_BITRATE,
+    gavl_dictionary_set_int(s->m, GAVL_META_BITRATE,
                           s->codec_bitrate);
   else if(s->container_bitrate)
-    gavl_dictionary_set_int(&s->m, GAVL_META_BITRATE,
+    gavl_dictionary_set_int(s->m, GAVL_META_BITRATE,
                           s->container_bitrate);
 
   if(s->action == BGAV_STREAM_DECODE)
     s->data.audio.source =
       gavl_audio_source_create(get_frame, s,
                                GAVL_SOURCE_SRC_ALLOC | s->src_flags,
-                               &s->data.audio.format);
+                               s->data.audio.format);
 #if 1
   if(s->action == BGAV_STREAM_READRAW)
     s->psrc =
       gavl_packet_source_create_audio(bgav_stream_read_packet_func, // get_packet,
                                       s, GAVL_SOURCE_SRC_ALLOC,
-                                      &s->ci, &s->data.audio.format);
+                                      &s->ci, s->data.audio.format);
 #endif
   
   //  if(s->data.audio.pre_skip && s->data.audio.source)
@@ -231,32 +231,32 @@ void bgav_audio_stop(bgav_stream_t * s)
 
 const char * bgav_get_audio_description(bgav_t * b, int s)
   {
-  return gavl_dictionary_get_string(&b->tt->cur->audio_streams[s].m,
+  return gavl_dictionary_get_string(b->tt->cur->audio_streams[s].m,
                            GAVL_META_FORMAT);
   }
 
 const char * bgav_get_audio_info(bgav_t * b, int s)
   {
-  return gavl_dictionary_get_string(&b->tt->cur->audio_streams[s].m,
+  return gavl_dictionary_get_string(b->tt->cur->audio_streams[s].m,
                            GAVL_META_LABEL);
   }
 
 const bgav_metadata_t *
 bgav_get_audio_metadata(bgav_t * b, int s)
   {
-  return &b->tt->cur->audio_streams[s].m;
+  return b->tt->cur->audio_streams[s].m;
   }
 
 const bgav_metadata_t *
 bgav_get_audio_metadata_t(bgav_t * b, int track, int s)
   {
-  return &b->tt->tracks[track].audio_streams[s].m;
+  return b->tt->tracks[track].audio_streams[s].m;
   }
 
 
 const char * bgav_get_audio_language(bgav_t * b, int s)
   {
-  return gavl_dictionary_get_string(&b->tt->cur->audio_streams[s].m,
+  return gavl_dictionary_get_string(b->tt->cur->audio_streams[s].m,
                            GAVL_META_LANGUAGE);
   }
 
@@ -285,7 +285,7 @@ void bgav_audio_dump(bgav_stream_t * s)
   bgav_dprintf("  Block align:       %d\n", s->data.audio.block_align);
   bgav_dprintf("  Pre skip:          %d\n", s->ci.pre_skip);
   bgav_dprintf("Format:\n");
-  gavl_audio_format_dump(&s->data.audio.format);
+  gavl_audio_format_dump(s->data.audio.format);
   }
 
 
@@ -297,7 +297,7 @@ void bgav_audio_resync(bgav_stream_t * s)
     {
     s->out_time =
       gavl_time_rescale(s->timescale,
-                        s->data.audio.format.samplerate,
+                        s->data.audio.format->samplerate,
                         STREAM_GET_SYNC(s));
     }
   
@@ -331,7 +331,7 @@ int bgav_audio_skipto(bgav_stream_t * s, int64_t * t, int scale)
   int64_t skip_time;
   
   skip_time = gavl_time_rescale(scale,
-                                s->data.audio.format.samplerate,
+                                s->data.audio.format->samplerate,
                                 *t);
   
   num_samples = skip_time - s->out_time;

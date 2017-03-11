@@ -249,8 +249,8 @@ static int init_real(bgav_stream_t * s)
   extradata = (unsigned int *)s->ext_data;
 
   init_data.unk1 = 11;
-  init_data.w    = s->data.video.format.frame_width;
-  init_data.h    = s->data.video.format.frame_height;
+  init_data.w    = s->data.video.format->frame_width;
+  init_data.h    = s->data.video.format->frame_height;
   init_data.unk3 = 0;
   init_data.unk2 = 0;
   init_data.subformat = extradata[0];
@@ -263,18 +263,18 @@ static int init_real(bgav_stream_t * s)
     return 0;
     }
 
-  s->data.video.format.pixelformat = GAVL_YUV_420_P;
+  s->data.video.format->pixelformat = GAVL_YUV_420_P;
 
   //  priv->gavl_frame = gavl_video_frame_create_nopad(&s->data.video.format);
-  priv->gavl_frame = gavl_video_frame_create(&s->data.video.format);
+  priv->gavl_frame = gavl_video_frame_create(s->data.video.format);
   
   version = ((s->fourcc & 0x000000FF) - '0') +
     (((s->fourcc & 0x0000FF00) >> 8)- '0') * 10;
 
   if((version <= 30) && (extradata[1]>=0x20200002))
     {
-    cmsg24[0] = s->data.video.format.frame_width;
-    cmsg24[1] = s->data.video.format.frame_height;
+    cmsg24[0] = s->data.video.format->frame_width;
+    cmsg24[1] = s->data.video.format->frame_height;
     cmsg24[2] = s->ext_data[8]*4;
     cmsg24[3] = s->ext_data[9]*4;
     cmsg24[4] = s->ext_data[10]*4;
@@ -292,7 +292,7 @@ static int init_real(bgav_stream_t * s)
       }
     }
 
-  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(s->m, GAVL_META_FORMAT,
                     info->format_name);
   
   return 1;
@@ -341,7 +341,7 @@ decode_real(bgav_stream_t * s, gavl_video_frame_t * f)
     }
   if(f)
     {
-    gavl_video_frame_copy(&s->data.video.format, f, priv->gavl_frame);
+    gavl_video_frame_copy(s->data.video.format, f, priv->gavl_frame);
     f->timestamp = p->pts;
     f->duration = p->duration;
     }

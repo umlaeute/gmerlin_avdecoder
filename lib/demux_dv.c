@@ -102,14 +102,14 @@ static int open_dv(bgav_demuxer_context_t * ctx)
     {
     total_frames = ctx->input->total_bytes / priv->frame_size;
     ctx->tt->cur->duration =
-      gavl_frames_to_time(vs->data.video.format.timescale, vs->data.video.format.frame_duration,
+      gavl_frames_to_time(vs->data.video.format->timescale, vs->data.video.format->frame_duration,
                           total_frames);
     }
   
   if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
   
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "DV");
 
   ctx->data_start = ctx->input->position;
@@ -173,19 +173,19 @@ static void seek_dv(bgav_demuxer_context_t * ctx, int64_t time,
   vs = ctx->tt->cur->video_streams;
   as = ctx->tt->cur->audio_streams;
 
-  t = gavl_time_rescale(scale, vs->data.video.format.timescale,
+  t = gavl_time_rescale(scale, vs->data.video.format->timescale,
                         time);
   
-  frame_pos = t / vs->data.video.format.frame_duration;
+  frame_pos = t / vs->data.video.format->frame_duration;
   
   file_position = frame_pos * priv->frame_size;
 
-  t = frame_pos * vs->data.video.format.frame_duration;
+  t = frame_pos * vs->data.video.format->frame_duration;
   STREAM_SET_SYNC(vs, t);
   
   STREAM_SET_SYNC(as, 
-                  gavl_time_rescale(vs->data.video.format.timescale,
-                                    as->data.audio.format.samplerate,
+                  gavl_time_rescale(vs->data.video.format->timescale,
+                                    as->data.audio.format->samplerate,
                                     t));
   
   bgav_dv_dec_set_frame_counter(priv->d, frame_pos);
@@ -222,17 +222,18 @@ static void resync_dv(bgav_demuxer_context_t * ctx, bgav_stream_t * s)
 
   switch(s->type)
     {
-    case BGAV_STREAM_AUDIO:
+    case GAVF_STREAM_AUDIO:
       bgav_dv_dec_set_sample_counter(priv->d, STREAM_GET_SYNC(s));
       break;
-    case BGAV_STREAM_VIDEO:
+    case GAVF_STREAM_VIDEO:
       bgav_dv_dec_set_frame_counter(priv->d,
                                     STREAM_GET_SYNC(s) /
-                                    s->data.video.format.frame_duration);
+                                    s->data.video.format->frame_duration);
       break;
-    case BGAV_STREAM_SUBTITLE_OVERLAY:
-    case BGAV_STREAM_SUBTITLE_TEXT:
-    case BGAV_STREAM_UNKNOWN:
+    case GAVF_STREAM_OVERLAY:
+    case GAVF_STREAM_TEXT:
+    case GAVF_STREAM_NONE:
+    case GAVF_STREAM_MSG:
       break;
     }
 

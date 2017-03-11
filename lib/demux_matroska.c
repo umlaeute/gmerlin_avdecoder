@@ -340,7 +340,7 @@ static void init_stream_common(mkv_t * m,
   s->stats.pts_start = GAVL_TIME_UNDEFINED;
   
   if(track->Language)
-    gavl_dictionary_set_string(&s->m, GAVL_META_LANGUAGE, track->Language);
+    gavl_dictionary_set_string(s->m, GAVL_META_LANGUAGE, track->Language);
   
   if(!codecs)
     return;
@@ -384,7 +384,7 @@ static int init_audio(bgav_demuxer_context_t * ctx,
   s = bgav_track_add_audio_stream(ctx->tt->cur, ctx->opt);
   init_stream_common(m, s, track, audio_codecs);
 
-  fmt = &s->data.audio.format;
+  fmt = s->data.audio.format;
   a = &track->audio;
 
   if(a->SamplingFrequency > 0.0)
@@ -427,7 +427,7 @@ static int init_video(bgav_demuxer_context_t * ctx,
   s = bgav_track_add_video_stream(ctx->tt->cur, ctx->opt);
   init_stream_common(m, s, track, video_codecs);
 
-  fmt = &s->data.video.format;
+  fmt = s->data.video.format;
   v = &track->video;
   
   if(v->PixelWidth)
@@ -473,7 +473,7 @@ static int init_subtitle(bgav_demuxer_context_t * ctx,
     {
     // fprintf(stderr, "UTF-8 subtitles\n");
     s = bgav_track_add_text_stream(ctx->tt->cur, ctx->opt, BGAV_UTF8);
-    gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "SRT");
+    gavl_dictionary_set_string(s->m, GAVL_META_FORMAT, "SRT");
     }
   else if(!strcmp(track->CodecID, "S_VOBSUB"))
     {
@@ -509,15 +509,15 @@ static int init_subtitle(bgav_demuxer_context_t * ctx,
       {
       s = bgav_track_add_overlay_stream(ctx->tt->cur, ctx->opt);
 
-      gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "DVD subtitles");
+      gavl_dictionary_set_string(s->m, GAVL_META_FORMAT, "DVD subtitles");
       s->fourcc = BGAV_MK_FOURCC('D', 'V', 'D', 'S');
       s->ext_data = (uint8_t*)pal;
       s->ext_size = 16 * 4; // 64
-      s->data.subtitle.video.format.image_width  = width;
-      s->data.subtitle.video.format.image_height = height;
+      s->data.subtitle.video.format->image_width  = width;
+      s->data.subtitle.video.format->image_height = height;
       
-      s->data.subtitle.video.format.frame_width  = width;
-      s->data.subtitle.video.format.frame_height = height;
+      s->data.subtitle.video.format->frame_width  = width;
+      s->data.subtitle.video.format->frame_height = height;
       }
     
     }
@@ -772,11 +772,11 @@ static int open_matroska(bgav_demuxer_context_t * ctx)
     }
 
   /* Look for chapters */
-  create_chapter_list(&p->chapters, &ctx->tt->cur->metadata);
+  create_chapter_list(&p->chapters, ctx->tt->cur->metadata);
 
   /* Metadata */
   init_metadata(p->tags, p->num_tags,
-                &ctx->tt->cur->metadata);
+                ctx->tt->cur->metadata);
   
   /* Look for file index (cues) */
   if(p->meta_seek_info.num_entries && (ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE) &&
@@ -827,16 +827,16 @@ static int open_matroska(bgav_demuxer_context_t * ctx)
 
   if(!strcmp(p->ebml_header.DocType, "matroska"))
     {
-    gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+    gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                       GAVL_META_FORMAT, "Matroska");
-    gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+    gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                       GAVL_META_MIMETYPE, "video/x-matroska");
     }
   else if(!strcmp(p->ebml_header.DocType, "webm"))
     {
-    gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+    gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                       GAVL_META_FORMAT, "Webm");
-    gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+    gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                       GAVL_META_MIMETYPE, "video/webm");
     }
   bgav_input_close(input_mem);
@@ -958,7 +958,7 @@ static void setup_packet(mkv_t * m, bgav_stream_t * s,
       {
       p->pts =
         gavl_time_rescale(m->segment_info.TimecodeScale/1000,
-                          s->data.audio.format.samplerate,
+                          s->data.audio.format->samplerate,
                           pts);
       STREAM_SET_SYNC(s, p->pts);
       t->pts = p->pts + t->frame_samples;
@@ -974,7 +974,7 @@ static void setup_packet(mkv_t * m, bgav_stream_t * s,
     }
   else if(!index)
     {
-    //    if(s->type == BGAV_STREAM_VIDEO)
+    //    if(s->type == GAVF_STREAM_VIDEO)
     //      fprintf(stderr, "Video PTS: %"PRId64"\n", pts);
     p->pts = pts;
     if(m->do_sync && !STREAM_HAS_SYNC(s))
@@ -1009,7 +1009,7 @@ static int process_block(bgav_demuxer_context_t * ctx,
     keyframe = 1;
     }
   
-  //  if(s->type == BGAV_STREAM_AUDIO)
+  //  if(s->type == GAVF_STREAM_AUDIO)
   //    fprintf(stderr, "Audio stream\n");
   
   switch(b->flags & MKV_LACING_MASK)
@@ -1020,7 +1020,7 @@ static int process_block(bgav_demuxer_context_t * ctx,
       set_packet_data(s, p, b->data, b->data_size);
       setup_packet(m, s, p, pts, keyframe, 0);
 
-      if(s->type == BGAV_STREAM_SUBTITLE_TEXT)
+      if(s->type == GAVF_STREAM_TEXT)
         {
         if(bg && bg->BlockDuration)
           p->duration = bg->BlockDuration;

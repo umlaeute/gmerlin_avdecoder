@@ -322,8 +322,8 @@ static int open_ape(bgav_demuxer_context_t * ctx)
 
   ctx->tt = bgav_track_table_create(1);
   s = bgav_track_add_audio_stream(ctx->tt->cur, ctx->opt);
-  s->data.audio.format.samplerate = priv->h.samplerate;
-  s->data.audio.format.num_channels = priv->h.channels;
+  s->data.audio.format->samplerate = priv->h.samplerate;
+  s->data.audio.format->num_channels = priv->h.channels;
   s->data.audio.bits_per_sample = priv->h.bps;
   s->fourcc = BGAV_MK_FOURCC('.', 'a', 'p', 'e');
   s->duration = priv->h.blocksperframe * (priv->h.totalframes -1) +
@@ -338,7 +338,7 @@ static int open_ape(bgav_demuxer_context_t * ctx)
   ctx->tt->cur->duration =
     gavl_samples_to_time(priv->h.samplerate,
                          s->duration);
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "APE");
 
   ctx->index_mode = INDEX_MODE_SIMPLE;

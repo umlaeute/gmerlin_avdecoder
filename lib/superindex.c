@@ -60,7 +60,7 @@ void bgav_superindex_set_sbr(bgav_superindex_t * si, bgav_stream_t * s)
   
   s->timescale *= 2;
   s->duration *= 2;
-  s->data.audio.format.samplerate *= 2;
+  s->data.audio.format->samplerate *= 2;
   
   for(i = 0; i < si->num_entries; i++)
     {
@@ -361,7 +361,7 @@ void bgav_superindex_seek(bgav_superindex_t * idx,
   STREAM_SET_SYNC(s, idx->entries[i].pts);
   
   /* Handle audio preroll */
-  if((s->type == BGAV_STREAM_AUDIO) && s->data.audio.preroll)
+  if((s->type == GAVF_STREAM_AUDIO) && s->data.audio.preroll)
     {
     while(i >= s->first_index_position)
       {
@@ -459,9 +459,9 @@ merge_fileindex_video(bgav_superindex_t * idx, bgav_stream_t * s)
 
 void bgav_superindex_merge_fileindex(bgav_superindex_t * idx, bgav_stream_t * s)
   {
-  if(s->type == BGAV_STREAM_AUDIO)
+  if(s->type == GAVF_STREAM_AUDIO)
     merge_fileindex_audio(idx, s);
-  else if(s->type == BGAV_STREAM_VIDEO)
+  else if(s->type == GAVF_STREAM_VIDEO)
     merge_fileindex_video(idx, s);
 
   //  fprintf(stderr, "Merged fileindex\n");

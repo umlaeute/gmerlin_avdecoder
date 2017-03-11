@@ -133,16 +133,16 @@ static gavl_source_status_t decode_frame_dts(bgav_stream_t * s)
 
     if(priv->need_format)
       {
-      s->data.audio.format.samplerate = sample_rate;
-      s->data.audio.format.samples_per_frame = BLOCK_SAMPLES;
+      s->data.audio.format->samplerate = sample_rate;
+      s->data.audio.format->samples_per_frame = BLOCK_SAMPLES;
       s->codec_bitrate = bit_rate;
-      s->data.audio.format.sample_format = GAVL_SAMPLE_FLOAT;
+      s->data.audio.format->sample_format = GAVL_SAMPLE_FLOAT;
       
-      bgav_dca_flags_2_channel_setup(flags, &s->data.audio.format);
+      bgav_dca_flags_2_channel_setup(flags, s->data.audio.format);
   
-      priv->frame = gavl_audio_frame_create(&s->data.audio.format);
+      priv->frame = gavl_audio_frame_create(s->data.audio.format);
 
-      gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
+      gavl_dictionary_set_string(s->m, GAVL_META_FORMAT,
                         "DTS");
       }
     
@@ -156,7 +156,7 @@ static gavl_source_status_t decode_frame_dts(bgav_stream_t * s)
   
   dts_block (priv->state);
 
-  for(j = 0; j < s->data.audio.format.num_channels; j++)
+  for(j = 0; j < s->data.audio.format->num_channels; j++)
     {
 #ifdef LIBDTS_DOUBLE
     for(k = 0; k < 256; k++)
@@ -180,12 +180,12 @@ static gavl_source_status_t decode_frame_dts(bgav_stream_t * s)
 #if 0
   
   s->data.audio.frame->samples.f = priv->frame->samples.f;
-  for(j = 0; j < s->data.audio.format.num_channels; j++)
+  for(j = 0; j < s->data.audio.format->num_channels; j++)
     s->data.audio.frame->channels.f[j] = priv->frame->channels.f[j];
 
   s->data.audio.frame->valid_samples = BLOCK_SAMPLES;
 #else
-  gavl_audio_frame_copy_ptrs(&s->data.audio.format,
+  gavl_audio_frame_copy_ptrs(s->data.audio.format,
                              s->data.audio.frame, priv->frame);
 #endif
 

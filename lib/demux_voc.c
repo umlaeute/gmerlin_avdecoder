@@ -176,12 +176,12 @@ static int open_voc(bgav_demuxer_context_t * ctx)
           {
           if(!bgav_input_read_data(ctx->input, &tmp_8, 1))
             return 0;
-          s->data.audio.format.samplerate = 1000000 / (256 - tmp_8);
+          s->data.audio.format->samplerate = 1000000 / (256 - tmp_8);
           if(!bgav_input_read_data(ctx->input, &tmp_8, 1))
             return 0;
           if(!set_codec(tmp_8, s, 1))
             return 0;
-          s->data.audio.format.num_channels = 1;
+          s->data.audio.format->num_channels = 1;
           }
         else
           bgav_input_skip(ctx->input, 2);
@@ -200,17 +200,17 @@ static int open_voc(bgav_demuxer_context_t * ctx)
 
         if(!bgav_input_read_data(ctx->input, &tmp_8, 1))
           return 0;
-        s->data.audio.format.num_channels = tmp_8+1;
+        s->data.audio.format->num_channels = tmp_8+1;
         
-        s->data.audio.format.samplerate =
-          256000000/(s->data.audio.format.num_channels * (65536 - frequency_divisor));
+        s->data.audio.format->samplerate =
+          256000000/(s->data.audio.format->num_channels * (65536 - frequency_divisor));
         have_extended_info = 1;
         break;
       case VOC_TYPE_NEW_VOICE_DATA: /* New format */
         pos = ctx->input->position;
         if(!bgav_input_read_32_le(ctx->input, &tmp_32))
           return 0;
-        s->data.audio.format.samplerate = tmp_32;
+        s->data.audio.format->samplerate = tmp_32;
 
         if(!bgav_input_read_data(ctx->input, &tmp_8, 1))
           return 0;
@@ -218,7 +218,7 @@ static int open_voc(bgav_demuxer_context_t * ctx)
 
         if(!bgav_input_read_data(ctx->input, &tmp_8, 1))
           return 0;
-        s->data.audio.format.num_channels = tmp_8;
+        s->data.audio.format->num_channels = tmp_8;
         
         if(!bgav_input_read_16_le(ctx->input, &tmp_16))
           return 0;
@@ -236,7 +236,7 @@ static int open_voc(bgav_demuxer_context_t * ctx)
         break;
       }
     }
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "VOC");
 
   return 1;

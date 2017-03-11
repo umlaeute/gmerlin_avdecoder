@@ -396,22 +396,22 @@ static const char * get_op_name(mxf_op_t op)
 typedef struct
   {
   mxf_ul_t ul;
-  bgav_stream_type_t type;
+  gavf_stream_type_t type;
   } stream_entry_t;
 
 /* SMPTE RP224 http://www.smpte-ra.org/mdd/index.html */
 static const stream_entry_t mxf_data_definition_uls[] = {
-  { { 0x06,0x0E,0x2B,0x34,0x04,0x01,0x01,0x01,0x01,0x03,0x02,0x02,0x01,0x00,0x00,0x00 }, BGAV_STREAM_VIDEO },
-  { { 0x06,0x0E,0x2B,0x34,0x04,0x01,0x01,0x01,0x01,0x03,0x02,0x02,0x02,0x00,0x00,0x00 }, BGAV_STREAM_AUDIO },
-  { { 0x06,0x0E,0x2B,0x34,0x04,0x01,0x01,0x05,0x01,0x03,0x02,0x02,0x02,0x02,0x00,0x00 }, BGAV_STREAM_AUDIO },
-  { { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 }, BGAV_STREAM_UNKNOWN /* CODEC_TYPE_DATA */},
+  { { 0x06,0x0E,0x2B,0x34,0x04,0x01,0x01,0x01,0x01,0x03,0x02,0x02,0x01,0x00,0x00,0x00 }, GAVF_STREAM_VIDEO },
+  { { 0x06,0x0E,0x2B,0x34,0x04,0x01,0x01,0x01,0x01,0x03,0x02,0x02,0x02,0x00,0x00,0x00 }, GAVF_STREAM_AUDIO },
+  { { 0x06,0x0E,0x2B,0x34,0x04,0x01,0x01,0x05,0x01,0x03,0x02,0x02,0x02,0x02,0x00,0x00 }, GAVF_STREAM_AUDIO },
+  { { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 }, GAVF_STREAM_NONE /* CODEC_TYPE_DATA */},
 };
 
 static const stream_entry_t * match_stream(const stream_entry_t * se, const mxf_ul_t u1)
   {
   int i = 0;
   
-  while(se[i].type != BGAV_STREAM_UNKNOWN)
+  while(se[i].type != GAVF_STREAM_NONE)
     {
     if(match_ul(se[i].ul, u1, 16))
       return &se[i];
@@ -988,13 +988,13 @@ static int bgav_mxf_package_resolve_refs_2(partition_t * p, mxf_package_t * s)
 
     switch(seq->stream_type)
       {
-      case BGAV_STREAM_AUDIO:
+      case GAVF_STREAM_AUDIO:
         s->num_audio_tracks++;
         break;
-      case BGAV_STREAM_VIDEO:
+      case GAVF_STREAM_VIDEO:
         s->num_video_tracks++;
         break;
-      case BGAV_STREAM_UNKNOWN:
+      case GAVF_STREAM_NONE:
         if(seq->is_timecode)
           {
           s->num_timecode_tracks++;
@@ -1025,7 +1025,7 @@ static int bgav_mxf_package_finalize_descriptors(mxf_file_t * file, mxf_package_
     
     switch(seq->stream_type)
       {
-      case BGAV_STREAM_AUDIO:
+      case GAVF_STREAM_AUDIO:
         d = bgav_mxf_get_source_descriptor(file, s, track);
 
         ce = match_codec(mxf_sound_essence_container_uls, d->essence_container_ul);
@@ -1045,7 +1045,7 @@ static int bgav_mxf_package_finalize_descriptors(mxf_file_t * file, mxf_package_
           }
         
         break;
-      case BGAV_STREAM_VIDEO:
+      case GAVF_STREAM_VIDEO:
         d = bgav_mxf_get_source_descriptor(file, s, track);
 
         ce = match_codec(mxf_picture_essence_container_uls, d->essence_container_ul);
@@ -1064,7 +1064,7 @@ static int bgav_mxf_package_finalize_descriptors(mxf_file_t * file, mxf_package_
             }
           }
         break;
-      case BGAV_STREAM_UNKNOWN:
+      case GAVF_STREAM_NONE:
         break;
       default:
         break;
@@ -1296,8 +1296,8 @@ void bgav_mxf_sequence_dump(int indent, mxf_sequence_t * s)
     do_indent(indent+4); dump_ul_ptr(s->structural_component_refs[i], s->structural_components[i]);
     }
   bgav_diprintf(indent+2, "Type: %s\n",
-                                    (s->stream_type == BGAV_STREAM_AUDIO ? "Audio" :
-                                     (s->stream_type == BGAV_STREAM_VIDEO ? "Video" :
+                                    (s->stream_type == GAVF_STREAM_AUDIO ? "Audio" :
+                                     (s->stream_type == GAVF_STREAM_VIDEO ? "Video" :
                                       (s->is_timecode ? "Timecode" : "Unknown"))));
   }
 

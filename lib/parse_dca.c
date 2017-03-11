@@ -53,8 +53,8 @@ static int parse_frame_dca(bgav_audio_parser_t * parser,
   p->duration = frame_length;
   if(parser->s->codec_bitrate <= 0)
     parser->s->codec_bitrate = bit_rate;
-  if(parser->s->data.audio.format.channel_locations[0] == GAVL_CHID_NONE)
-    bgav_dca_flags_2_channel_setup(flags, &parser->s->data.audio.format);
+  if(parser->s->data.audio.format->channel_locations[0] == GAVL_CHID_NONE)
+    bgav_dca_flags_2_channel_setup(flags, parser->s->data.audio.format);
   //  fprintf(stderr, "Parse frame: %d %d\n", p->data_size, frame_bytes);
   return 1;
   }
@@ -81,8 +81,8 @@ static int parse_dca(bgav_audio_parser_t * parser)
 
       if(!parser->have_format)
         {
-        parser->s->data.audio.format.samplerate = sample_rate;
-        bgav_dca_flags_2_channel_setup(flags, &parser->s->data.audio.format);
+        parser->s->data.audio.format->samplerate = sample_rate;
+        bgav_dca_flags_2_channel_setup(flags, parser->s->data.audio.format);
         parser->have_format = 1;
         parser->s->codec_bitrate = bit_rate;
         return PARSER_HAVE_FORMAT;

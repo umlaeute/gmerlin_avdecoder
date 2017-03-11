@@ -46,7 +46,7 @@ static gavl_source_status_t decode_frame_gavl(bgav_stream_t * s)
   if((st = bgav_stream_get_packet_read(s, &priv->p)) != GAVL_SOURCE_OK)
     return st;  
   
-  gavl_audio_frame_copy_ptrs(&s->data.audio.format, s->data.audio.frame, priv->p->audio_frame);
+  gavl_audio_frame_copy_ptrs(s->data.audio.format, s->data.audio.frame, priv->p->audio_frame);
   return GAVL_SOURCE_OK;
   }
 

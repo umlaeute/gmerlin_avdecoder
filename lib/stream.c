@@ -33,16 +33,16 @@ int bgav_stream_start(bgav_stream_t * stream)
   
   switch(stream->type)
     {
-    case BGAV_STREAM_VIDEO:
+    case GAVF_STREAM_VIDEO:
       result = bgav_video_start(stream);
       break;
-    case BGAV_STREAM_AUDIO:
+    case GAVF_STREAM_AUDIO:
       result = bgav_audio_start(stream);
       break;
-    case BGAV_STREAM_SUBTITLE_OVERLAY:
+    case GAVF_STREAM_OVERLAY:
       result = bgav_overlay_start(stream);
       break;
-    case BGAV_STREAM_SUBTITLE_TEXT:
+    case GAVF_STREAM_TEXT:
       result = bgav_text_start(stream);
       break;
     default:
@@ -62,14 +62,14 @@ void bgav_stream_stop(bgav_stream_t * s)
     {
     switch(s->type)
       {
-      case BGAV_STREAM_VIDEO:
+      case GAVF_STREAM_VIDEO:
         bgav_video_stop(s);
         break;
-      case BGAV_STREAM_AUDIO:
+      case GAVF_STREAM_AUDIO:
         bgav_audio_stop(s);
         break;
-      case BGAV_STREAM_SUBTITLE_TEXT:
-      case BGAV_STREAM_SUBTITLE_OVERLAY:
+      case GAVF_STREAM_TEXT:
+      case GAVF_STREAM_OVERLAY:
         bgav_subtitle_stop(s);
       default:
         break;
@@ -140,24 +140,22 @@ void bgav_stream_free(bgav_stream_t * s)
   
   if(s->file_index)
     bgav_file_index_destroy(s->file_index);
-
-  gavl_dictionary_free(&s->m);
   
   if(s->packet_buffer)
     bgav_packet_buffer_destroy(s->packet_buffer);
 
-  if(((s->type == BGAV_STREAM_SUBTITLE_TEXT) ||
-      (s->type == BGAV_STREAM_SUBTITLE_OVERLAY)) &&
+  if(((s->type == GAVF_STREAM_TEXT) ||
+      (s->type == GAVF_STREAM_OVERLAY)) &&
      s->data.subtitle.subreader)
     bgav_subtitle_reader_destroy(s);
 
-  if((s->type == BGAV_STREAM_SUBTITLE_TEXT) &&
+  if((s->type == GAVF_STREAM_TEXT) &&
      s->data.subtitle.charset)
     {
     free(s->data.subtitle.charset);
     }
   
-  if(s->type == BGAV_STREAM_VIDEO)
+  if(s->type == GAVF_STREAM_VIDEO)
     {
     if(s->data.video.pal.entries)
       free(s->data.video.pal.entries);
@@ -175,24 +173,25 @@ void bgav_stream_dump(bgav_stream_t * s)
   {
   switch(s->type)
     {
-    case BGAV_STREAM_AUDIO:
+    case GAVF_STREAM_AUDIO:
       bgav_dprintf("============ Audio stream ============\n");
       break;
-    case BGAV_STREAM_VIDEO:
+    case GAVF_STREAM_VIDEO:
       bgav_dprintf("============ Video stream ============\n");
       break;
-    case BGAV_STREAM_SUBTITLE_TEXT:
+    case GAVF_STREAM_TEXT:
       bgav_dprintf("=========== Text subtitles ===========\n");
       break;
-    case BGAV_STREAM_SUBTITLE_OVERLAY:
+    case GAVF_STREAM_OVERLAY:
       bgav_dprintf("========= Overlay subtitles ===========\n");
       break;
-    case BGAV_STREAM_UNKNOWN:
+    case GAVF_STREAM_NONE:
+    case GAVF_STREAM_MSG:
       return;
     }
 
   bgav_dprintf("  Metadata:\n");
-  gavl_dictionary_dump(&s->m, 4);
+  gavl_dictionary_dump(s->m, 4);
   bgav_dprintf("\n");
   
   bgav_dprintf("  Fourcc:            ");
@@ -260,17 +259,18 @@ int bgav_stream_skipto(bgav_stream_t * s, gavl_time_t * time, int scale)
   
   switch(s->type)
     {
-    case BGAV_STREAM_AUDIO:
+    case GAVF_STREAM_AUDIO:
       return bgav_audio_skipto(s, time, scale);
       break;
-    case BGAV_STREAM_VIDEO:
+    case GAVF_STREAM_VIDEO:
       return bgav_video_skipto(s, time, scale);
       break;
-    case BGAV_STREAM_SUBTITLE_TEXT:
-    case BGAV_STREAM_SUBTITLE_OVERLAY:
+    case GAVF_STREAM_TEXT:
+    case GAVF_STREAM_OVERLAY:
       return bgav_subtitle_skipto(s, time, scale);
       break;
-    case BGAV_STREAM_UNKNOWN:
+    case GAVF_STREAM_NONE:
+    case GAVF_STREAM_MSG:
       break;
     }
   return 0;
@@ -291,12 +291,12 @@ void bgav_stream_done_packet_write(bgav_stream_t * s, bgav_packet_t * p)
 
   /* If the stream has a constant framerate, all packets have the same
      duration */
-  if(s->type == BGAV_STREAM_VIDEO)
+  if(s->type == GAVF_STREAM_VIDEO)
     {
-    if((s->data.video.format.frame_duration) &&
-       (s->data.video.format.framerate_mode == GAVL_FRAMERATE_CONSTANT) &&
+    if((s->data.video.format->frame_duration) &&
+       (s->data.video.format->framerate_mode == GAVL_FRAMERATE_CONSTANT) &&
        !p->duration)
-      p->duration = s->data.video.format.frame_duration;
+      p->duration = s->data.video.format->frame_duration;
 
     if(s->data.video.pal.size && !s->data.video.pal.sent)
       {
@@ -325,19 +325,20 @@ int bgav_stream_get_index(bgav_stream_t * s)
   {
   switch(s->type)
     {
-    case BGAV_STREAM_AUDIO:
+    case GAVF_STREAM_AUDIO:
       return (int)(s - s->track->audio_streams);
       break;
-    case BGAV_STREAM_VIDEO:
+    case GAVF_STREAM_VIDEO:
       return (int)(s - s->track->video_streams);
       break;
-    case BGAV_STREAM_SUBTITLE_TEXT:
+    case GAVF_STREAM_TEXT:
       return (int)(s - s->track->text_streams);
       break;
-    case BGAV_STREAM_SUBTITLE_OVERLAY:
+    case GAVF_STREAM_OVERLAY:
       return (int)(s - s->track->overlay_streams);
       break;
-    case BGAV_STREAM_UNKNOWN:
+    case GAVF_STREAM_NONE:
+    case GAVF_STREAM_MSG:
       break;
     }
   return -1;
@@ -438,16 +439,16 @@ void bgav_stream_set_from_gavl(bgav_stream_t * s,
   {
   if(afmt)
     {
-    gavl_audio_format_copy(&s->data.audio.format, afmt);
+    gavl_audio_format_copy(s->data.audio.format, afmt);
     s->ci.pre_skip = ci->pre_skip;
-    s->timescale = s->data.audio.format.samplerate;
+    s->timescale = s->data.audio.format->samplerate;
     }
   else if(vfmt)
     {
-    if(s->type == BGAV_STREAM_SUBTITLE_OVERLAY)
-      gavl_video_format_copy(&s->data.subtitle.video.format, vfmt);
-    else if(s->type == BGAV_STREAM_VIDEO)
-      gavl_video_format_copy(&s->data.video.format, vfmt);
+    if(s->type == GAVF_STREAM_OVERLAY)
+      gavl_video_format_copy(s->data.subtitle.video.format, vfmt);
+    else if(s->type == GAVF_STREAM_VIDEO)
+      gavl_video_format_copy(s->data.video.format, vfmt);
 
     s->ci.flags = ci->flags;
     s->timescale = vfmt->timescale;
@@ -457,7 +458,7 @@ void bgav_stream_set_from_gavl(bgav_stream_t * s,
   bgav_stream_set_extradata(s, ci->global_header,
                             ci->global_header_len);
   s->container_bitrate = ci->bitrate;
-  gavl_dictionary_copy(&s->m, m);
+  gavl_dictionary_copy(s->m, m);
   }
                          
 int bgav_streams_foreach(bgav_stream_t * s, int num,

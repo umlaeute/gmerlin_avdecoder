@@ -198,20 +198,20 @@ static int open_smacker(bgav_demuxer_context_t * ctx)
   s->fourcc = priv->h.Signature;
   s->stream_id = VIDEO_ID;
   
-  s->data.video.format.image_width  = priv->h.Width;
-  s->data.video.format.image_height = priv->h.Height;
+  s->data.video.format->image_width  = priv->h.Width;
+  s->data.video.format->image_height = priv->h.Height;
 
-  s->data.video.format.frame_width  = priv->h.Width;
-  s->data.video.format.frame_height = priv->h.Height;
+  s->data.video.format->frame_width  = priv->h.Width;
+  s->data.video.format->frame_height = priv->h.Height;
   
-  s->data.video.format.pixel_width  = 1;
-  s->data.video.format.pixel_height = 1;
+  s->data.video.format->pixel_width  = 1;
+  s->data.video.format->pixel_height = 1;
 
-  s->data.video.format.timescale = 100000;
+  s->data.video.format->timescale = 100000;
   if(priv->h.FrameRate < 0)
-    s->data.video.format.frame_duration = -priv->h.FrameRate;
+    s->data.video.format->frame_duration = -priv->h.FrameRate;
   else
-    s->data.video.format.frame_duration = 100 * priv->h.FrameRate;
+    s->data.video.format->frame_duration = 100 * priv->h.FrameRate;
 
   /* Setup video extradata */
   s->ext_size = 16 + priv->h.TreesSize;
@@ -241,15 +241,15 @@ static int open_smacker(bgav_demuxer_context_t * ctx)
       s->data.audio.bits_per_sample =
         (priv->h.AudioRate[i] & SMK_AUD_16BITS) ? 16 : 8;
 
-      s->data.audio.format.num_channels =
+      s->data.audio.format->num_channels =
         (priv->h.AudioRate[i] & SMK_AUD_STEREO) ? 2 : 1;
       
-      s->data.audio.format.samplerate = priv->h.AudioRate[i] & 0xffffff;
+      s->data.audio.format->samplerate = priv->h.AudioRate[i] & 0xffffff;
       s->stream_id = i + AUDIO_OFFSET;
       }
     }
 
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "Smacker");
   ctx->data_start = ctx->input->position;
   ctx->flags |= BGAV_DEMUXER_HAS_DATA_START;
@@ -426,7 +426,7 @@ static int next_packet_smacker(bgav_demuxer_context_t * ctx)
 
   p->data_size = size + 769;
   
-  p->pts = s->in_position * s->data.video.format.frame_duration;
+  p->pts = s->in_position * s->data.video.format->frame_duration;
   
   bgav_stream_done_packet_write(s, p);
 

@@ -346,17 +346,17 @@ static int find_codec(bgav_stream_t * s, bgav_sdp_media_desc_t * md,
       s->timescale = atoi(pos);
       }
 
-    if(s->type == BGAV_STREAM_AUDIO)
+    if(s->type == GAVF_STREAM_AUDIO)
       {
       pos = strchr(pos, '/');
       if(pos)
         {
         pos++;
-        s->data.audio.format.num_channels = atoi(pos);
+        s->data.audio.format->num_channels = atoi(pos);
         }
       }
     
-    if(s->type == BGAV_STREAM_AUDIO)
+    if(s->type == GAVF_STREAM_AUDIO)
       {
       check_dynamic(s, dynamic_audio_payloads, rtpmap);
       }
@@ -874,7 +874,7 @@ int bgav_demuxer_rtp_open(bgav_demuxer_context_t * ctx,
         init_stream(ctx, s, &sdp->media[i], j);
 
         if(s->fourcc != BGAV_MK_FOURCC('.','m','p','3'))
-          s->data.audio.format.samplerate = s->timescale;
+          s->data.audio.format->samplerate = s->timescale;
         }
       }
     else if(!strcmp(sdp->media[i].media, "video"))
@@ -1392,8 +1392,8 @@ static int init_h264(bgav_stream_t * s)
       }
     }
   /* TODO: Get packetization-mode */
-  s->data.video.format.framerate_mode = GAVL_FRAMERATE_VARIABLE;
-  s->data.video.format.timescale = s->timescale;
+  s->data.video.format->framerate_mode = GAVL_FRAMERATE_VARIABLE;
+  s->data.video.format->timescale = s->timescale;
   s->flags |= STREAM_NO_DURATIONS;
   sp->process = process_h264;
   return 1;
@@ -1821,11 +1821,11 @@ static int init_ogg(bgav_stream_t * s)
     }
   free(config_buffer);
 
-  if(s->type == BGAV_STREAM_VIDEO)
+  if(s->type == GAVF_STREAM_VIDEO)
     {
-    s->data.video.format.timescale = s->timescale;
-    s->data.video.format.frame_duration = 0;
-    s->data.video.format.framerate_mode = GAVL_FRAMERATE_VARIABLE;
+    s->data.video.format->timescale = s->timescale;
+    s->data.video.format->frame_duration = 0;
+    s->data.video.format->framerate_mode = GAVL_FRAMERATE_VARIABLE;
     }
   
   sp->process = process_ogg;

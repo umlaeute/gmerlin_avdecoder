@@ -64,69 +64,69 @@ static int open_rawaudio(bgav_demuxer_context_t * ctx)
   if(!(var = strstr(mimetype, "rate=")))
     return 0; // Required
   
-  s->data.audio.format.samplerate = atoi(var + 5);
+  s->data.audio.format->samplerate = atoi(var + 5);
 
   if(!(var = strstr(mimetype, "channels=")))
-    s->data.audio.format.num_channels = 1;
+    s->data.audio.format->num_channels = 1;
   else
-    s->data.audio.format.num_channels = atoi(var + 9);
+    s->data.audio.format->num_channels = atoi(var + 9);
 
   if(!strncasecmp(mimetype, "audio/L16", 9))
     {
     s->data.audio.bits_per_sample = 16;
-    s->data.audio.format.sample_format = GAVL_SAMPLE_S16;
-    s->data.audio.block_align = 2 * s->data.audio.format.num_channels;
+    s->data.audio.format->sample_format = GAVL_SAMPLE_S16;
+    s->data.audio.block_align = 2 * s->data.audio.format->num_channels;
     s->fourcc = BGAV_MK_FOURCC('t', 'w', 'o', 's');
     }
   else if(!strncasecmp(mimetype, "audio/L8", 8))
     {
     s->data.audio.bits_per_sample = 8;
-    s->data.audio.format.sample_format = GAVL_SAMPLE_U8;
-    s->data.audio.block_align = s->data.audio.format.num_channels;
+    s->data.audio.format->sample_format = GAVL_SAMPLE_U8;
+    s->data.audio.block_align = s->data.audio.format->num_channels;
     s->fourcc = BGAV_WAVID_2_FOURCC(0x01);
     }
 
-  s->data.audio.format.interleave_mode = GAVL_INTERLEAVE_ALL;
+  s->data.audio.format->interleave_mode = GAVL_INTERLEAVE_ALL;
   
-  switch(s->data.audio.format.num_channels)
+  switch(s->data.audio.format->num_channels)
     {
     case 1:
-      s->data.audio.format.channel_locations[0] = GAVL_CHID_FRONT_CENTER;
+      s->data.audio.format->channel_locations[0] = GAVL_CHID_FRONT_CENTER;
       break;
     case 2:
-      s->data.audio.format.channel_locations[0] = GAVL_CHID_FRONT_LEFT;
-      s->data.audio.format.channel_locations[1] = GAVL_CHID_FRONT_RIGHT;
+      s->data.audio.format->channel_locations[0] = GAVL_CHID_FRONT_LEFT;
+      s->data.audio.format->channel_locations[1] = GAVL_CHID_FRONT_RIGHT;
       break;
     case 3:
-      s->data.audio.format.channel_locations[0] = GAVL_CHID_FRONT_LEFT;
-      s->data.audio.format.channel_locations[1] = GAVL_CHID_FRONT_RIGHT;
-      s->data.audio.format.channel_locations[2] = GAVL_CHID_FRONT_CENTER;
+      s->data.audio.format->channel_locations[0] = GAVL_CHID_FRONT_LEFT;
+      s->data.audio.format->channel_locations[1] = GAVL_CHID_FRONT_RIGHT;
+      s->data.audio.format->channel_locations[2] = GAVL_CHID_FRONT_CENTER;
       break;
     case 4: /* Note: 4 channels can also be "left center right surround" but we
                believe, that quad is more common */
-      s->data.audio.format.channel_locations[0] = GAVL_CHID_FRONT_LEFT;
-      s->data.audio.format.channel_locations[1] = GAVL_CHID_FRONT_RIGHT;
-      s->data.audio.format.channel_locations[2] = GAVL_CHID_REAR_LEFT;
-      s->data.audio.format.channel_locations[3] = GAVL_CHID_REAR_RIGHT;
+      s->data.audio.format->channel_locations[0] = GAVL_CHID_FRONT_LEFT;
+      s->data.audio.format->channel_locations[1] = GAVL_CHID_FRONT_RIGHT;
+      s->data.audio.format->channel_locations[2] = GAVL_CHID_REAR_LEFT;
+      s->data.audio.format->channel_locations[3] = GAVL_CHID_REAR_RIGHT;
       break;
     case 5:
-      s->data.audio.format.channel_locations[0] = GAVL_CHID_FRONT_LEFT;
-      s->data.audio.format.channel_locations[1] = GAVL_CHID_FRONT_RIGHT;
-      s->data.audio.format.channel_locations[2] = GAVL_CHID_FRONT_CENTER;
-      s->data.audio.format.channel_locations[3] = GAVL_CHID_SIDE_LEFT;
-      s->data.audio.format.channel_locations[4] = GAVL_CHID_SIDE_RIGHT;
+      s->data.audio.format->channel_locations[0] = GAVL_CHID_FRONT_LEFT;
+      s->data.audio.format->channel_locations[1] = GAVL_CHID_FRONT_RIGHT;
+      s->data.audio.format->channel_locations[2] = GAVL_CHID_FRONT_CENTER;
+      s->data.audio.format->channel_locations[3] = GAVL_CHID_SIDE_LEFT;
+      s->data.audio.format->channel_locations[4] = GAVL_CHID_SIDE_RIGHT;
       break;
     case 6:
-      s->data.audio.format.channel_locations[0] = GAVL_CHID_FRONT_LEFT;
-      s->data.audio.format.channel_locations[1] = GAVL_CHID_FRONT_CENTER_LEFT;
-      s->data.audio.format.channel_locations[2] = GAVL_CHID_FRONT_CENTER;
-      s->data.audio.format.channel_locations[3] = GAVL_CHID_FRONT_RIGHT;
-      s->data.audio.format.channel_locations[4] = GAVL_CHID_FRONT_CENTER_RIGHT;
-      s->data.audio.format.channel_locations[5] = GAVL_CHID_REAR_CENTER;
+      s->data.audio.format->channel_locations[0] = GAVL_CHID_FRONT_LEFT;
+      s->data.audio.format->channel_locations[1] = GAVL_CHID_FRONT_CENTER_LEFT;
+      s->data.audio.format->channel_locations[2] = GAVL_CHID_FRONT_CENTER;
+      s->data.audio.format->channel_locations[3] = GAVL_CHID_FRONT_RIGHT;
+      s->data.audio.format->channel_locations[4] = GAVL_CHID_FRONT_CENTER_RIGHT;
+      s->data.audio.format->channel_locations[5] = GAVL_CHID_REAR_CENTER;
       break;
     }
 
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "LPCM");
   
   
@@ -182,7 +182,7 @@ static void seek_rawaudio(bgav_demuxer_context_t * ctx, int64_t time, int scale)
   if(s->data.audio.bits_per_sample)
     {
     file_position = s->data.audio.block_align * gavl_time_rescale(scale,
-                                                                  s->data.audio.format.samplerate,
+                                                                  s->data.audio.format->samplerate,
                                                                   time);
     }
   else

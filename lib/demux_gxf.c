@@ -262,15 +262,15 @@ static int parse_track(bgav_input_context_t * input,
       break;
     case 9:
       as = bgav_track_add_audio_stream(t, opt);
-      as->data.audio.format.num_channels = 1;
-      as->data.audio.format.samplerate = 48000;
+      as->data.audio.format->num_channels = 1;
+      as->data.audio.format->samplerate = 48000;
       as->data.audio.bits_per_sample = 24;
       as->fourcc = BGAV_WAVID_2_FOURCC(0x0001);
       break;
     case 10:
       as = bgav_track_add_audio_stream(t, opt);
-      as->data.audio.format.num_channels = 1;
-      as->data.audio.format.samplerate = 48000;
+      as->data.audio.format->num_channels = 1;
+      as->data.audio.format->samplerate = 48000;
       as->data.audio.bits_per_sample = 16;
       as->fourcc = BGAV_WAVID_2_FOURCC(0x0001);
       break;
@@ -299,9 +299,9 @@ static int parse_track(bgav_input_context_t * input,
           bgav_input_read_32_be(input, &val_32);
           if((val_32 >= 1) && (val_32 <= 8))
             {
-            vs->data.video.format.timescale =
+            vs->data.video.format->timescale =
               framerate_table[val_32].timescale;
-            vs->data.video.format.frame_duration =
+            vs->data.video.format->frame_duration =
               framerate_table[val_32].frame_duration;
             }
           }
@@ -313,7 +313,7 @@ static int parse_track(bgav_input_context_t * input,
           {
           bgav_input_read_32_be(input, &val_32);
           if(val_32 == 2)
-            vs->data.video.format.interlace_mode =
+            vs->data.video.format->interlace_mode =
               GAVL_INTERLACE_BOTTOM_FIRST;
           }
         else
@@ -443,7 +443,7 @@ static int open_gxf(bgav_demuxer_context_t * ctx)
     track_desc_length -= parse_track(ctx->input, ctx->tt->cur,
                                      ctx->opt);
     }
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "GXF");
 
   /* Skip remaining stuff of the map packet */
@@ -489,8 +489,8 @@ static int open_gxf(bgav_demuxer_context_t * ctx)
   /* Get number of fields and timescales */
   vs = ctx->tt->cur->video_streams;
 
-  priv->timescale      = vs->data.video.format.timescale;
-  priv->frame_duration = vs->data.video.format.frame_duration;
+  priv->timescale      = vs->data.video.format->timescale;
+  priv->frame_duration = vs->data.video.format->frame_duration;
   
   if(vs)
     {
@@ -498,7 +498,7 @@ static int open_gxf(bgav_demuxer_context_t * ctx)
     for(i = 0; i < ctx->tt->cur->num_audio_streams; i++)
       ctx->tt->cur->audio_streams[i].timescale = priv->timescale;
     
-    if(vs->data.video.format.interlace_mode != GAVL_INTERLACE_NONE)
+    if(vs->data.video.format->interlace_mode != GAVL_INTERLACE_NONE)
       priv->num_fields = 2;
     else
       priv->num_fields = 1;
@@ -519,8 +519,8 @@ static int open_gxf(bgav_demuxer_context_t * ctx)
 
     if(priv->last_field > priv->first_field)
       ctx->tt->cur->duration =
-        gavl_time_unscale(vs->data.video.format.timescale,
-                          (int64_t)vs->data.video.format.frame_duration *
+        gavl_time_unscale(vs->data.video.format->timescale,
+                          (int64_t)vs->data.video.format->frame_duration *
                           (priv->last_field - priv->first_field) /
                           priv->num_fields);
     }
@@ -564,7 +564,7 @@ static int next_packet_gxf(bgav_demuxer_context_t * ctx)
       }
     else
       {
-      //      if(s->type == BGAV_STREAM_VIDEO)
+      //      if(s->type == GAVF_STREAM_VIDEO)
       //        dump_media_header(&mh);
       if(priv->do_sync)
         {
@@ -592,7 +592,7 @@ static int next_packet_gxf(bgav_demuxer_context_t * ctx)
         return 0;
       p->data_size = length;
 #if 0
-      if(s->type == BGAV_STREAM_VIDEO)
+      if(s->type == GAVF_STREAM_VIDEO)
         {
         fprintf(stderr, "Got video packet %d:\n", priv->num_fields);
         bgav_packet_dump(p);

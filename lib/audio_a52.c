@@ -86,17 +86,17 @@ static gavl_source_status_t decode_frame_a52(bgav_stream_t * s)
 
     s->codec_bitrate = h.bitrate;
 
-    gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
+    gavl_dictionary_set_string(s->m, GAVL_META_FORMAT,
                       "AC3");
     
 #ifdef LIBA52_DOUBLE
-    s->data.audio.format.sample_format = GAVL_SAMPLE_DOUBLE;
+    s->data.audio.format->sample_format = GAVL_SAMPLE_DOUBLE;
 #else
-    s->data.audio.format.sample_format = GAVL_SAMPLE_FLOAT;
+    s->data.audio.format->sample_format = GAVL_SAMPLE_FLOAT;
 #endif
-    s->data.audio.format.interleave_mode = GAVL_INTERLEAVE_NONE; 
-    bgav_a52_header_get_format(&h, &s->data.audio.format);
-    priv->frame = gavl_audio_frame_create(&s->data.audio.format);
+    s->data.audio.format->interleave_mode = GAVL_INTERLEAVE_NONE; 
+    bgav_a52_header_get_format(&h, s->data.audio.format);
+    priv->frame = gavl_audio_frame_create(s->data.audio.format);
     }
   
   /* Now, decode this */
@@ -127,7 +127,7 @@ static gavl_source_status_t decode_frame_a52(bgav_stream_t * s)
     //    if(!i)
     //      gavl_hexdump((uint8_t*)priv->samples, 16, 16);
     
-    for(j = 0; j < s->data.audio.format.num_channels; j++)
+    for(j = 0; j < s->data.audio.format->num_channels; j++)
       {
       
 #ifdef LIBA52_DOUBLE
@@ -147,7 +147,7 @@ static gavl_source_status_t decode_frame_a52(bgav_stream_t * s)
   if((p->duration > 0) && (p->duration < priv->frame->valid_samples))
     priv->frame->valid_samples = p->duration;
   
-  gavl_audio_frame_copy_ptrs(&s->data.audio.format,
+  gavl_audio_frame_copy_ptrs(s->data.audio.format,
                              s->data.audio.frame, priv->frame);
 
   bgav_stream_done_packet_read(s, p);

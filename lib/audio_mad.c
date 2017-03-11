@@ -99,17 +99,17 @@ static int get_format(bgav_stream_t * s)
   
   /* Get audio format and create frame */
 
-  s->data.audio.format.samplerate = h.samplerate;
+  s->data.audio.format->samplerate = h.samplerate;
 
   if(h.mode == MAD_MODE_SINGLE_CHANNEL)
-    s->data.audio.format.num_channels = 1;
+    s->data.audio.format->num_channels = 1;
   else
-    s->data.audio.format.num_channels = 2;
+    s->data.audio.format->num_channels = 2;
     
-  s->data.audio.format.samplerate = h.samplerate;
-  s->data.audio.format.sample_format = GAVL_SAMPLE_FLOAT;
-  s->data.audio.format.interleave_mode = GAVL_INTERLEAVE_NONE;
-  s->data.audio.format.samples_per_frame =
+  s->data.audio.format->samplerate = h.samplerate;
+  s->data.audio.format->sample_format = GAVL_SAMPLE_FLOAT;
+  s->data.audio.format->interleave_mode = GAVL_INTERLEAVE_NONE;
+  s->data.audio.format->samples_per_frame =
     MAD_NSBSAMPLES(&h) * 32;
 
   if(!s->codec_bitrate)
@@ -119,38 +119,38 @@ static int get_format(bgav_stream_t * s)
     else
       s->codec_bitrate = h.bitrate;
     }
-  gavl_set_channel_setup(&s->data.audio.format);
+  gavl_set_channel_setup(s->data.audio.format);
 
   if(h.flags & MAD_FLAG_MPEG_2_5_EXT)
     {
     if(h.layer == 3)
-      s->data.audio.preroll = s->data.audio.format.samples_per_frame * 30;
+      s->data.audio.preroll = s->data.audio.format->samples_per_frame * 30;
     else
-      s->data.audio.preroll = s->data.audio.format.samples_per_frame;
+      s->data.audio.preroll = s->data.audio.format->samples_per_frame;
     version_string = "2.5";
     }
   else if(h.flags & MAD_FLAG_LSF_EXT)
     {
     if(h.layer == 3)
-      s->data.audio.preroll = s->data.audio.format.samples_per_frame * 30;
+      s->data.audio.preroll = s->data.audio.format->samples_per_frame * 30;
     else
-      s->data.audio.preroll = s->data.audio.format.samples_per_frame;
+      s->data.audio.preroll = s->data.audio.format->samples_per_frame;
     version_string = "2";
     }
   else
     {
     if(h.layer == 3)
-      s->data.audio.preroll = s->data.audio.format.samples_per_frame * 10;
+      s->data.audio.preroll = s->data.audio.format->samples_per_frame * 10;
     else
-      s->data.audio.preroll = s->data.audio.format.samples_per_frame;
+      s->data.audio.preroll = s->data.audio.format->samples_per_frame;
     version_string = "1";
     }
   
-  gavl_dictionary_set_string_nocopy(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string_nocopy(s->m, GAVL_META_FORMAT,
                           bgav_sprintf("MPEG-%s layer %d",
                                        version_string, h.layer));
   
-  priv->audio_frame = gavl_audio_frame_create(&s->data.audio.format);
+  priv->audio_frame = gavl_audio_frame_create(s->data.audio.format);
   return 1;
   }
 
@@ -218,9 +218,9 @@ static gavl_source_status_t decode_frame_mad(bgav_stream_t * s)
     
     mad_synth_frame(&priv->synth, &priv->frame);
 
-    for(i = 0; i < s->data.audio.format.num_channels; i++)
+    for(i = 0; i < s->data.audio.format->num_channels; i++)
       {
-      for(j = 0; j < s->data.audio.format.samples_per_frame; j++)
+      for(j = 0; j < s->data.audio.format->samples_per_frame; j++)
         {
         if (priv->synth.pcm.samples[i][j] >= MAD_F_ONE)
           priv->synth.pcm.samples[i][j] = MAD_F_ONE - 1;
@@ -233,16 +233,16 @@ static gavl_source_status_t decode_frame_mad(bgav_stream_t * s)
         }
       }
     
-    priv->audio_frame->valid_samples   = s->data.audio.format.samples_per_frame;
+    priv->audio_frame->valid_samples   = s->data.audio.format->samples_per_frame;
     }
   else
-    gavl_audio_frame_mute(priv->audio_frame, &s->data.audio.format);
+    gavl_audio_frame_mute(priv->audio_frame, s->data.audio.format);
   
   if(flush && (priv->last_duration > 0) &&
      (priv->last_duration < priv->audio_frame->valid_samples))
     priv->audio_frame->valid_samples = priv->last_duration;
   
-  gavl_audio_frame_copy_ptrs(&s->data.audio.format,
+  gavl_audio_frame_copy_ptrs(s->data.audio.format,
                              s->data.audio.frame, priv->audio_frame);
 #if 0
   fprintf(stderr, "Done decode %ld %ld\n",

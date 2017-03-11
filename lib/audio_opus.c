@@ -84,7 +84,7 @@ static gavl_source_status_t decode_frame_opus(bgav_stream_t * s)
   if(priv->frame->valid_samples > p->duration)
     priv->frame->valid_samples = p->duration;
   
-  gavl_audio_frame_copy_ptrs(&s->data.audio.format,
+  gavl_audio_frame_copy_ptrs(s->data.audio.format,
                              s->data.audio.frame, priv->frame);
   
   ret = GAVL_SOURCE_OK;
@@ -117,8 +117,8 @@ static int init_opus(bgav_stream_t * s)
   err = 0;
   
   priv->dec =
-    opus_multistream_decoder_create(s->data.audio.format.samplerate,
-                                    s->data.audio.format.num_channels,
+    opus_multistream_decoder_create(s->data.audio.format->samplerate,
+                                    s->data.audio.format->num_channels,
                                     priv->h.chtab.stream_count,
                                     priv->h.chtab.coupled_count,
                                     priv->h.chtab.map,
@@ -132,22 +132,22 @@ static int init_opus(bgav_stream_t * s)
     goto fail;
     }
 #ifdef USE_FLOAT
-  s->data.audio.format.sample_format = GAVL_SAMPLE_FLOAT;
+  s->data.audio.format->sample_format = GAVL_SAMPLE_FLOAT;
 #else
-  s->data.audio.format.sample_format = GAVL_SAMPLE_S16;
+  s->data.audio.format->sample_format = GAVL_SAMPLE_S16;
 #endif
-  s->data.audio.format.samples_per_frame = MAX_FRAME_SIZE;
-  s->data.audio.format.interleave_mode = GAVL_INTERLEAVE_ALL;
+  s->data.audio.format->samples_per_frame = MAX_FRAME_SIZE;
+  s->data.audio.format->interleave_mode = GAVL_INTERLEAVE_ALL;
   s->data.audio.preroll = MAX_FRAME_SIZE;
   
-  if(s->data.audio.format.channel_locations[0] == GAVL_CHID_NONE)
+  if(s->data.audio.format->channel_locations[0] == GAVL_CHID_NONE)
     bgav_opus_set_channel_setup(&priv->h,
-                                &s->data.audio.format);
+                                s->data.audio.format);
 
   /* Samples per frame is just the maximum */
   s->src_flags |= GAVL_SOURCE_SRC_FRAMESIZE_MAX;
     
-  priv->frame = gavl_audio_frame_create(&s->data.audio.format);
+  priv->frame = gavl_audio_frame_create(s->data.audio.format);
 
   /* Apply Gain */
 

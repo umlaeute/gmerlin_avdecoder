@@ -333,9 +333,9 @@ static void init_audio_stream(bgav_demuxer_context_t * ctx,
     len = *data;
     data++;
     bg_as->fourcc = BGAV_PTR_2_FOURCC(data);
-    bg_as->data.audio.format.num_channels = 1;
+    bg_as->data.audio.format->num_channels = 1;
     bg_as->data.audio.bits_per_sample = 16;
-    bg_as->data.audio.format.samplerate = 8000;
+    bg_as->data.audio.format->samplerate = 8000;
     }
   else
     {
@@ -359,12 +359,12 @@ static void init_audio_stream(bgav_demuxer_context_t * ctx,
     if (version == 5)
       data += 6; //0,srate,0
   
-    bg_as->data.audio.format.samplerate = BGAV_PTR_2_16BE(data);data+=2;
+    bg_as->data.audio.format->samplerate = BGAV_PTR_2_16BE(data);data+=2;
     data += 2;  // 0
     samplesize = BGAV_PTR_2_16BE(data);data += 2;
     samplesize /= 8;
     bg_as->data.audio.bits_per_sample = samplesize * 8;
-    bg_as->data.audio.format.num_channels = BGAV_PTR_2_16BE(data);data+=2;
+    bg_as->data.audio.format->num_channels = BGAV_PTR_2_16BE(data);data+=2;
     if (version == 5)
       {
       data += 4;  // "genr"
@@ -523,22 +523,22 @@ static void init_video_stream(bgav_demuxer_context_t * ctx,
 
   /* emulate BITMAPINFOHEADER */
 
-  bg_vs->data.video.format.frame_width = BGAV_PTR_2_16BE(data);data+=2;
-  bg_vs->data.video.format.frame_height = BGAV_PTR_2_16BE(data);data+=2;
+  bg_vs->data.video.format->frame_width = BGAV_PTR_2_16BE(data);data+=2;
+  bg_vs->data.video.format->frame_height = BGAV_PTR_2_16BE(data);data+=2;
 
-  bg_vs->data.video.format.image_width = bg_vs->data.video.format.frame_width;
-  bg_vs->data.video.format.image_height = bg_vs->data.video.format.frame_height;
+  bg_vs->data.video.format->image_width = bg_vs->data.video.format->frame_width;
+  bg_vs->data.video.format->image_height = bg_vs->data.video.format->frame_height;
 
-  bg_vs->data.video.format.pixel_width = 1;
-  bg_vs->data.video.format.pixel_height = 1;
+  bg_vs->data.video.format->pixel_width = 1;
+  bg_vs->data.video.format->pixel_height = 1;
     
-  // bg_vs->data.video.format.framerate_num = BGAV_PTR_2_16BE(data);data+=2;
-  //  bg_vs->data.video.format.framerate_den = 1;
+  // bg_vs->data.video.format->framerate_num = BGAV_PTR_2_16BE(data);data+=2;
+  //  bg_vs->data.video.format->framerate_den = 1;
   // we probably won't even care about fps
-  //  if (bg_vs->data.video.format.framerate_num<=0) bg_vs->data.video.format.framerate_num=24; 
+  //  if (bg_vs->data.video.format->framerate_num<=0) bg_vs->data.video.format->framerate_num=24; 
 
-  bg_vs->data.video.format.timescale = 1000;
-  bg_vs->data.video.format.framerate_mode = GAVL_FRAMERATE_VARIABLE;
+  bg_vs->data.video.format->timescale = 1000;
+  bg_vs->data.video.format->framerate_mode = GAVL_FRAMERATE_VARIABLE;
   
   data += 2; // fps =  BGAV_PTR_2_16BE(data); data+=2; /* fps */
   
@@ -585,7 +585,7 @@ static void init_video_stream(bgav_demuxer_context_t * ctx,
     {
     tmp=BGAV_PTR_2_16BE(data);data+=2;
     //    if(tmp>0){
-    //    bg_vs->data.video.format.framerate_num = tmp;
+    //    bg_vs->data.video.format->framerate_num = tmp;
     //    }
     } else {
     int fps=BGAV_PTR_2_16BE(data);data+=2;
@@ -869,7 +869,7 @@ int bgav_demux_rm_open_with_header(bgav_demuxer_context_t * ctx,
       }
     }
 
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "RM");
   
   /* Handle metadata */
@@ -877,14 +877,14 @@ int bgav_demux_rm_open_with_header(bgav_demuxer_context_t * ctx,
   cnv = bgav_charset_converter_create(ctx->opt, "ISO-8859-1", BGAV_UTF8);
 
   if(priv->header->cont.title_len)
-    gavl_dictionary_set_string_nocopy(&track->metadata,
+    gavl_dictionary_set_string_nocopy(track->metadata,
                             GAVL_META_TITLE,
                             bgav_convert_string(cnv,
                                                 priv->header->cont.title,
                                                 priv->header->cont.title_len,
                                                 NULL));
   if(priv->header->cont.author_len)
-    gavl_dictionary_set_string_nocopy(&track->metadata,
+    gavl_dictionary_set_string_nocopy(track->metadata,
                             GAVL_META_AUTHOR,
                             bgav_convert_string(cnv,
                                                 priv->header->cont.author,
@@ -892,7 +892,7 @@ int bgav_demux_rm_open_with_header(bgav_demuxer_context_t * ctx,
                                                 NULL));
   
   if(priv->header->cont.copyright_len)
-    gavl_dictionary_set_string_nocopy(&track->metadata,
+    gavl_dictionary_set_string_nocopy(track->metadata,
                             GAVL_META_COPYRIGHT,
                             bgav_convert_string(cnv,
                                                 priv->header->cont.copyright,
@@ -900,7 +900,7 @@ int bgav_demux_rm_open_with_header(bgav_demuxer_context_t * ctx,
                                                 NULL));
   
   if(priv->header->cont.comment_len)
-    gavl_dictionary_set_string_nocopy(&track->metadata,
+    gavl_dictionary_set_string_nocopy(track->metadata,
                             GAVL_META_COMMENT,
                             bgav_convert_string(cnv,
                                                 priv->header->cont.comment,
@@ -1535,7 +1535,7 @@ static int next_packet_rmff(bgav_demuxer_context_t * ctx)
       }
     }
   
-  if(stream->type == BGAV_STREAM_VIDEO)
+  if(stream->type == GAVF_STREAM_VIDEO)
     {
     rs = stream->priv;
     if(rm->do_seek)
@@ -1552,7 +1552,7 @@ static int next_packet_rmff(bgav_demuxer_context_t * ctx)
       result = process_video_chunk(ctx, &h, stream);
     rs->data_pos = ctx->input->position;
     }
-  else if(stream->type == BGAV_STREAM_AUDIO)
+  else if(stream->type == GAVF_STREAM_AUDIO)
     {
     rs = stream->priv;
     if(rm->do_seek)

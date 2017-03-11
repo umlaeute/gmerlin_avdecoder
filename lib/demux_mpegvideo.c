@@ -143,7 +143,7 @@ static int open_mpegvideo(bgav_demuxer_context_t * ctx)
   
   ctx->tt->cur->duration = GAVL_TIME_UNDEFINED;
 
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "Elementary video stream");
   ctx->index_mode = INDEX_MODE_MIXED;
   

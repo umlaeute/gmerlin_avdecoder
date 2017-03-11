@@ -28,7 +28,7 @@ const gavl_chapter_list_t * bgav_get_chapter_list(bgav_t * bgav, int track)
   const gavl_chapter_list_t * ret;
   
   if((track >= bgav->tt->num_tracks) || (track < 0) ||
-     !(ret = gavl_dictionary_get_chapter_list(&bgav->tt->tracks[track].metadata)))
+     !(ret = gavl_dictionary_get_chapter_list(bgav->tt->tracks[track].metadata)))
     return NULL;
   return ret;
   }

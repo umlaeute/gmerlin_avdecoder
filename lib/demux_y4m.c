@@ -119,12 +119,12 @@ static int open_y4m(bgav_demuxer_context_t * ctx)
     switch(*pos)
       {
       case 'W':
-        s->data.video.format.image_width = atoi(pos+1);
-        s->data.video.format.frame_width  = s->data.video.format.image_width;
+        s->data.video.format->image_width = atoi(pos+1);
+        s->data.video.format->frame_width  = s->data.video.format->image_width;
         break;
       case 'H':
-        s->data.video.format.image_height = atoi(pos+1);
-        s->data.video.format.frame_height  = s->data.video.format.image_height;
+        s->data.video.format->image_height = atoi(pos+1);
+        s->data.video.format->frame_height  = s->data.video.format->image_height;
         break;
       case 'C':
         format = pos+1;
@@ -134,29 +134,29 @@ static int open_y4m(bgav_demuxer_context_t * ctx)
           {
           case 'p':
           case '?':
-            s->data.video.format.interlace_mode = GAVL_INTERLACE_NONE;
+            s->data.video.format->interlace_mode = GAVL_INTERLACE_NONE;
             break;
           case 't':
-            s->data.video.format.interlace_mode = GAVL_INTERLACE_TOP_FIRST;
+            s->data.video.format->interlace_mode = GAVL_INTERLACE_TOP_FIRST;
             break;
           case 'b':
-            s->data.video.format.interlace_mode = GAVL_INTERLACE_BOTTOM_FIRST;
+            s->data.video.format->interlace_mode = GAVL_INTERLACE_BOTTOM_FIRST;
             break;
           case 'm':
-            s->data.video.format.interlace_mode = GAVL_INTERLACE_MIXED;
+            s->data.video.format->interlace_mode = GAVL_INTERLACE_MIXED;
             break;
           }
         break;
       case 'F':
         if(sscanf(pos+1, "%d:%d",
-                  &s->data.video.format.timescale,
-                  &s->data.video.format.frame_duration) < 2)
+                  &s->data.video.format->timescale,
+                  &s->data.video.format->frame_duration) < 2)
           return 0;
         break;
       case 'A':
         if(sscanf(pos+1, "%d:%d",
-                  &s->data.video.format.pixel_width,
-                  &s->data.video.format.pixel_height) < 2)
+                  &s->data.video.format->pixel_width,
+                  &s->data.video.format->pixel_height) < 2)
           return 0;
         break;
       default:
@@ -168,26 +168,26 @@ static int open_y4m(bgav_demuxer_context_t * ctx)
     }
 
   /* Set default values */
-  if(!s->data.video.format.timescale ||
-     !s->data.video.format.frame_duration)
+  if(!s->data.video.format->timescale ||
+     !s->data.video.format->frame_duration)
     {
-    s->data.video.format.timescale = 25; // Completely random
-    s->data.video.format.frame_duration = 1;
+    s->data.video.format->timescale = 25; // Completely random
+    s->data.video.format->frame_duration = 1;
     }
   
-  if(!s->data.video.format.pixel_width ||
-     !s->data.video.format.pixel_height)
+  if(!s->data.video.format->pixel_width ||
+     !s->data.video.format->pixel_height)
     {
-    s->data.video.format.pixel_width = 1;
-    s->data.video.format.pixel_height = 1;
+    s->data.video.format->pixel_width = 1;
+    s->data.video.format->pixel_height = 1;
     }
   
-  if(s->data.video.format.interlace_mode == GAVL_INTERLACE_MIXED)
+  if(s->data.video.format->interlace_mode == GAVL_INTERLACE_MIXED)
     {
-    s->data.video.format.interlace_mode = GAVL_INTERLACE_MIXED;
-    s->data.video.format.timescale *= 2;
-    s->data.video.format.frame_duration *= 2;
-    s->data.video.format.framerate_mode = GAVL_FRAMERATE_VARIABLE;
+    s->data.video.format->interlace_mode = GAVL_INTERLACE_MIXED;
+    s->data.video.format->timescale *= 2;
+    s->data.video.format->frame_duration *= 2;
+    s->data.video.format->framerate_mode = GAVL_FRAMERATE_VARIABLE;
     }
   
   s->ci.flags &= ~GAVL_COMPRESSION_HAS_B_FRAMES;
@@ -203,8 +203,8 @@ static int open_y4m(bgav_demuxer_context_t * ctx)
 
   bgav_stream_set_extradata(s, (const uint8_t*)format, ext_len);
   
-  w = s->data.video.format.image_width;
-  h = s->data.video.format.image_height;
+  w = s->data.video.format->image_width;
+  h = s->data.video.format->image_height;
   
   if(!strncmp(format, "420", 3))
     priv->buf_size = w * h + (w/2) * (h/2) + (w/2) * (h/2);
@@ -226,7 +226,7 @@ static int open_y4m(bgav_demuxer_context_t * ctx)
   
   s->fourcc = BGAV_MK_FOURCC('y','4','m',' ');
   
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "yuv4mpeg");
   
   ctx->index_mode = INDEX_MODE_SIMPLE;
@@ -274,7 +274,7 @@ static int next_packet_y4m(bgav_demuxer_context_t * ctx)
   p->pts = priv->pts;
   
   PACKET_SET_KEYFRAME(p);
-  p->duration = s->data.video.format.frame_duration;
+  p->duration = s->data.video.format->frame_duration;
   
   pos = next_tag(priv->line);
   while(pos)
@@ -286,31 +286,31 @@ static int next_packet_y4m(bgav_demuxer_context_t * ctx)
           {
           case 't':
             p->ilace = GAVL_INTERLACE_TOP_FIRST;
-            p->duration = s->data.video.format.frame_duration;
+            p->duration = s->data.video.format->frame_duration;
             break;
           case 'T':
             p->ilace = GAVL_INTERLACE_TOP_FIRST;
-            p->duration = (s->data.video.format.frame_duration*3)/2;
+            p->duration = (s->data.video.format->frame_duration*3)/2;
             break;
           case 'b':
             p->ilace = GAVL_INTERLACE_BOTTOM_FIRST;
-            p->duration = s->data.video.format.frame_duration;
+            p->duration = s->data.video.format->frame_duration;
             break;
           case 'B':
             p->ilace = GAVL_INTERLACE_BOTTOM_FIRST;
-            p->duration = (s->data.video.format.frame_duration*3)/2;
+            p->duration = (s->data.video.format->frame_duration*3)/2;
             break;
           case '1':
             p->ilace = GAVL_INTERLACE_NONE;
-            p->duration = s->data.video.format.frame_duration;
+            p->duration = s->data.video.format->frame_duration;
             break;
           case '2':
             p->ilace = GAVL_INTERLACE_NONE;
-            p->duration = 2 * s->data.video.format.frame_duration;
+            p->duration = 2 * s->data.video.format->frame_duration;
             break;
           case '3':
             p->ilace = GAVL_INTERLACE_NONE;
-            p->duration = 3 * s->data.video.format.frame_duration;
+            p->duration = 3 * s->data.video.format->frame_duration;
             break;
           }
         break;

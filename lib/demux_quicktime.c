@@ -257,13 +257,13 @@ static void stream_init(bgav_stream_t * bgav_s, qt_trak_t * trak,
   
   /* Set encoding software */
   if(trak->mdia.hdlr.component_name)
-    gavl_dictionary_set_string(&bgav_s->m, GAVL_META_SOFTWARE,
+    gavl_dictionary_set_string(bgav_s->m, GAVL_META_SOFTWARE,
                       trak->mdia.hdlr.component_name);
 
-  time_to_metadata(&bgav_s->m,
+  time_to_metadata(bgav_s->m,
                    GAVL_META_DATE_CREATE,
                    trak->mdia.mdhd.creation_time);
-  time_to_metadata(&bgav_s->m,
+  time_to_metadata(bgav_s->m,
                    GAVL_META_DATE_MODIFY,
                    trak->mdia.mdhd.modification_time);
   
@@ -524,7 +524,7 @@ static void build_index(bgav_demuxer_context_t * ctx)
     
     bgav_s = bgav_track_find_stream_all(ctx->tt->cur, stream_id);
 
-    if(bgav_s && (bgav_s->type == BGAV_STREAM_AUDIO))
+    if(bgav_s && (bgav_s->type == GAVF_STREAM_AUDIO))
       {
       s = bgav_s->priv;
 
@@ -611,7 +611,7 @@ static void build_index(bgav_demuxer_context_t * ctx)
           s->stsc_pos++;
         }
       }
-    else if(bgav_s && (bgav_s->type == BGAV_STREAM_VIDEO))
+    else if(bgav_s && (bgav_s->type == GAVF_STREAM_VIDEO))
       {
       s = bgav_s->priv;
       for(j = 0; j < s->stbl->stsc.entries[s->stsc_pos].samples_per_chunk; j++)
@@ -702,8 +702,8 @@ static void build_index(bgav_demuxer_context_t * ctx)
         }
       }
     else if(bgav_s &&
-            ((bgav_s->type == BGAV_STREAM_SUBTITLE_TEXT) ||
-             (bgav_s->type == BGAV_STREAM_SUBTITLE_OVERLAY)))
+            ((bgav_s->type == GAVF_STREAM_TEXT) ||
+             (bgav_s->type == GAVF_STREAM_OVERLAY)))
       {
       s = bgav_s->priv;
       
@@ -771,20 +771,20 @@ static void build_index(bgav_demuxer_context_t * ctx)
   }
 
 #define SET_UDTA_STRING(gavl_name, src) \
-  if(!gavl_dictionary_get_string(&ctx->tt->cur->metadata, gavl_name) && moov->udta.src) \
+  if(!gavl_dictionary_get_string(ctx->tt->cur->metadata, gavl_name) && moov->udta.src) \
     {                                                                   \
     if(moov->udta.have_ilst)                                            \
-      gavl_dictionary_set_string(&ctx->tt->cur->metadata, gavl_name, moov->udta.src); \
+      gavl_dictionary_set_string(ctx->tt->cur->metadata, gavl_name, moov->udta.src); \
     else                                                                \
-      gavl_dictionary_set_string_nocopy(&ctx->tt->cur->metadata, gavl_name, \
+      gavl_dictionary_set_string_nocopy(ctx->tt->cur->metadata, gavl_name, \
                               bgav_convert_string(cnv, moov->udta.src, -1, NULL)); \
     }
 
 #define SET_UDTA_INT(gavl_name, src) \
-  if(!gavl_dictionary_get_string(&ctx->tt->cur->metadata, gavl_name) && moov->udta.src && \
+  if(!gavl_dictionary_get_string(ctx->tt->cur->metadata, gavl_name) && moov->udta.src && \
      isdigit(*(moov->udta.src)))                                        \
     { \
-    gavl_dictionary_set_int(&ctx->tt->cur->metadata, gavl_name, atoi(moov->udta.src)); \
+    gavl_dictionary_set_int(ctx->tt->cur->metadata, gavl_name, atoi(moov->udta.src)); \
     }
 
 static void set_metadata(bgav_demuxer_context_t * ctx)
@@ -811,17 +811,17 @@ static void set_metadata(bgav_demuxer_context_t * ctx)
   SET_UDTA_STRING(GAVL_META_COMMENT,   inf);
   SET_UDTA_STRING(GAVL_META_AUTHOR,    aut);
   
-  if(!gavl_dictionary_get_string(&ctx->tt->cur->metadata, GAVL_META_TRACKNUMBER)
+  if(!gavl_dictionary_get_string(ctx->tt->cur->metadata, GAVL_META_TRACKNUMBER)
      && moov->udta.trkn)
     {
-    gavl_dictionary_set_int(&ctx->tt->cur->metadata, GAVL_META_TRACKNUMBER,
+    gavl_dictionary_set_int(ctx->tt->cur->metadata, GAVL_META_TRACKNUMBER,
                           moov->udta.trkn);
     }
 
-  time_to_metadata(&ctx->tt->cur->metadata,
+  time_to_metadata(ctx->tt->cur->metadata,
                    GAVL_META_DATE_CREATE,
                    moov->mvhd.creation_time);
-  time_to_metadata(&ctx->tt->cur->metadata,
+  time_to_metadata(ctx->tt->cur->metadata,
                    GAVL_META_DATE_MODIFY,
                    moov->mvhd.modification_time);
 
@@ -873,10 +873,10 @@ static int init_mp3on4(bgav_stream_t * s)
   channel_config = (s->ext_data[1] >> 3) & 0x0f;
   if(!channel_config || (channel_config > 8))
     return 0;
-  s->data.audio.format.num_channels = mp3on4_channels[channel_config].num_channels;
-  memcpy(s->data.audio.format.channel_locations,
+  s->data.audio.format->num_channels = mp3on4_channels[channel_config].num_channels;
+  memcpy(s->data.audio.format->channel_locations,
          mp3on4_channels[channel_config].channels,
-         s->data.audio.format.num_channels * sizeof(mp3on4_channels[channel_config].channels[0]));
+         s->data.audio.format->num_channels * sizeof(mp3on4_channels[channel_config].channels[0]));
   return 1;
   }
 
@@ -1102,7 +1102,7 @@ static void setup_chapter_track(bgav_demuxer_context_t * ctx, qt_trak_t * trak)
              "Chapters detected but stream is not seekable");
     return;
     }
-  if(gavl_dictionary_get_chapter_list(&ctx->tt->cur->metadata))
+  if(gavl_dictionary_get_chapter_list(ctx->tt->cur->metadata))
     {
     bgav_log(ctx->opt, BGAV_LOG_WARNING, LOG_DOMAIN,
              "More than one chapter track, choosing first");
@@ -1137,7 +1137,7 @@ static void setup_chapter_track(bgav_demuxer_context_t * ctx, qt_trak_t * trak)
   
   total_chapters = bgav_qt_trak_samples(trak);
 
-  cl = gavl_dictionary_add_chapter_list(&ctx->tt->cur->metadata, trak->mdia.mdhd.time_scale);
+  cl = gavl_dictionary_add_chapter_list(ctx->tt->cur->metadata, trak->mdia.mdhd.time_scale);
   
   chunk_index = 0;
   stts_index = 0;
@@ -1232,7 +1232,7 @@ static void init_audio(bgav_demuxer_context_t * ctx,
   bgav_qt_mdhd_get_language(&trak->mdia.mdhd,
                             language);
 
-  gavl_dictionary_set_string(&bg_as->m, GAVL_META_LANGUAGE, language);
+  gavl_dictionary_set_string(bg_as->m, GAVL_META_LANGUAGE, language);
   
   desc = &stsd->entries[0].desc;
 
@@ -1242,8 +1242,8 @@ static void init_audio(bgav_demuxer_context_t * ctx,
       
   bg_as->timescale = trak->mdia.mdhd.time_scale;
   bg_as->fourcc    = desc->fourcc;
-  bg_as->data.audio.format.num_channels = desc->format.audio.num_channels;
-  bg_as->data.audio.format.samplerate = (int)(desc->format.audio.samplerate+0.5);
+  bg_as->data.audio.format->num_channels = desc->format.audio.num_channels;
+  bg_as->data.audio.format->samplerate = (int)(desc->format.audio.samplerate+0.5);
   bg_as->data.audio.bits_per_sample = desc->format.audio.bits_per_sample;
   if(desc->version == 1)
     {
@@ -1257,7 +1257,7 @@ static void init_audio(bgav_demuxer_context_t * ctx,
   if(desc->format.audio.has_chan)
     {
     bgav_qt_chan_get(&desc->format.audio.chan,
-                     &bg_as->data.audio.format);
+                     bg_as->data.audio.format);
     }
       
   /* Set mp4 extradata */
@@ -1367,13 +1367,13 @@ static void init_audio(bgav_demuxer_context_t * ctx,
 
   if(bg_as->fourcc == BGAV_MK_FOURCC('s','a','m','r'))
     {
-    bg_as->data.audio.format.num_channels = 1;
-    bg_as->data.audio.format.samplerate = 8000;
+    bg_as->data.audio.format->num_channels = 1;
+    bg_as->data.audio.format->samplerate = 8000;
     }
   else if(bg_as->fourcc == BGAV_MK_FOURCC('s','a','w','b'))
     {
-    bg_as->data.audio.format.num_channels = 1;
-    bg_as->data.audio.format.samplerate = 16000;
+    bg_as->data.audio.format->num_channels = 1;
+    bg_as->data.audio.format->samplerate = 16000;
     }
   /* AC3 in mp4 can have multiple frames per packet */
   else if(bg_as->fourcc == BGAV_MK_FOURCC('a', 'c', '-', '3'))
@@ -1439,10 +1439,10 @@ static void init_video(bgav_demuxer_context_t * ctx,
      (bg_vs->fourcc == BGAV_MK_FOURCC('j','p','e','g')))
     bg_vs->flags |= STREAM_PARSE_FRAME;
   
-  bg_vs->data.video.format.image_width = desc->format.video.width;
-  bg_vs->data.video.format.image_height = desc->format.video.height;
-  bg_vs->data.video.format.frame_width = desc->format.video.width;
-  bg_vs->data.video.format.frame_height = desc->format.video.height;
+  bg_vs->data.video.format->image_width = desc->format.video.width;
+  bg_vs->data.video.format->image_height = desc->format.video.height;
+  bg_vs->data.video.format->frame_width = desc->format.video.width;
+  bg_vs->data.video.format->frame_height = desc->format.video.height;
 
   if(!trak->mdia.minf.stbl.has_stss ||
      (bgav_qt_stts_num_samples(&trak->mdia.minf.stbl.stts) ==
@@ -1453,13 +1453,13 @@ static void init_video(bgav_demuxer_context_t * ctx,
   
   if(desc->format.video.has_pasp)
     {
-    bg_vs->data.video.format.pixel_width = desc->format.video.pasp.hSpacing;
-    bg_vs->data.video.format.pixel_height = desc->format.video.pasp.vSpacing;
+    bg_vs->data.video.format->pixel_width = desc->format.video.pasp.hSpacing;
+    bg_vs->data.video.format->pixel_height = desc->format.video.pasp.vSpacing;
     }
   else
     {
-    bg_vs->data.video.format.pixel_width = 1;
-    bg_vs->data.video.format.pixel_height = 1;
+    bg_vs->data.video.format->pixel_width = 1;
+    bg_vs->data.video.format->pixel_height = 1;
     }
   if(desc->format.video.has_fiel)
     {
@@ -1467,33 +1467,33 @@ static void init_video(bgav_demuxer_context_t * ctx,
       {
       if((desc->format.video.fiel.detail == 14) ||
          (desc->format.video.fiel.detail == 6))
-        bg_vs->data.video.format.interlace_mode = GAVL_INTERLACE_BOTTOM_FIRST;
+        bg_vs->data.video.format->interlace_mode = GAVL_INTERLACE_BOTTOM_FIRST;
       else if((desc->format.video.fiel.detail == 9) ||
               (desc->format.video.fiel.detail == 1))
-        bg_vs->data.video.format.interlace_mode = GAVL_INTERLACE_TOP_FIRST;
+        bg_vs->data.video.format->interlace_mode = GAVL_INTERLACE_TOP_FIRST;
       }
     }
   bg_vs->data.video.depth = desc->format.video.depth;
       
-  bg_vs->data.video.format.timescale = trak->mdia.mdhd.time_scale;
+  bg_vs->data.video.format->timescale = trak->mdia.mdhd.time_scale;
 
   /* We set the timescale here, because we need it before the demuxer sets it. */
 
   bg_vs->timescale = trak->mdia.mdhd.time_scale;
       
-  bg_vs->data.video.format.frame_duration =
+  bg_vs->data.video.format->frame_duration =
     trak->mdia.minf.stbl.stts.entries[0].duration;
 
   /* Some quicktime movies have just a still image */
   if((trak->mdia.minf.stbl.stts.num_entries == 1) &&
      (trak->mdia.minf.stbl.stts.entries[0].count == 1))
-    bg_vs->data.video.format.framerate_mode = GAVL_FRAMERATE_STILL;
+    bg_vs->data.video.format->framerate_mode = GAVL_FRAMERATE_STILL;
   else if((trak->mdia.minf.stbl.stts.num_entries == 1) ||
           ((trak->mdia.minf.stbl.stts.num_entries == 2) &&
            (trak->mdia.minf.stbl.stts.entries[1].count == 1)))
-    bg_vs->data.video.format.framerate_mode = GAVL_FRAMERATE_CONSTANT;
+    bg_vs->data.video.format->framerate_mode = GAVL_FRAMERATE_CONSTANT;
   else
-    bg_vs->data.video.format.framerate_mode = GAVL_FRAMERATE_VARIABLE;
+    bg_vs->data.video.format->framerate_mode = GAVL_FRAMERATE_VARIABLE;
       
   bg_vs->data.video.pal.size = desc->format.video.ctab_size;
   if(bg_vs->data.video.pal.size)
@@ -1598,14 +1598,14 @@ static void quicktime_init(bgav_demuxer_context_t * ctx)
         if(trak_has_edl(trak))
           priv->has_edl = 1;
         
-        gavl_dictionary_set_string(&bg_ss->m, GAVL_META_FORMAT,
+        gavl_dictionary_set_string(bg_ss->m, GAVL_META_FORMAT,
                           "Quicktime subtitles");
         bg_ss->fourcc = stsd->entries[0].desc.fourcc;
         
         bgav_qt_mdhd_get_language(&trak->mdia.mdhd,
                                   language);
         
-        gavl_dictionary_set_string(&bg_ss->m, GAVL_META_LANGUAGE,
+        gavl_dictionary_set_string(bg_ss->m, GAVL_META_LANGUAGE,
                           language);
         
         
@@ -1632,13 +1632,13 @@ static void quicktime_init(bgav_demuxer_context_t * ctx)
         if(trak_has_edl(trak))
           priv->has_edl = 1;
         
-        gavl_dictionary_set_string(&bg_ss->m, GAVL_META_FORMAT,
+        gavl_dictionary_set_string(bg_ss->m, GAVL_META_FORMAT,
                           "3gpp subtitles");
 
         bg_ss->fourcc = stsd->entries[0].desc.fourcc;
         bgav_qt_mdhd_get_language(&trak->mdia.mdhd,
                                   language);
-        gavl_dictionary_set_string(&bg_ss->m, GAVL_META_LANGUAGE,
+        gavl_dictionary_set_string(bg_ss->m, GAVL_META_LANGUAGE,
                           language);
                 
         bg_ss->timescale = trak->mdia.mdhd.time_scale;
@@ -1679,7 +1679,7 @@ static void quicktime_init(bgav_demuxer_context_t * ctx)
         }
       bg_ss = bgav_track_add_overlay_stream(track, ctx->opt);
 
-      gavl_dictionary_set_string(&bg_ss->m, GAVL_META_FORMAT, "DVD subtitles");
+      gavl_dictionary_set_string(bg_ss->m, GAVL_META_FORMAT, "DVD subtitles");
       bg_ss->fourcc = stsd->entries[0].desc.fourcc;
       
       if(trak_has_edl(trak))
@@ -1703,18 +1703,18 @@ static void quicktime_init(bgav_demuxer_context_t * ctx)
       stream_init(bg_ss, &moov->tracks[i], moov->mvhd.time_scale);
 
       /* Set video format */
-      bg_ss->data.subtitle.video.format.image_width = (int)trak->tkhd.track_width;
-      bg_ss->data.subtitle.video.format.image_height = (int)trak->tkhd.track_height;
+      bg_ss->data.subtitle.video.format->image_width = (int)trak->tkhd.track_width;
+      bg_ss->data.subtitle.video.format->image_height = (int)trak->tkhd.track_height;
 
-      bg_ss->data.subtitle.video.format.frame_width  = bg_ss->data.subtitle.video.format.image_width;
-      bg_ss->data.subtitle.video.format.frame_height = bg_ss->data.subtitle.video.format.image_height;
+      bg_ss->data.subtitle.video.format->frame_width  = bg_ss->data.subtitle.video.format->image_width;
+      bg_ss->data.subtitle.video.format->frame_height = bg_ss->data.subtitle.video.format->image_height;
 
       /* Bogus values */
-      bg_ss->data.subtitle.video.format.pixel_width  = 1;
-      bg_ss->data.subtitle.video.format.pixel_height = 1;
+      bg_ss->data.subtitle.video.format->pixel_width  = 1;
+      bg_ss->data.subtitle.video.format->pixel_height = 1;
       
-      bg_ss->data.subtitle.video.format.timescale = trak->mdia.mdhd.time_scale;
-      bg_ss->data.subtitle.video.format.framerate_mode = GAVL_FRAMERATE_VARIABLE;
+      bg_ss->data.subtitle.video.format->timescale = trak->mdia.mdhd.time_scale;
+      bg_ss->data.subtitle.video.format->framerate_mode = GAVL_FRAMERATE_VARIABLE;
       }
     
     }
@@ -1745,7 +1745,7 @@ static int handle_rmra(bgav_demuxer_context_t * ctx)
     if(priv->moov.rmra.rmda[i].rdrf.fourcc == BGAV_MK_FOURCC('u','r','l',' '))
       {
       t = bgav_track_table_append_track(ctx->tt);
-      gavl_dictionary_set_string_nocopy(&t->metadata, GAVL_META_REFURL,
+      gavl_dictionary_set_string_nocopy(t->metadata, GAVL_META_REFURL,
                               bgav_input_absolute_url(ctx->input,
                                                       (char*)priv->moov.rmra.rmda[i].rdrf.data_ref));
       
@@ -1890,13 +1890,13 @@ static void check_he_aac(bgav_demuxer_context_t * ctx,
         /* Detected HE-AAC */
         bgav_superindex_set_sbr(ctx->si, s);
         bgav_log(ctx->opt, BGAV_LOG_INFO, LOG_DOMAIN, "Detected HE-AAC");
-        s->data.audio.format.samples_per_frame = 2048;
+        s->data.audio.format->samples_per_frame = 2048;
         s->ci.flags |= GAVL_COMPRESSION_SBR ;
         }
       else
         {
         bgav_log(ctx->opt, BGAV_LOG_INFO, LOG_DOMAIN, "Detected no HE-AAC");
-        s->data.audio.format.samples_per_frame = 1024;
+        s->data.audio.format->samples_per_frame = 1024;
         }
       break;
       }
@@ -2146,27 +2146,27 @@ static int open_quicktime(bgav_demuxer_context_t * ctx)
   switch(priv->ftyp_fourcc)
     {
     case BGAV_MK_FOURCC('M','4','A',' '):
-      gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+      gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                         GAVL_META_FORMAT, "MPEG-4 audio (m4a)");
       break;
     case BGAV_MK_FOURCC('m','p','4','1'):
     case BGAV_MK_FOURCC('m','p','4','2'):
     case BGAV_MK_FOURCC('i','s','o','m'):
     case BGAV_MK_FOURCC('M','4','V',' '):
-      gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+      gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                         GAVL_META_FORMAT, "MPEG-4 video (mp4)");
-      gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+      gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                         GAVL_META_MIMETYPE, "video/mp4");
       break;
     case 0:
     case BGAV_MK_FOURCC('q','t',' ',' '):
-      gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+      gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                         GAVL_META_FORMAT, "Quicktime");
-      gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+      gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                         GAVL_META_MIMETYPE, "video/quicktime");
       break;
     default:
-      gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+      gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                         GAVL_META_FORMAT, "Quicktime/mp4/m4a");
       break;
     

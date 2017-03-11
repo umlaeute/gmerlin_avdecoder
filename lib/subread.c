@@ -490,12 +490,12 @@ static int setup_stream_vobsub(bgav_stream_t * s)
     else if(!strncmp(line, "size:", 5)) // size: 720x576
       {
       sscanf(line + 5, "%dx%d",
-             &s->data.subtitle.video.format.image_width,
-             &s->data.subtitle.video.format.image_height);
-      s->data.subtitle.video.format.frame_width =
-        s->data.subtitle.video.format.image_width;
-      s->data.subtitle.video.format.frame_height =
-        s->data.subtitle.video.format.image_height;
+             &s->data.subtitle.video.format->image_width,
+             &s->data.subtitle.video.format->image_height);
+      s->data.subtitle.video.format->frame_width =
+        s->data.subtitle.video.format->image_width;
+      s->data.subtitle.video.format->frame_height =
+        s->data.subtitle.video.format->image_height;
       }
     else if(!strncmp(line, "palette:", 8)) // palette: 000000, 828282...
       {
@@ -524,7 +524,7 @@ static int setup_stream_vobsub(bgav_stream_t * s)
           language_2cc[1] = pos[1];
           language_2cc[2] = '\0';
           if((language_3cc = bgav_lang_from_twocc(language_2cc)))
-            gavl_dictionary_set_string(&s->m, GAVL_META_LANGUAGE, language_3cc);
+            gavl_dictionary_set_string(s->m, GAVL_META_LANGUAGE, language_3cc);
           }
 
         ctx->data_start = input->position;
@@ -826,8 +826,8 @@ static gavl_source_status_t read_spumux(bgav_stream_t * s, bgav_packet_t * p)
     }
   
   p->pts =
-    parse_time_spumux(start_time, s->data.subtitle.video.format.timescale,
-                      s->data.subtitle.video.format.frame_duration);
+    parse_time_spumux(start_time, s->data.subtitle.video.format->timescale,
+                      s->data.subtitle.video.format->frame_duration);
   
   if(p->pts == GAVL_TIME_UNDEFINED)
     {
@@ -840,8 +840,8 @@ static gavl_source_status_t read_spumux(bgav_stream_t * s, bgav_packet_t * p)
     {
     p->duration =
       parse_time_spumux(tmp,
-                        s->data.subtitle.video.format.timescale,
-                        s->data.subtitle.video.format.frame_duration);
+                        s->data.subtitle.video.format->timescale,
+                        s->data.subtitle.video.format->frame_duration);
     if(p->duration == GAVL_TIME_UNDEFINED)
       return 0;
     p->duration -= p->pts;
@@ -906,17 +906,17 @@ static int init_spumux(bgav_stream_t * s)
   do{
     tmp = bgav_yml_get_attribute_i(priv->cur, "end");
     s->duration = parse_time_spumux(tmp,
-                                    s->data.subtitle.video.format.timescale,
-                                    s->data.subtitle.video.format.frame_duration);
+                                    s->data.subtitle.video.format->timescale,
+                                    s->data.subtitle.video.format->frame_duration);
     } while(advance_current_spumux(s));
   
   if(!init_current_spumux(s))
     return 0;
   
-  gavl_video_format_copy(&s->data.subtitle.video.format,
-                         &s->data.subtitle.video_stream->data.video.format);
-  s->data.subtitle.video.format.pixelformat = GAVL_PIXELFORMAT_NONE;
-  s->data.subtitle.video.format.timescale   = GAVL_TIME_SCALE;
+  gavl_video_format_copy(s->data.subtitle.video.format,
+                         s->data.subtitle.video_stream->data.video.format);
+  s->data.subtitle.video.format->pixelformat = GAVL_PIXELFORMAT_NONE;
+  s->data.subtitle.video.format->timescale   = GAVL_TIME_SCALE;
   
   return 1;
   }
@@ -946,8 +946,8 @@ static void seek_spumux(bgav_stream_t * s, int64_t time1, int scale)
     end_time = bgav_yml_get_attribute_i(priv->cur, "end");
 
     start = parse_time_spumux(start_time,
-                              s->data.subtitle.video.format.timescale,
-                              s->data.subtitle.video.format.frame_duration);
+                              s->data.subtitle.video.format->timescale,
+                              s->data.subtitle.video.format->frame_duration);
     if(start == GAVL_TIME_UNDEFINED)
       {
       bgav_log(s->opt, BGAV_LOG_ERROR, LOG_DOMAIN,
@@ -957,8 +957,8 @@ static void seek_spumux(bgav_stream_t * s, int64_t time1, int scale)
     
     if(end_time)
       end = parse_time_spumux(end_time,
-                              s->data.subtitle.video.format.timescale,
-                              s->data.subtitle.video.format.frame_duration);
+                              s->data.subtitle.video.format->timescale,
+                              s->data.subtitle.video.format->frame_duration);
     
     if(end == GAVL_TIME_UNDEFINED)
       {
@@ -995,14 +995,14 @@ static void close_spumux(bgav_stream_t * s)
 static const bgav_subtitle_reader_t subtitle_readers[] =
   {
     {
-      .type = BGAV_STREAM_SUBTITLE_TEXT,
+      .type = GAVF_STREAM_TEXT,
       .name = "Subrip (srt)",
       .init =               init_srt,
       .probe =              probe_srt,
       .read_packet =        read_srt,
     },
     {
-      .type = BGAV_STREAM_SUBTITLE_TEXT,
+      .type = GAVF_STREAM_TEXT,
       .name = "Mplayer mpsub",
       .init =               init_mpsub,
       .probe =              probe_mpsub,
@@ -1010,7 +1010,7 @@ static const bgav_subtitle_reader_t subtitle_readers[] =
       .close =              close_mpsub,
     },
     {
-      .type = BGAV_STREAM_SUBTITLE_OVERLAY,
+      .type = GAVF_STREAM_OVERLAY,
       .name = "vobsub",
       .setup_stream =       setup_stream_vobsub,
       .init =               init_vobsub,
@@ -1022,7 +1022,7 @@ static const bgav_subtitle_reader_t subtitle_readers[] =
 
 #ifdef HAVE_LIBPNG
     {
-      .type = BGAV_STREAM_SUBTITLE_OVERLAY,
+      .type = GAVF_STREAM_OVERLAY,
       .name = "Spumux (xml/png)",
       .probe =                 probe_spumux,
       .init =                  init_spumux,

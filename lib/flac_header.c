@@ -63,7 +63,7 @@ void bgav_flac_streaminfo_dump(bgav_flac_streaminfo_t * s)
 
 void bgav_flac_streaminfo_init_stream(bgav_flac_streaminfo_t * si, bgav_stream_t * s)
   {
-  gavl_audio_format_t * fmt = &s->data.audio.format;
+  gavl_audio_format_t * fmt = s->data.audio.format;
   
   fmt->num_channels = si->num_channels;
   fmt->samplerate   = si->samplerate;

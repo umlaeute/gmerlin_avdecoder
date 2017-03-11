@@ -185,11 +185,11 @@ int bgav_vaapi_init(bgav_vaapi_t * v,
 
   /* Get dimensions. What about padding here? */
   
-  surface_width  = s->data.video.format.image_width;
-  surface_height = s->data.video.format.image_height;
+  surface_width  = s->data.video.format->image_width;
+  surface_height = s->data.video.format->image_height;
 
-  context_width  = s->data.video.format.image_width;
-  context_height = s->data.video.format.image_height;
+  context_width  = s->data.video.format->image_width;
+  context_height = s->data.video.format->image_height;
 
   /* Get surface format */
   
@@ -222,7 +222,7 @@ int bgav_vaapi_init(bgav_vaapi_t * v,
   
   
   /* Create context */
-  if(s->data.video.format.interlace_mode == GAVL_INTERLACE_NONE)
+  if(s->data.video.format->interlace_mode == GAVL_INTERLACE_NONE)
     context_flags |= VA_PROGRESSIVE;
 
   if((status = vaCreateContext(v->vaapi_ctx.display,
@@ -251,8 +251,8 @@ int bgav_vaapi_init(bgav_vaapi_t * v,
                                         free_buffer, NULL, 0);
     }
   
-  s->data.video.format.pixelformat = GAVL_YUV_420_P;
-  s->data.video.format.hwctx = v->hwctx;
+  s->data.video.format->pixelformat = GAVL_YUV_420_P;
+  s->data.video.format->hwctx = v->hwctx;
   return 1; 
   
   fail: // Cleanup

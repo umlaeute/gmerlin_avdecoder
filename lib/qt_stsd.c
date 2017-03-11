@@ -284,7 +284,7 @@ static int stsd_read_audio(bgav_input_context_t * input,
   
   if(!stsd_read_common(input, ret))
     return 0;
-  ret->type = BGAV_STREAM_AUDIO;
+  ret->type = GAVF_STREAM_AUDIO;
 
   if(ret->version == 2)
     {
@@ -408,7 +408,7 @@ static int stsd_read_video(bgav_input_context_t * input,
   if(!stsd_read_common(input, ret))
     return 0;
   
-  ret->type = BGAV_STREAM_VIDEO;
+  ret->type = GAVF_STREAM_VIDEO;
   if(!bgav_input_read_32_be(input, &ret->format.video.temporal_quality) ||
      !bgav_input_read_32_be(input, &ret->format.video.spatial_quality) ||
      !bgav_input_read_16_be(input, &ret->format.video.width) ||
@@ -544,7 +544,7 @@ static int stsd_read_video(bgav_input_context_t * input,
 static int stsd_read_subtitle_qt(bgav_input_context_t * input,
                                  qt_sample_description_t * ret)
   {
-  ret->type = BGAV_STREAM_SUBTITLE_TEXT;
+  ret->type = GAVF_STREAM_TEXT;
   if(!bgav_input_read_fourcc(input, &ret->fourcc) ||
      (bgav_input_read_data(input, ret->reserved, 6) < 6) ||
      !bgav_input_read_16_be(input, &ret->data_reference_index) ||
@@ -592,7 +592,7 @@ static int stsd_read_subtitle_tx3g(bgav_input_context_t * input,
                                    qt_sample_description_t * ret)
   {
   qt_atom_header_t h;
-  ret->type = BGAV_STREAM_SUBTITLE_TEXT;
+  ret->type = GAVF_STREAM_TEXT;
   if(!bgav_input_read_fourcc(input, &ret->fourcc) ||
      (bgav_input_read_data(input, ret->reserved, 6) < 6) ||
      !bgav_input_read_16_be(input, &ret->data_reference_index) ||
@@ -813,7 +813,7 @@ void bgav_qt_stsd_free(qt_stsd_t * c)
     {
     if(c->entries[i].data)
       free(c->entries[i].data);
-    if(c->entries[i].desc.type == BGAV_STREAM_AUDIO)
+    if(c->entries[i].desc.type == GAVF_STREAM_AUDIO)
       {
       if(c->entries[i].desc.format.audio.has_wave)
         bgav_qt_wave_free(&c->entries[i].desc.format.audio.wave);
@@ -821,7 +821,7 @@ void bgav_qt_stsd_free(qt_stsd_t * c)
         bgav_qt_chan_free(&c->entries[i].desc.format.audio.chan);
       bgav_qt_user_atoms_free(&c->entries[i].desc.format.audio.user);
       }
-    else if(c->entries[i].desc.type == BGAV_STREAM_VIDEO)
+    else if(c->entries[i].desc.type == GAVF_STREAM_VIDEO)
       {
       if(c->entries[i].desc.format.video.ctab)
         free(c->entries[i].desc.format.video.ctab);
@@ -867,7 +867,7 @@ void bgav_qt_stsd_dump(int indent, qt_stsd_t * s)
     bgav_diprintf(indent+2, "Raw data:           %d bytes\n", s->entries[i].data_size);
     gavl_hexdump(s->entries[i].data, s->entries[i].data_size, 16);
     
-    if(s->entries[i].desc.type == BGAV_STREAM_AUDIO)
+    if(s->entries[i].desc.type == GAVF_STREAM_AUDIO)
       {
       stsd_dump_common(indent+2, &s->entries[i].desc);
       stsd_dump_audio(indent+2, &s->entries[i].desc);
@@ -876,7 +876,7 @@ void bgav_qt_stsd_dump(int indent, qt_stsd_t * s)
       if(s->entries[i].desc.has_glbl)
         bgav_qt_glbl_dump(indent+2, &s->entries[i].desc.glbl);
       }
-    else if(s->entries[i].desc.type == BGAV_STREAM_VIDEO)
+    else if(s->entries[i].desc.type == GAVF_STREAM_VIDEO)
       {
       stsd_dump_common(indent+2, &s->entries[i].desc);
       stsd_dump_video(indent+2, &s->entries[i].desc);

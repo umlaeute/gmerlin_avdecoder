@@ -436,7 +436,7 @@ static int open_vivo(bgav_demuxer_context_t * ctx)
     {
     /* G.723 */
     audio_stream->fourcc = BGAV_WAVID_2_FOURCC(0x0111);
-    audio_stream->data.audio.format.samplerate = 8000;
+    audio_stream->data.audio.format->samplerate = 8000;
     audio_stream->container_bitrate = 800 * 8;
     audio_stream->data.audio.block_align = 24;
     audio_stream->data.audio.bits_per_sample = 8;
@@ -445,12 +445,12 @@ static int open_vivo(bgav_demuxer_context_t * ctx)
     {
     /* Siren */
     audio_stream->fourcc = BGAV_WAVID_2_FOURCC(0x0112);
-    audio_stream->data.audio.format.samplerate = 16000;
+    audio_stream->data.audio.format->samplerate = 16000;
     audio_stream->container_bitrate = 2000 * 8;
     audio_stream->data.audio.block_align = 40;
     audio_stream->data.audio.bits_per_sample = 16;
     }
-  audio_stream->data.audio.format.num_channels = 1;
+  audio_stream->data.audio.format->num_channels = 1;
   audio_stream->codec_bitrate = audio_stream->container_bitrate;
   /* Set up video stream */
   
@@ -464,39 +464,39 @@ static int open_vivo(bgav_demuxer_context_t * ctx)
   else if(priv->header.version == 2)
     {
     video_stream->fourcc = BGAV_MK_FOURCC('v', 'i', 'v', 'o');
-    video_stream->data.video.format.image_width = priv->header.width;
-    video_stream->data.video.format.frame_width = priv->header.width;
+    video_stream->data.video.format->image_width = priv->header.width;
+    video_stream->data.video.format->frame_width = priv->header.width;
 
-    video_stream->data.video.format.image_height = priv->header.height;
-    video_stream->data.video.format.frame_height = priv->header.height;
+    video_stream->data.video.format->image_height = priv->header.height;
+    video_stream->data.video.format->frame_height = priv->header.height;
     }
-  video_stream->data.video.format.pixel_width = 1;
-  video_stream->data.video.format.pixel_height = 1;
-  video_stream->data.video.format.framerate_mode = GAVL_FRAMERATE_VARIABLE;
+  video_stream->data.video.format->pixel_width = 1;
+  video_stream->data.video.format->pixel_height = 1;
+  video_stream->data.video.format->framerate_mode = GAVL_FRAMERATE_VARIABLE;
   
   video_stream->stream_id = VIDEO_STREAM_ID;
   
-  //  video_stream->data.video.format.timescale = (int)(priv->header.fps * 1000.0);
+  //  video_stream->data.video.format->timescale = (int)(priv->header.fps * 1000.0);
   
-  video_stream->data.video.format.timescale = 1000;
+  video_stream->data.video.format->timescale = 1000;
   video_stream->timescale = 1000;
   
-  //  video_stream->data.video.format.frame_duration = 1000;
+  //  video_stream->data.video.format->frame_duration = 1000;
   video_stream->data.video.depth = 24;
-  video_stream->data.video.image_size = video_stream->data.video.format.image_width *
-    video_stream->data.video.format.image_height * 3;
+  video_stream->data.video.image_size = video_stream->data.video.format->image_width *
+    video_stream->data.video.format->image_height * 3;
   /* Set up metadata */
 
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata,
+  gavl_dictionary_set_string(ctx->tt->cur->metadata,
                     GAVL_META_TITLE, priv->header.title);
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata,
+  gavl_dictionary_set_string(ctx->tt->cur->metadata,
                     GAVL_META_AUTHOR, priv->header.author);
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata,
+  gavl_dictionary_set_string(ctx->tt->cur->metadata,
                     GAVL_META_COPYRIGHT, priv->header.copyright);
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata,
+  gavl_dictionary_set_string(ctx->tt->cur->metadata,
                     GAVL_META_SOFTWARE, priv->header.producer);
 
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "Vivo");
 
   ctx->tt->cur->duration = (GAVL_TIME_SCALE * (int64_t)(priv->header.duration)) / 1000;

@@ -88,11 +88,11 @@ static void decode_mono(bgav_stream_t * s, bgav_packet_t * p, gavl_video_frame_t
   
   src = p->data;
   
-  for(i = 0; i < s->data.video.format.image_height; i++)
+  for(i = 0; i < s->data.video.format->image_height; i++)
     {
     dst = f->planes[0] + i * f->strides[0];
 
-    for(j = 0; i < s->data.video.format.image_width; j++)
+    for(j = 0; i < s->data.video.format->image_width; j++)
       {
       dst[j] = y_8_to_yj_8[src[j]];
       src++;
@@ -118,11 +118,11 @@ static void decode_yuva(bgav_stream_t * s, bgav_packet_t * p, gavl_video_frame_t
   src_v = src_u + priv->plane_sizes[1];
   src_a = src_v + priv->plane_sizes[1];
   
-  for(i = 0; i < s->data.video.format.image_height; i++)
+  for(i = 0; i < s->data.video.format->image_height; i++)
     {
     dst = f->planes[0] + i * f->strides[0];
 
-    for(j = 0; i < s->data.video.format.image_width; j++)
+    for(j = 0; i < s->data.video.format->image_width; j++)
       {
       *(dst++) = *(src_y++);
       *(dst++) = *(src_u++);
@@ -207,7 +207,7 @@ static int init_y4m(bgav_stream_t * s)
   priv = calloc(1, sizeof(*priv));
   s->decoder_priv = priv;
   
-  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "Y4M");
+  gavl_dictionary_set_string(s->m, GAVL_META_FORMAT, "Y4M");
   
   priv = s->decoder_priv;
   
@@ -219,35 +219,35 @@ static int init_y4m(bgav_stream_t * s)
 
   if(!strncmp((char*)s->ext_data, "420", 3))
     {
-    s->data.video.format.pixelformat = GAVL_YUV_420_P;
+    s->data.video.format->pixelformat = GAVL_YUV_420_P;
     
     if(!strncmp((char*)(s->ext_data+3), "mpeg2", 5))
-      s->data.video.format.chroma_placement = GAVL_CHROMA_PLACEMENT_MPEG2;
+      s->data.video.format->chroma_placement = GAVL_CHROMA_PLACEMENT_MPEG2;
     else if(!strncmp((char*)(s->ext_data+3), "paldv", 5))
-      s->data.video.format.chroma_placement = GAVL_CHROMA_PLACEMENT_DVPAL;
+      s->data.video.format->chroma_placement = GAVL_CHROMA_PLACEMENT_DVPAL;
     }
   else if(!strncmp((char*)s->ext_data, "422", 3))
     {
-    s->data.video.format.pixelformat = GAVL_YUV_422_P;
+    s->data.video.format->pixelformat = GAVL_YUV_422_P;
     }
   else if(!strncmp((char*)s->ext_data, "411", 3))
     {
-    s->data.video.format.pixelformat = GAVL_YUV_411_P;
+    s->data.video.format->pixelformat = GAVL_YUV_411_P;
     }
   else if(!strncmp((char*)s->ext_data, "444", 3))
     {
     if(!strcmp((char*)s->ext_data, "444alpha"))
       {
       priv->decode_func = decode_yuva;
-      s->data.video.format.pixelformat = GAVL_YUVA_32;
+      s->data.video.format->pixelformat = GAVL_YUVA_32;
       }
     else // Normal planar 444
-      s->data.video.format.pixelformat = GAVL_YUV_444_P;
+      s->data.video.format->pixelformat = GAVL_YUV_444_P;
     }
   else if(!strncmp((char*)s->ext_data, "mono", 4))
     {
     priv->decode_func = decode_mono;
-    s->data.video.format.pixelformat = GAVL_GRAY_8;
+    s->data.video.format->pixelformat = GAVL_GRAY_8;
     }
 
   if(!priv->decode_func)
@@ -256,19 +256,19 @@ static int init_y4m(bgav_stream_t * s)
     
     priv->frame = gavl_video_frame_create(NULL);
 
-    gavl_pixelformat_chroma_sub(s->data.video.format.pixelformat,
+    gavl_pixelformat_chroma_sub(s->data.video.format->pixelformat,
                                 &sub_h, &sub_v);
     
-    priv->frame->strides[0] = s->data.video.format.image_width;
-    priv->frame->strides[1] = s->data.video.format.image_width / sub_h;
-    priv->frame->strides[2] = s->data.video.format.image_width / sub_h;
+    priv->frame->strides[0] = s->data.video.format->image_width;
+    priv->frame->strides[1] = s->data.video.format->image_width / sub_h;
+    priv->frame->strides[2] = s->data.video.format->image_width / sub_h;
     
     priv->plane_sizes[0] =
-      s->data.video.format.image_width *
-      s->data.video.format.image_height;
+      s->data.video.format->image_width *
+      s->data.video.format->image_height;
     
     priv->plane_sizes[1] =
-      priv->frame->strides[1] * (s->data.video.format.image_height/sub_v);
+      priv->frame->strides[1] * (s->data.video.format->image_height/sub_v);
 
     s->vframe = priv->frame;
     }

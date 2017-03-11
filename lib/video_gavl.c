@@ -42,7 +42,7 @@ static gavl_source_status_t decode_gavl(bgav_stream_t * s, gavl_video_frame_t * 
 
   if(frame)
     {
-    gavl_video_frame_copy(&s->data.video.format, frame, p->video_frame);
+    gavl_video_frame_copy(s->data.video.format, frame, p->video_frame);
     gavl_video_frame_copy_metadata(frame, p->video_frame);
     }
   bgav_stream_done_packet_read(s, p);

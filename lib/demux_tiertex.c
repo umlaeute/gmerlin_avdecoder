@@ -147,24 +147,24 @@ static int open_tiertex(bgav_demuxer_context_t * ctx)
   s = bgav_track_add_audio_stream(ctx->tt->cur, ctx->opt);
   //  s->fourcc = BGAV_WAVID_2_FOURCC(0x0001);
   s->fourcc = BGAV_MK_FOURCC('t','w','o','s');
-  s->data.audio.format.samplerate = SEQ_SAMPLE_RATE;
-  s->data.audio.format.num_channels = 1;
+  s->data.audio.format->samplerate = SEQ_SAMPLE_RATE;
+  s->data.audio.format->num_channels = 1;
   s->data.audio.bits_per_sample = 16;
   s->stream_id = AUDIO_ID;
   
   /* Setup video stream */
   s = bgav_track_add_video_stream(ctx->tt->cur, ctx->opt);
   s->fourcc = BGAV_MK_FOURCC('T','I','T','X');
-  s->data.video.format.image_width  = SEQ_FRAME_W;
-  s->data.video.format.image_height = SEQ_FRAME_H;
-  s->data.video.format.frame_width  = SEQ_FRAME_W;
-  s->data.video.format.frame_height = SEQ_FRAME_H;
-  s->data.video.format.pixel_width  = 1;
-  s->data.video.format.pixel_height = 1;
-  s->data.video.format.timescale = SEQ_FRAME_RATE;
-  s->data.video.format.frame_duration = 1;
+  s->data.video.format->image_width  = SEQ_FRAME_W;
+  s->data.video.format->image_height = SEQ_FRAME_H;
+  s->data.video.format->frame_width  = SEQ_FRAME_W;
+  s->data.video.format->frame_height = SEQ_FRAME_H;
+  s->data.video.format->pixel_width  = 1;
+  s->data.video.format->pixel_height = 1;
+  s->data.video.format->timescale = SEQ_FRAME_RATE;
+  s->data.video.format->frame_duration = 1;
   s->stream_id = VIDEO_ID;
-  s->data.video.format.framerate_mode = GAVL_FRAMERATE_VARIABLE;
+  s->data.video.format->framerate_mode = GAVL_FRAMERATE_VARIABLE;
   s->flags |= STREAM_NO_DURATIONS;
 
   /* Set up buffers */
@@ -182,7 +182,7 @@ static int open_tiertex(bgav_demuxer_context_t * ctx)
     }
   priv->num_frame_buffers = i;
 
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "Tiertex SEQ");
 
   ctx->data_start = ctx->input->position;

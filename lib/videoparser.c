@@ -693,10 +693,10 @@ bgav_video_parser_create(bgav_stream_t * s)
   ret->timestamp = GAVL_TIME_UNDEFINED;
   ret->raw_position = -1;
 
-  if(s->type == BGAV_STREAM_VIDEO)
+  if(s->type == GAVF_STREAM_VIDEO)
     {
     //    ret->s->ci.max_ref_frames = 2;
-    ret->format = &s->data.video.format;
+    ret->format = s->data.video.format;
     }
   ret->start_pos = -1;
   

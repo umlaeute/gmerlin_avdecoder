@@ -271,9 +271,9 @@ static int init_real(bgav_stream_t * s)
 
   free(path);
   
-  init_data.samplerate = s->data.audio.format.samplerate;
+  init_data.samplerate = s->data.audio.format->samplerate;
   init_data.bits       = s->data.audio.bits_per_sample;
-  init_data.channels   = s->data.audio.format.num_channels;
+  init_data.channels   = s->data.audio.format->num_channels;
   init_data.quality    = 100;
     /* 2bytes padding here, by gcc */
   init_data.bits_per_frame = s->data.audio.block_align;
@@ -308,11 +308,11 @@ static int init_real(bgav_stream_t * s)
   prop = priv->raGetFlavorProperty(priv->real_handle, s->subformat, 0, &len);
   
   if(prop)
-    gavl_dictionary_set_string_nocopy(&s->m, GAVL_META_FORMAT,
+    gavl_dictionary_set_string_nocopy(s->m, GAVL_META_FORMAT,
                             bgav_sprintf("%s (Flavor: %s)",
                                          info->format_name, (char*)prop));
   else
-    gavl_dictionary_set_string_nocopy(&s->m, GAVL_META_FORMAT,
+    gavl_dictionary_set_string_nocopy(s->m, GAVL_META_FORMAT,
                             bgav_sprintf("%s", info->format_name));
   
   //  prop = priv->raGetFlavorProperty(priv->real_handle, s->subformat, 1, &len);
@@ -320,13 +320,13 @@ static int init_real(bgav_stream_t * s)
   /* Allocate sample buffer and set audio format */
     
   
-  s->data.audio.format.interleave_mode = GAVL_INTERLEAVE_ALL;
-  s->data.audio.format.sample_format   = GAVL_SAMPLE_S16;
-  gavl_set_channel_setup(&s->data.audio.format);
+  s->data.audio.format->interleave_mode = GAVL_INTERLEAVE_ALL;
+  s->data.audio.format->sample_format   = GAVL_SAMPLE_S16;
+  gavl_set_channel_setup(s->data.audio.format);
 
-  s->data.audio.format.samples_per_frame = 10240;
-  priv->frame = gavl_audio_frame_create(&s->data.audio.format);
-  s->data.audio.format.samples_per_frame = 1024;
+  s->data.audio.format->samples_per_frame = 10240;
+  priv->frame = gavl_audio_frame_create(s->data.audio.format);
+  s->data.audio.format->samples_per_frame = 1024;
   
   return 1;
   }
@@ -389,9 +389,9 @@ static gavl_source_status_t decode_frame_real(bgav_stream_t * s)
   priv->read_buffer_ptr += s->data.audio.block_align;
   priv->read_buffer_size -= s->data.audio.block_align;
   
-  priv->frame->valid_samples = len / (2 * s->data.audio.format.num_channels);
+  priv->frame->valid_samples = len / (2 * s->data.audio.format->num_channels);
 
-  gavl_audio_frame_copy_ptrs(&s->data.audio.format, s->data.audio.frame, priv->frame);
+  gavl_audio_frame_copy_ptrs(s->data.audio.format, s->data.audio.frame, priv->frame);
 
   return GAVL_SOURCE_OK;
   }

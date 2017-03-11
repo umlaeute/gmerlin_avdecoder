@@ -431,23 +431,23 @@ void bgav_dv_dec_init_audio(bgav_dv_dec_t * d, bgav_stream_t * s)
   else
     d->ach = (stype == 2 || (quant && (freq == 2))) ? 2 : 1;
   
-  s->data.audio.format.samplerate = dv_audio_frequency[freq];
+  s->data.audio.format->samplerate = dv_audio_frequency[freq];
   
-  s->data.audio.format.num_channels = d->ach * 2;
-  //  s->data.audio.format.num_channels = dv_is_4ch(d->dv) ? 4 : 2;
-  s->data.audio.format.sample_format =  GAVL_SAMPLE_S16;
+  s->data.audio.format->num_channels = d->ach * 2;
+  //  s->data.audio.format->num_channels = dv_is_4ch(d->dv) ? 4 : 2;
+  s->data.audio.format->sample_format =  GAVL_SAMPLE_S16;
 
   if(d->ach == 1)
-    s->data.audio.format.interleave_mode =  GAVL_INTERLEAVE_ALL;
+    s->data.audio.format->interleave_mode =  GAVL_INTERLEAVE_ALL;
   else
-    s->data.audio.format.interleave_mode =  GAVL_INTERLEAVE_2;
+    s->data.audio.format->interleave_mode =  GAVL_INTERLEAVE_2;
   
-  s->data.audio.format.samples_per_frame = d->profile->audio_min_samples[freq] + 0x3f;
+  s->data.audio.format->samples_per_frame = d->profile->audio_min_samples[freq] + 0x3f;
   
-  gavl_set_channel_setup(&s->data.audio.format);
+  gavl_set_channel_setup(s->data.audio.format);
   s->fourcc = BGAV_MK_FOURCC('g', 'a', 'v', 'l');
   
-  gavl_audio_format_copy(&d->audio_format, &s->data.audio.format);
+  gavl_audio_format_copy(&d->audio_format, s->data.audio.format);
   }
 
 void bgav_dv_dec_get_pixel_aspect(bgav_dv_dec_t * d, uint32_t * pixel_width, uint32_t * pixel_height)
@@ -506,8 +506,8 @@ void bgav_dv_dec_get_video_format(bgav_dv_dec_t * d, gavl_video_format_t * fmt)
 void bgav_dv_dec_init_video(bgav_dv_dec_t * d, bgav_stream_t * s)
   {
   s->fourcc = BGAV_MK_FOURCC('d', 'v', 'c', ' ');
-  bgav_dv_dec_get_video_format(d, &s->data.video.format);
-  gavl_video_format_copy(&d->video_format, &s->data.video.format);
+  bgav_dv_dec_get_video_format(d, s->data.video.format);
+  gavl_video_format_copy(&d->video_format, s->data.video.format);
   }
 
 void bgav_dv_dec_set_frame_counter(bgav_dv_dec_t * d, int64_t frames)

@@ -53,12 +53,12 @@ static void decode_8(bgav_stream_t * s)
   int num_samples, num_bytes;
   priv = s->decoder_priv;
 
-  num_samples = priv->bytes_in_packet / (s->data.audio.format.num_channels);
+  num_samples = priv->bytes_in_packet / (s->data.audio.format->num_channels);
   
   if(num_samples > FRAME_SAMPLES)
     num_samples = FRAME_SAMPLES;
 
-  num_bytes   = num_samples * s->data.audio.format.num_channels;
+  num_bytes   = num_samples * s->data.audio.format->num_channels;
 
   memcpy(priv->frame->samples.u_8, priv->packet_ptr, num_bytes);
 
@@ -73,14 +73,14 @@ static void decode_s_16(bgav_stream_t * s)
   int num_samples, num_bytes;
   priv = s->decoder_priv;
 
-  num_samples = priv->bytes_in_packet / (2 * s->data.audio.format.num_channels);
+  num_samples = priv->bytes_in_packet / (2 * s->data.audio.format->num_channels);
   
   if(num_samples > FRAME_SAMPLES)
     num_samples = FRAME_SAMPLES;
 
 //  fprintf(stderr, "Bytes: %d, Samples: %d\n", priv->bytes_in_packet, num_samples);
 
-  num_bytes   = num_samples * 2 * s->data.audio.format.num_channels;
+  num_bytes   = num_samples * 2 * s->data.audio.format->num_channels;
 
   memcpy(priv->frame->samples.s_16, priv->packet_ptr, num_bytes);
 
@@ -97,18 +97,18 @@ static void decode_s_16_swap(bgav_stream_t * s)
   
   priv = s->decoder_priv;
 
-  num_samples = priv->bytes_in_packet / (2 * s->data.audio.format.num_channels);
+  num_samples = priv->bytes_in_packet / (2 * s->data.audio.format->num_channels);
 
   
   if(num_samples > FRAME_SAMPLES)
     num_samples = FRAME_SAMPLES;
 
-  num_bytes   = num_samples * 2 * s->data.audio.format.num_channels;
+  num_bytes   = num_samples * 2 * s->data.audio.format->num_channels;
 
   src = (int16_t*)priv->packet_ptr;
   dst = priv->frame->samples.s_16;
 
-  i = num_samples * s->data.audio.format.num_channels;
+  i = num_samples * s->data.audio.format->num_channels;
 
   while(i--)
     {
@@ -130,17 +130,17 @@ static void decode_s_24_le(bgav_stream_t * s)
   uint32_t * dst;
   priv = s->decoder_priv;
 
-  num_samples = priv->bytes_in_packet / (3 * s->data.audio.format.num_channels);
+  num_samples = priv->bytes_in_packet / (3 * s->data.audio.format->num_channels);
 
   if(num_samples > FRAME_SAMPLES)
     num_samples = FRAME_SAMPLES;
 
-  num_bytes   = num_samples * 3 * s->data.audio.format.num_channels;
+  num_bytes   = num_samples * 3 * s->data.audio.format->num_channels;
 
   src = priv->packet_ptr;
   dst = (uint32_t*)(priv->frame->samples.s_32);
 
-  i = num_samples * s->data.audio.format.num_channels;
+  i = num_samples * s->data.audio.format->num_channels;
   
   while(i--)
     {
@@ -165,17 +165,17 @@ static void decode_s_24_be(bgav_stream_t * s)
   uint32_t * dst;
   priv = s->decoder_priv;
 
-  num_samples = priv->bytes_in_packet / (3 * s->data.audio.format.num_channels);
+  num_samples = priv->bytes_in_packet / (3 * s->data.audio.format->num_channels);
 
   if(num_samples > FRAME_SAMPLES)
     num_samples = FRAME_SAMPLES;
 
-  num_bytes   = num_samples * 3 * s->data.audio.format.num_channels;
+  num_bytes   = num_samples * 3 * s->data.audio.format->num_channels;
 
   src = priv->packet_ptr;
   dst = (uint32_t*)(priv->frame->samples.s_32);
 
-  i = num_samples * s->data.audio.format.num_channels;
+  i = num_samples * s->data.audio.format->num_channels;
   
   while(i--)
     {
@@ -199,17 +199,17 @@ static void decode_s_24_lpcm(bgav_stream_t * s)
   uint32_t * dst;
   priv = s->decoder_priv;
 
-  num_samples = priv->bytes_in_packet / (3 * s->data.audio.format.num_channels);
+  num_samples = priv->bytes_in_packet / (3 * s->data.audio.format->num_channels);
 
   if(num_samples > FRAME_SAMPLES)
     num_samples = FRAME_SAMPLES;
 
-  num_bytes   = num_samples * 3 * s->data.audio.format.num_channels;
+  num_bytes   = num_samples * 3 * s->data.audio.format->num_channels;
 
   src = priv->packet_ptr;
   dst = (uint32_t *)priv->frame->samples.s_32;
 
-  i = (num_samples * s->data.audio.format.num_channels)/4;
+  i = (num_samples * s->data.audio.format->num_channels)/4;
   
   while(i--)
     {
@@ -266,17 +266,17 @@ static void decode_s_20_lpcm(bgav_stream_t * s)
   priv = s->decoder_priv;
 
   /* 5 bytes -> 2 samples */
-  num_samples = (2*priv->bytes_in_packet) / (5 * s->data.audio.format.num_channels);
+  num_samples = (2*priv->bytes_in_packet) / (5 * s->data.audio.format->num_channels);
 
   if(num_samples > FRAME_SAMPLES)
     num_samples = FRAME_SAMPLES;
 
-  num_bytes   = (num_samples * 5 * s->data.audio.format.num_channels)/2;
+  num_bytes   = (num_samples * 5 * s->data.audio.format->num_channels)/2;
   
   src = priv->packet_ptr;
   dst = (uint32_t*)(priv->frame->samples.s_32);
 
-  i = (num_samples * s->data.audio.format.num_channels)/4;
+  i = (num_samples * s->data.audio.format->num_channels)/4;
   
   while(i--)
     {
@@ -300,12 +300,12 @@ static void decode_s_20_lpcm_mono(bgav_stream_t * s)
   uint32_t * dst;
   priv = s->decoder_priv;
 
-  num_samples = (2*priv->bytes_in_packet) / (5 * s->data.audio.format.num_channels);
+  num_samples = (2*priv->bytes_in_packet) / (5 * s->data.audio.format->num_channels);
   
   if(num_samples > FRAME_SAMPLES)
     num_samples = FRAME_SAMPLES;
 
-  num_bytes   = (num_samples * 5 * s->data.audio.format.num_channels)/2;
+  num_bytes   = (num_samples * 5 * s->data.audio.format->num_channels)/2;
   
   src = priv->packet_ptr;
   dst = (uint32_t*)(priv->frame->samples.s_32);
@@ -331,12 +331,12 @@ static void decode_s_32(bgav_stream_t * s)
   int num_samples, num_bytes;
   priv = s->decoder_priv;
 
-  num_samples = priv->bytes_in_packet / (4 * s->data.audio.format.num_channels);
+  num_samples = priv->bytes_in_packet / (4 * s->data.audio.format->num_channels);
 
   if(num_samples > FRAME_SAMPLES)
     num_samples = FRAME_SAMPLES;
 
-  num_bytes   = num_samples * 4 * s->data.audio.format.num_channels;
+  num_bytes   = num_samples * 4 * s->data.audio.format->num_channels;
   memcpy(priv->frame->samples.s_32, priv->packet_ptr, num_bytes);
   
   priv->packet_ptr += num_bytes;
@@ -356,17 +356,17 @@ static void decode_s_32_swap(bgav_stream_t * s)
   
   priv = s->decoder_priv;
 
-  num_samples = priv->bytes_in_packet / (4 * s->data.audio.format.num_channels);
+  num_samples = priv->bytes_in_packet / (4 * s->data.audio.format->num_channels);
   
   if(num_samples > FRAME_SAMPLES)
     num_samples = FRAME_SAMPLES;
 
-  num_bytes   = num_samples * 4 * s->data.audio.format.num_channels;
+  num_bytes   = num_samples * 4 * s->data.audio.format->num_channels;
 
   src = (int32_t*)priv->packet_ptr;
   dst = priv->frame->samples.s_32;
 
-  i = num_samples * s->data.audio.format.num_channels;
+  i = num_samples * s->data.audio.format->num_channels;
 
   while(i--)
     {
@@ -528,17 +528,17 @@ static void decode_float_32_be(bgav_stream_t * s)
   float * dst;
   priv = s->decoder_priv;
 
-  num_samples = priv->bytes_in_packet / (4 * s->data.audio.format.num_channels);
+  num_samples = priv->bytes_in_packet / (4 * s->data.audio.format->num_channels);
 
   if(num_samples > FRAME_SAMPLES)
     num_samples = FRAME_SAMPLES;
 
-  num_bytes   = num_samples * 4 * s->data.audio.format.num_channels;
+  num_bytes   = num_samples * 4 * s->data.audio.format->num_channels;
 
   src = priv->packet_ptr;
   dst = (float*)(priv->frame->samples.f);
 
-  i = num_samples * s->data.audio.format.num_channels;
+  i = num_samples * s->data.audio.format->num_channels;
   
   while(i--)
     {
@@ -559,17 +559,17 @@ static void decode_float_32_le(bgav_stream_t * s)
   float * dst;
   priv = s->decoder_priv;
 
-  num_samples = priv->bytes_in_packet / (4 * s->data.audio.format.num_channels);
+  num_samples = priv->bytes_in_packet / (4 * s->data.audio.format->num_channels);
 
   if(num_samples > FRAME_SAMPLES)
     num_samples = FRAME_SAMPLES;
 
-  num_bytes   = num_samples * 4 * s->data.audio.format.num_channels;
+  num_bytes   = num_samples * 4 * s->data.audio.format->num_channels;
 
   src = priv->packet_ptr;
   dst = (float*)(priv->frame->samples.f);
 
-  i = num_samples * s->data.audio.format.num_channels;
+  i = num_samples * s->data.audio.format->num_channels;
   
   while(i--)
     {
@@ -590,17 +590,17 @@ static void decode_float_64_be(bgav_stream_t * s)
   double * dst;
   priv = s->decoder_priv;
 
-  num_samples = priv->bytes_in_packet / (8 * s->data.audio.format.num_channels);
+  num_samples = priv->bytes_in_packet / (8 * s->data.audio.format->num_channels);
 
   if(num_samples > FRAME_SAMPLES)
     num_samples = FRAME_SAMPLES;
 
-  num_bytes   = num_samples * 8 * s->data.audio.format.num_channels;
+  num_bytes   = num_samples * 8 * s->data.audio.format->num_channels;
 
   src = priv->packet_ptr;
   dst = (double*)(priv->frame->samples.f);
 
-  i = num_samples * s->data.audio.format.num_channels;
+  i = num_samples * s->data.audio.format->num_channels;
   
   while(i--)
     {
@@ -621,17 +621,17 @@ static void decode_float_64_le(bgav_stream_t * s)
   double * dst;
   priv = s->decoder_priv;
 
-  num_samples = priv->bytes_in_packet / (8 * s->data.audio.format.num_channels);
+  num_samples = priv->bytes_in_packet / (8 * s->data.audio.format->num_channels);
 
   if(num_samples > FRAME_SAMPLES)
     num_samples = FRAME_SAMPLES;
 
-  num_bytes   = num_samples * 8 * s->data.audio.format.num_channels;
+  num_bytes   = num_samples * 8 * s->data.audio.format->num_channels;
 
   src = priv->packet_ptr;
   dst = (double*)(priv->frame->samples.f);
 
-  i = num_samples * s->data.audio.format.num_channels;
+  i = num_samples * s->data.audio.format->num_channels;
   
   while(i--)
     {
@@ -690,17 +690,17 @@ static void decode_ulaw(bgav_stream_t * s)
   int16_t * dst;
   priv = s->decoder_priv;
 
-  num_samples = priv->bytes_in_packet / (s->data.audio.format.num_channels);
+  num_samples = priv->bytes_in_packet / (s->data.audio.format->num_channels);
 
   if(num_samples > FRAME_SAMPLES)
     num_samples = FRAME_SAMPLES;
 
-  num_bytes   = num_samples * s->data.audio.format.num_channels;
+  num_bytes   = num_samples * s->data.audio.format->num_channels;
 
   src = priv->packet_ptr;
   dst = (int16_t*)(priv->frame->samples.s_16);
 
-  i = num_samples * s->data.audio.format.num_channels;
+  i = num_samples * s->data.audio.format->num_channels;
   
   while(i--)
     {
@@ -760,17 +760,17 @@ static void decode_alaw(bgav_stream_t * s)
   int16_t * dst;
   priv = s->decoder_priv;
 
-  num_samples = priv->bytes_in_packet / (s->data.audio.format.num_channels);
+  num_samples = priv->bytes_in_packet / (s->data.audio.format->num_channels);
 
   if(num_samples > FRAME_SAMPLES)
     num_samples = FRAME_SAMPLES;
 
-  num_bytes   = num_samples * s->data.audio.format.num_channels;
+  num_bytes   = num_samples * s->data.audio.format->num_channels;
 
   src = priv->packet_ptr;
   dst = (int16_t*)(priv->frame->samples.s_16);
   
-  i = num_samples * s->data.audio.format.num_channels;
+  i = num_samples * s->data.audio.format->num_channels;
   
   while(i--)
     {
@@ -823,14 +823,14 @@ static int init_pcm(bgav_stream_t * s)
     case BGAV_MK_FOURCC('a', 'i', 'f', 'f'):
       if(s->data.audio.bits_per_sample <= 8)
         {
-        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "PCM");
-        s->data.audio.format.sample_format = GAVL_SAMPLE_S8;
+        gavl_dictionary_set_string(s->m, GAVL_META_FORMAT, "PCM");
+        s->data.audio.format->sample_format = GAVL_SAMPLE_S8;
         priv->decode_func = decode_8;
         }
       else if(s->data.audio.bits_per_sample <= 16)
         {
-        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "PCM (big endian)");
-        s->data.audio.format.sample_format = GAVL_SAMPLE_S16;
+        gavl_dictionary_set_string(s->m, GAVL_META_FORMAT, "PCM (big endian)");
+        s->data.audio.format->sample_format = GAVL_SAMPLE_S16;
 #ifndef WORDS_BIGENDIAN
         priv->decode_func = decode_s_16_swap;
 #else
@@ -839,14 +839,14 @@ static int init_pcm(bgav_stream_t * s)
         }
       else if(s->data.audio.bits_per_sample <= 24)
         {
-        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "PCM (big endian)");
-        s->data.audio.format.sample_format = GAVL_SAMPLE_S32;
+        gavl_dictionary_set_string(s->m, GAVL_META_FORMAT, "PCM (big endian)");
+        s->data.audio.format->sample_format = GAVL_SAMPLE_S32;
         priv->decode_func = decode_s_24_be;
         }
       else if(s->data.audio.bits_per_sample <= 32)
         {
-        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "PCM (big endian)");
-        s->data.audio.format.sample_format = GAVL_SAMPLE_S32;
+        gavl_dictionary_set_string(s->m, GAVL_META_FORMAT, "PCM (big endian)");
+        s->data.audio.format->sample_format = GAVL_SAMPLE_S32;
 #ifndef WORDS_BIGENDIAN
         priv->decode_func = decode_s_32_swap;
 #else
@@ -866,18 +866,18 @@ static int init_pcm(bgav_stream_t * s)
     case BGAV_MK_FOURCC('P','C','M',' '):
       if(s->data.audio.bits_per_sample <= 8)
         {
-        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "PCM");
-        s->data.audio.format.sample_format = GAVL_SAMPLE_U8;
+        gavl_dictionary_set_string(s->m, GAVL_META_FORMAT, "PCM");
+        s->data.audio.format->sample_format = GAVL_SAMPLE_U8;
         priv->decode_func = decode_8;
         }
       else if(s->data.audio.bits_per_sample <= 16)
         {
-        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "PCM (little endian)");
+        gavl_dictionary_set_string(s->m, GAVL_META_FORMAT, "PCM (little endian)");
 
         if(s->fourcc == BGAV_MK_FOURCC('P','C','M',' '))
-          s->data.audio.format.sample_format = GAVL_SAMPLE_U16;
+          s->data.audio.format->sample_format = GAVL_SAMPLE_U16;
         else
-          s->data.audio.format.sample_format = GAVL_SAMPLE_S16;
+          s->data.audio.format->sample_format = GAVL_SAMPLE_S16;
 #ifndef WORDS_BIGENDIAN
         priv->decode_func = decode_s_16;
 #else
@@ -886,14 +886,14 @@ static int init_pcm(bgav_stream_t * s)
         }
       else if(s->data.audio.bits_per_sample <= 24)
         {
-        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "PCM (little endian)");
-        s->data.audio.format.sample_format = GAVL_SAMPLE_S32;
+        gavl_dictionary_set_string(s->m, GAVL_META_FORMAT, "PCM (little endian)");
+        s->data.audio.format->sample_format = GAVL_SAMPLE_S32;
         priv->decode_func = decode_s_24_le;
         }
       else if(s->data.audio.bits_per_sample <= 32)
         {
-        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "PCM (little endian)");
-        s->data.audio.format.sample_format = GAVL_SAMPLE_S32;
+        gavl_dictionary_set_string(s->m, GAVL_META_FORMAT, "PCM (little endian)");
+        s->data.audio.format->sample_format = GAVL_SAMPLE_S32;
 #ifndef WORDS_BIGENDIAN
         priv->decode_func = decode_s_32;
 #else
@@ -907,16 +907,16 @@ static int init_pcm(bgav_stream_t * s)
       switch(s->data.audio.bits_per_sample)
         {
         case 8:
-          gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "PCM");
+          gavl_dictionary_set_string(s->m, GAVL_META_FORMAT, "PCM");
           if(s->fourcc == BGAV_MK_FOURCC('s', 'o', 'w', 't'))
-            s->data.audio.format.sample_format = GAVL_SAMPLE_S8;
+            s->data.audio.format->sample_format = GAVL_SAMPLE_S8;
           else
-            s->data.audio.format.sample_format = GAVL_SAMPLE_U8;
+            s->data.audio.format->sample_format = GAVL_SAMPLE_U8;
           priv->decode_func = decode_8;
           break;
         case 16:
-          gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "PCM (little endian)");
-          s->data.audio.format.sample_format = GAVL_SAMPLE_S16;
+          gavl_dictionary_set_string(s->m, GAVL_META_FORMAT, "PCM (little endian)");
+          s->data.audio.format->sample_format = GAVL_SAMPLE_S16;
 #ifndef WORDS_BIGENDIAN
           priv->decode_func = decode_s_16;
 #else
@@ -924,13 +924,13 @@ static int init_pcm(bgav_stream_t * s)
 #endif
           break;
         case 24:
-          gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "PCM (little endian)");
-          s->data.audio.format.sample_format = GAVL_SAMPLE_S32;
+          gavl_dictionary_set_string(s->m, GAVL_META_FORMAT, "PCM (little endian)");
+          s->data.audio.format->sample_format = GAVL_SAMPLE_S32;
           priv->decode_func = decode_s_24_le;
           break;
         case 32:
-          gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "PCM (little endian)");
-          s->data.audio.format.sample_format = GAVL_SAMPLE_S32;
+          gavl_dictionary_set_string(s->m, GAVL_META_FORMAT, "PCM (little endian)");
+          s->data.audio.format->sample_format = GAVL_SAMPLE_S32;
 #ifndef WORDS_BIGENDIAN
           priv->decode_func = decode_s_32;
 #else
@@ -956,7 +956,7 @@ static int init_pcm(bgav_stream_t * s)
       switch(s->data.audio.bits_per_sample)
         {
         case 16:
-          s->data.audio.format.sample_format = GAVL_SAMPLE_S16;
+          s->data.audio.format->sample_format = GAVL_SAMPLE_S16;
 #ifndef WORDS_BIGENDIAN
           priv->decode_func = decode_s_16_swap;
 #else
@@ -964,15 +964,15 @@ static int init_pcm(bgav_stream_t * s)
 #endif
           break;
         case 20:
-          s->data.audio.format.sample_format = GAVL_SAMPLE_S32;
-          if(s->data.audio.format.num_channels == 1)
+          s->data.audio.format->sample_format = GAVL_SAMPLE_S32;
+          if(s->data.audio.format->num_channels == 1)
             priv->decode_func = decode_s_20_lpcm_mono;
           else
             priv->decode_func = decode_s_20_lpcm;
           break;
         case 24:
-          s->data.audio.format.sample_format = GAVL_SAMPLE_S32;
-          if(s->data.audio.format.num_channels == 1)
+          s->data.audio.format->sample_format = GAVL_SAMPLE_S32;
+          if(s->data.audio.format->num_channels == 1)
             priv->decode_func = decode_s_24_lpcm_mono;
           else
             priv->decode_func = decode_s_24_lpcm;
@@ -983,7 +983,7 @@ static int init_pcm(bgav_stream_t * s)
                    s->data.audio.bits_per_sample);
           return 0;
         }
-      gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "LPCM");
+      gavl_dictionary_set_string(s->m, GAVL_META_FORMAT, "LPCM");
       
       break;
       /* Quicktime 24/32 bit, can be either big or little endian */
@@ -993,12 +993,12 @@ static int init_pcm(bgav_stream_t * s)
       else
         priv->decode_func = decode_s_24_be;
 
-      gavl_dictionary_set_string_nocopy(&s->m, GAVL_META_FORMAT,
+      gavl_dictionary_set_string_nocopy(s->m, GAVL_META_FORMAT,
                               bgav_sprintf("PCM (%s endian)",
                                            ((s->data.audio.endianess == BGAV_ENDIANESS_LITTLE) ? "little" : "big" )));
       
-      s->data.audio.format.sample_format = GAVL_SAMPLE_S32;
-      priv->block_align = s->data.audio.format.num_channels * 3;
+      s->data.audio.format->sample_format = GAVL_SAMPLE_S32;
+      priv->block_align = s->data.audio.format->num_channels * 3;
       break;
     case BGAV_MK_FOURCC('i', 'n', '3', '2'):
       if(s->data.audio.endianess == BGAV_ENDIANESS_LITTLE)
@@ -1017,12 +1017,12 @@ static int init_pcm(bgav_stream_t * s)
         priv->decode_func = decode_s_32;
 #endif
         }
-      gavl_dictionary_set_string_nocopy(&s->m, GAVL_META_FORMAT,
+      gavl_dictionary_set_string_nocopy(s->m, GAVL_META_FORMAT,
                               bgav_sprintf("PCM (%s endian)",
                                            ((s->data.audio.endianess == BGAV_ENDIANESS_LITTLE) ? "little" : "big" )));
       
-      s->data.audio.format.sample_format = GAVL_SAMPLE_S32;
-      priv->block_align = s->data.audio.format.num_channels * 4;
+      s->data.audio.format->sample_format = GAVL_SAMPLE_S32;
+      priv->block_align = s->data.audio.format->num_channels * 4;
       break;
       /* Floating point formats */
     case BGAV_WAVID_2_FOURCC(0x0003):
@@ -1030,16 +1030,16 @@ static int init_pcm(bgav_stream_t * s)
         {
         case 32:
           priv->decode_func = decode_float_32_le;
-          s->data.audio.format.sample_format = GAVL_SAMPLE_FLOAT;
+          s->data.audio.format->sample_format = GAVL_SAMPLE_FLOAT;
 
-          gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
+          gavl_dictionary_set_string(s->m, GAVL_META_FORMAT,
                             "PCM float (little endian)");
 
           break;
         case 64:
           priv->decode_func = decode_float_64_le;
-          s->data.audio.format.sample_format = GAVL_SAMPLE_DOUBLE;
-          gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
+          s->data.audio.format->sample_format = GAVL_SAMPLE_DOUBLE;
+          gavl_dictionary_set_string(s->m, GAVL_META_FORMAT,
                             "PCM float (little endian)");
           break;
         default:
@@ -1052,47 +1052,47 @@ static int init_pcm(bgav_stream_t * s)
         priv->decode_func = decode_float_32_le;
       else
         priv->decode_func = decode_float_32_be;
-      s->data.audio.format.sample_format = GAVL_SAMPLE_FLOAT;
+      s->data.audio.format->sample_format = GAVL_SAMPLE_FLOAT;
 
-      gavl_dictionary_set_string_nocopy(&s->m, GAVL_META_FORMAT,
+      gavl_dictionary_set_string_nocopy(s->m, GAVL_META_FORMAT,
                               bgav_sprintf("PCM float (%s endian)",
                                            (s->data.audio.endianess == BGAV_ENDIANESS_LITTLE) ? "little" : "big" ));
       
-      priv->block_align = s->data.audio.format.num_channels * 4;
+      priv->block_align = s->data.audio.format->num_channels * 4;
       break;
     case BGAV_MK_FOURCC('f', 'l', '6', '4'):
       if(s->data.audio.endianess == BGAV_ENDIANESS_LITTLE)
         {
         priv->decode_func = decode_float_64_le;
-        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
+        gavl_dictionary_set_string(s->m, GAVL_META_FORMAT,
                           "PCM float (little endian)");
         }
       else
         {
         priv->decode_func = decode_float_64_be;
-        gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
+        gavl_dictionary_set_string(s->m, GAVL_META_FORMAT,
                           "PCM float (big endian)");
         }
-      s->data.audio.format.sample_format = GAVL_SAMPLE_DOUBLE;
-      priv->block_align = s->data.audio.format.num_channels * 8;
+      s->data.audio.format->sample_format = GAVL_SAMPLE_DOUBLE;
+      priv->block_align = s->data.audio.format->num_channels * 8;
       break;
     case BGAV_MK_FOURCC('u', 'l', 'a', 'w'):
     case BGAV_MK_FOURCC('U', 'L', 'A', 'W'):
     case BGAV_WAVID_2_FOURCC(0x07):
       priv->decode_func = decode_ulaw;
-      gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
+      gavl_dictionary_set_string(s->m, GAVL_META_FORMAT,
                         "u-Law 2:1");
-      s->data.audio.format.sample_format = GAVL_SAMPLE_S16;
-      priv->block_align = s->data.audio.format.num_channels;
+      s->data.audio.format->sample_format = GAVL_SAMPLE_S16;
+      priv->block_align = s->data.audio.format->num_channels;
       break;
     case BGAV_MK_FOURCC('a', 'l', 'a', 'w'):
     case BGAV_MK_FOURCC('A', 'L', 'A', 'W'):
     case BGAV_WAVID_2_FOURCC(0x06):
       priv->decode_func = decode_alaw;
-      gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
+      gavl_dictionary_set_string(s->m, GAVL_META_FORMAT,
                         "a-Law 2:1");
-      s->data.audio.format.sample_format = GAVL_SAMPLE_S16;
-      priv->block_align = s->data.audio.format.num_channels;
+      s->data.audio.format->sample_format = GAVL_SAMPLE_S16;
+      priv->block_align = s->data.audio.format->num_channels;
       break;
     case BGAV_MK_FOURCC('l', 'p', 'c', 'm'):
       /* Quicktime 7 lpcm: extradata contains formatSpecificFlags in native byte order */
@@ -1123,14 +1123,14 @@ static int init_pcm(bgav_stream_t * s)
               priv->decode_func = decode_float_32_le;
             else
               priv->decode_func = decode_float_32_be;
-            s->data.audio.format.sample_format = GAVL_SAMPLE_FLOAT;
+            s->data.audio.format->sample_format = GAVL_SAMPLE_FLOAT;
 
-            gavl_dictionary_set_string_nocopy(&s->m, GAVL_META_FORMAT,
+            gavl_dictionary_set_string_nocopy(s->m, GAVL_META_FORMAT,
                                     bgav_sprintf("PCM float (%s endian)",
                                                  (!(formatSpecificFlags &
                                                     kAudioFormatFlagIsBigEndian) ?
                                                   "little" : "big" )));
-            priv->block_align = s->data.audio.format.num_channels * 4;
+            priv->block_align = s->data.audio.format->num_channels * 4;
 
             break;
           case 64:
@@ -1138,15 +1138,15 @@ static int init_pcm(bgav_stream_t * s)
               priv->decode_func = decode_float_64_le;
             else
               priv->decode_func = decode_float_64_be;
-            s->data.audio.format.sample_format = GAVL_SAMPLE_DOUBLE;
+            s->data.audio.format->sample_format = GAVL_SAMPLE_DOUBLE;
 
-            gavl_dictionary_set_string_nocopy(&s->m, GAVL_META_FORMAT,
+            gavl_dictionary_set_string_nocopy(s->m, GAVL_META_FORMAT,
                                     bgav_sprintf("PCM float (%s endian)",
                                                  (!(formatSpecificFlags &
                                                     kAudioFormatFlagIsBigEndian) ?
                                                   "little" : "big" )));
 
-            priv->block_align = s->data.audio.format.num_channels * 8;
+            priv->block_align = s->data.audio.format->num_channels * 8;
             
             break;
           }
@@ -1164,10 +1164,10 @@ static int init_pcm(bgav_stream_t * s)
               {
               priv->decode_func = decode_s_16_le;
               }
-            priv->block_align = s->data.audio.format.num_channels * 2;
-            s->data.audio.format.sample_format = GAVL_SAMPLE_S16;
+            priv->block_align = s->data.audio.format->num_channels * 2;
+            s->data.audio.format->sample_format = GAVL_SAMPLE_S16;
 
-            gavl_dictionary_set_string_nocopy(&s->m, GAVL_META_FORMAT,
+            gavl_dictionary_set_string_nocopy(s->m, GAVL_META_FORMAT,
                                     bgav_sprintf("PCM (%s endian)",
                                                  (!(formatSpecificFlags &
                                                     kAudioFormatFlagIsBigEndian) ?
@@ -1183,10 +1183,10 @@ static int init_pcm(bgav_stream_t * s)
               {
               priv->decode_func = decode_s_24_le;
               }
-            priv->block_align = s->data.audio.format.num_channels * 3;
-            s->data.audio.format.sample_format = GAVL_SAMPLE_S32;
+            priv->block_align = s->data.audio.format->num_channels * 3;
+            s->data.audio.format->sample_format = GAVL_SAMPLE_S32;
 
-            gavl_dictionary_set_string_nocopy(&s->m, GAVL_META_FORMAT,
+            gavl_dictionary_set_string_nocopy(s->m, GAVL_META_FORMAT,
                                     bgav_sprintf("PCM (%s endian)",
                                                  (!(formatSpecificFlags &
                                                     kAudioFormatFlagIsBigEndian) ?
@@ -1202,10 +1202,10 @@ static int init_pcm(bgav_stream_t * s)
               {
               priv->decode_func = decode_s_32_le;
               }
-            priv->block_align = s->data.audio.format.num_channels * 4;
-            s->data.audio.format.sample_format = GAVL_SAMPLE_S32;
+            priv->block_align = s->data.audio.format->num_channels * 4;
+            s->data.audio.format->sample_format = GAVL_SAMPLE_S32;
 
-            gavl_dictionary_set_string_nocopy(&s->m, GAVL_META_FORMAT,
+            gavl_dictionary_set_string_nocopy(s->m, GAVL_META_FORMAT,
                                     bgav_sprintf("PCM (%s endian)",
                                                  (!(formatSpecificFlags &
                                                     kAudioFormatFlagIsBigEndian) ?
@@ -1219,16 +1219,16 @@ static int init_pcm(bgav_stream_t * s)
                "Unknown fourcc");
       return 0;
     }
-  s->data.audio.format.interleave_mode = GAVL_INTERLEAVE_ALL;
-  s->data.audio.format.samples_per_frame = FRAME_SAMPLES;
+  s->data.audio.format->interleave_mode = GAVL_INTERLEAVE_ALL;
+  s->data.audio.format->samples_per_frame = FRAME_SAMPLES;
   /* Samples per frame is just the maximum */
   s->src_flags |= GAVL_SOURCE_SRC_FRAMESIZE_MAX;
   
-  gavl_set_channel_setup(&s->data.audio.format);
+  gavl_set_channel_setup(s->data.audio.format);
   
-  priv->frame = gavl_audio_frame_create(&s->data.audio.format);
+  priv->frame = gavl_audio_frame_create(s->data.audio.format);
   if(!priv->block_align)
-    priv->block_align = s->data.audio.format.num_channels *
+    priv->block_align = s->data.audio.format->num_channels *
       ((s->data.audio.bits_per_sample+7)/8);
   
   return 1;
@@ -1248,7 +1248,7 @@ static gavl_source_status_t decode_frame_pcm(bgav_stream_t * s)
   
   priv->decode_func(s);
 
-  gavl_audio_frame_copy_ptrs(&s->data.audio.format,
+  gavl_audio_frame_copy_ptrs(s->data.audio.format,
                              s->data.audio.frame, priv->frame);
   
   if(!priv->bytes_in_packet)

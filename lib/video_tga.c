@@ -155,29 +155,29 @@ static gavl_source_status_t decode_tga(bgav_stream_t * s, gavl_video_frame_t * f
     {
     /* Figure out the format */
 
-    s->data.video.format.frame_width  = priv->tga.width;
-    s->data.video.format.frame_height = priv->tga.height;
+    s->data.video.format->frame_width  = priv->tga.width;
+    s->data.video.format->frame_height = priv->tga.height;
     
-    s->data.video.format.image_width  = priv->tga.width;
-    s->data.video.format.image_height = priv->tga.height;
+    s->data.video.format->image_width  = priv->tga.width;
+    s->data.video.format->image_height = priv->tga.height;
     
-    s->data.video.format.pixel_width  = 1;
-    s->data.video.format.pixel_height = 1;
+    s->data.video.format->pixel_width  = 1;
+    s->data.video.format->pixel_height = 1;
     switch(priv->tga.image_type)
       {
       case TGA_IMAGE_TYPE_COLORMAP:
       case TGA_IMAGE_TYPE_COLORMAP_RLE:
-        s->data.video.format.pixelformat =
+        s->data.video.format->pixelformat =
           get_pixelformat(priv->tga.color_map_depth,
                           &priv->bytes_per_pixel);
         break;
       default:
-        s->data.video.format.pixelformat =
+        s->data.video.format->pixelformat =
           get_pixelformat(priv->tga.pixel_depth,
                           &priv->bytes_per_pixel);
         break;
       }
-    if(s->data.video.format.pixelformat == GAVL_PIXELFORMAT_NONE)
+    if(s->data.video.format->pixelformat == GAVL_PIXELFORMAT_NONE)
       {
       bgav_log(s->opt, BGAV_LOG_ERROR, LOG_DOMAIN,
                "Cannot detect image type: %d", priv->tga.image_type);
@@ -204,11 +204,11 @@ static gavl_source_status_t decode_tga(bgav_stream_t * s, gavl_video_frame_t * f
       default:
         break;
       }
-    if(s->data.video.format.pixelformat == GAVL_RGBA_32)
+    if(s->data.video.format->pixelformat == GAVL_RGBA_32)
       tga_swap_red_blue(&priv->tga);
 
     priv->frame->strides[0] =
-      priv->bytes_per_pixel * s->data.video.format.image_width;
+      priv->bytes_per_pixel * s->data.video.format->image_width;
     priv->frame->planes[0] = priv->tga.image_data;
     
     /* Figure out the copy function */
@@ -217,12 +217,12 @@ static gavl_source_status_t decode_tga(bgav_stream_t * s, gavl_video_frame_t * f
       {
       if(priv->tga.image_descriptor & TGA_T_TO_B_BIT)
         {
-        gavl_video_frame_copy_flip_x(&s->data.video.format,
+        gavl_video_frame_copy_flip_x(s->data.video.format,
                                      frame, priv->frame);
         }
       else
         {
-        gavl_video_frame_copy_flip_xy(&s->data.video.format,
+        gavl_video_frame_copy_flip_xy(s->data.video.format,
                                       frame, priv->frame);
         }
       }
@@ -230,12 +230,12 @@ static gavl_source_status_t decode_tga(bgav_stream_t * s, gavl_video_frame_t * f
       {
       if(priv->tga.image_descriptor & TGA_T_TO_B_BIT)
         {
-        gavl_video_frame_copy(&s->data.video.format,
+        gavl_video_frame_copy(s->data.video.format,
                               frame, priv->frame);
         }
       else
         {
-        gavl_video_frame_copy_flip_y(&s->data.video.format,
+        gavl_video_frame_copy_flip_y(s->data.video.format,
                                      frame, priv->frame);
         }
       }
@@ -267,7 +267,7 @@ static int init_tga(bgav_stream_t * s)
   
   priv->do_init = 0;
   
-  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "TGA");
+  gavl_dictionary_set_string(s->m, GAVL_META_FORMAT, "TGA");
   return 1;
   }
 

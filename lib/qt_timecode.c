@@ -57,7 +57,7 @@ void bgav_qt_init_timecodes(bgav_input_context_t * input,
   stco = &trak->mdia.minf.stbl.stco;
 
   /* Set timecode format */
-  s->data.video.format.timecode_format.int_framerate =
+  s->data.video.format->timecode_format.int_framerate =
     trak->mdia.minf.stbl.stsd.entries[0].desc.format.timecode.numframes;
 
   /* Flags:
@@ -81,7 +81,7 @@ void bgav_qt_init_timecodes(bgav_input_context_t * input,
    */
   
   if(trak->mdia.minf.stbl.stsd.entries[0].desc.format.timecode.flags & 0x0001)
-    s->data.video.format.timecode_format.flags |= GAVL_TIMECODE_DROP_FRAME;
+    s->data.video.format->timecode_format.flags |= GAVL_TIMECODE_DROP_FRAME;
   
   /* Count samples */
 
@@ -110,7 +110,7 @@ void bgav_qt_init_timecodes(bgav_input_context_t * input,
         }
       table->entries[samples_read].pts      = pts + pts_offset;
       table->entries[samples_read].timecode =
-        gavl_timecode_from_framecount(&s->data.video.format.timecode_format, timecode);
+        gavl_timecode_from_framecount(&s->data.video.format->timecode_format, timecode);
 
       samples_read++;
 
@@ -143,7 +143,7 @@ fail:
   bgav_input_seek(input, last_pos, SEEK_SET);
   
   bgav_timecode_table_destroy(table);
-  s->data.video.format.timecode_format.int_framerate = 0;
+  s->data.video.format->timecode_format.int_framerate = 0;
   return;
   
   }

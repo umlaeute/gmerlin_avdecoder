@@ -55,14 +55,14 @@ decode_frame_gavf_video(bgav_stream_t * s, gavl_video_frame_t * frame)
   gp.dst_y    = priv->p->dst_y;
   gavl_rectangle_i_copy(&gp.src_rect, &priv->p->src_rect);
   
-  if(s->type == BGAV_STREAM_VIDEO)
+  if(s->type == GAVF_STREAM_VIDEO)
     {
-    gavf_packet_to_video_frame(&gp, priv->frame, &s->data.video.format, &s->m, &priv->dsp);
+    gavf_packet_to_video_frame(&gp, priv->frame, s->data.video.format, s->m, &priv->dsp);
     bgav_set_video_frame_from_packet(priv->p, priv->frame);
     }
   else
     {
-    gavf_packet_to_overlay(&gp, frame, &s->data.video.format);
+    gavf_packet_to_overlay(&gp, frame, s->data.video.format);
     bgav_set_video_frame_from_packet(priv->p, frame);
     }
   return GAVL_SOURCE_OK;
@@ -86,7 +86,7 @@ static int init_gavf_video(bgav_stream_t * s)
 
   s->decoder_priv = priv;
 
-  if(s->type == BGAV_STREAM_VIDEO)
+  if(s->type == GAVF_STREAM_VIDEO)
     {
     priv->frame = gavl_video_frame_create(NULL);
     s->vframe = priv->frame;

@@ -134,27 +134,27 @@ static int open_dsicin(bgav_demuxer_context_t * ctx)
   /* Set up video stream */
   s = bgav_track_add_video_stream(ctx->tt->cur, ctx->opt);
 
-  s->data.video.format.image_width  = fh.video_width;
-  s->data.video.format.image_height = fh.video_height;
-  s->data.video.format.frame_width  = fh.video_width;
-  s->data.video.format.frame_height = fh.video_height;
-  s->data.video.format.pixel_width  = 1;
-  s->data.video.format.pixel_height = 1;
+  s->data.video.format->image_width  = fh.video_width;
+  s->data.video.format->image_height = fh.video_height;
+  s->data.video.format->frame_width  = fh.video_width;
+  s->data.video.format->frame_height = fh.video_height;
+  s->data.video.format->pixel_width  = 1;
+  s->data.video.format->pixel_height = 1;
   s->fourcc = BGAV_MK_FOURCC('d','c','i','n');
   s->stream_id = VIDEO_ID;
 
-  s->data.video.format.timescale = 12;
-  s->data.video.format.frame_duration = 1;
+  s->data.video.format->timescale = 12;
+  s->data.video.format->frame_duration = 1;
   
   /* Set up audio stream */
   s = bgav_track_add_audio_stream(ctx->tt->cur, ctx->opt);
-  s->data.audio.format.samplerate = fh.samplerate;
-  s->data.audio.format.num_channels   = 1+fh.stereo;
+  s->data.audio.format->samplerate = fh.samplerate;
+  s->data.audio.format->num_channels   = 1+fh.stereo;
   s->data.audio.bits_per_sample   = fh.bits_per_sample;
   s->fourcc = BGAV_MK_FOURCC('d','c','i','n');
   s->stream_id = AUDIO_ID;
 
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "Delphine Software CIN");
   
   ctx->data_start = ctx->input->position;

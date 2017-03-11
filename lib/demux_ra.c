@@ -120,8 +120,8 @@ static int open_ra(bgav_demuxer_context_t * ctx)
     {
     priv->data_size = BGAV_PTR_2_32BE(audio_header + 0x12);
 
-    s->data.audio.format.num_channels = 1;
-    s->data.audio.format.samplerate = 8000;
+    s->data.audio.format->num_channels = 1;
+    s->data.audio.format->samplerate = 8000;
     s->data.audio.block_align = 240;
     s->data.audio.bits_per_sample = 16;
     offset = 0x16;
@@ -130,10 +130,10 @@ static int open_ra(bgav_demuxer_context_t * ctx)
     {
     priv->data_size = BGAV_PTR_2_32BE(audio_header + 0x1C);    
     s->data.audio.block_align = BGAV_PTR_2_16BE(audio_header + 0x2A);
-    s->data.audio.format.samplerate = BGAV_PTR_2_16BE(audio_header + 0x30);
+    s->data.audio.format->samplerate = BGAV_PTR_2_16BE(audio_header + 0x30);
     
     s->data.audio.bits_per_sample     = audio_header[0x35];
-    s->data.audio.format.num_channels = audio_header[0x37];
+    s->data.audio.format->num_channels = audio_header[0x37];
 
     // sub_packet_size    = BGAV_PTR_2_16BE(audio_header + 0x2C);
     priv->sub_packet_h       = BGAV_PTR_2_16BE(audio_header + 0x28);    
@@ -163,7 +163,7 @@ static int open_ra(bgav_demuxer_context_t * ctx)
   len = audio_header[offset];
   if(len && ((offset+len+2) < hdr_size))
     {
-    gavl_dictionary_set_string_nocopy(&track->metadata,
+    gavl_dictionary_set_string_nocopy(track->metadata,
                             GAVL_META_TITLE,
                             bgav_convert_string(charset_cnv,
                                                 (char*)(audio_header +offset+1), len,
@@ -177,7 +177,7 @@ static int open_ra(bgav_demuxer_context_t * ctx)
   len = audio_header[offset];
   if(len && ((offset+len+1) < hdr_size))
     {
-    gavl_dictionary_set_string_nocopy(&track->metadata,
+    gavl_dictionary_set_string_nocopy(track->metadata,
                             GAVL_META_AUTHOR,
                             bgav_convert_string(charset_cnv,
                                                 (char*)(audio_header +offset+1), len,
@@ -191,7 +191,7 @@ static int open_ra(bgav_demuxer_context_t * ctx)
   len = audio_header[offset];
   if(len && ((offset+len+1) <= hdr_size))
     {
-    gavl_dictionary_set_string_nocopy(&track->metadata,
+    gavl_dictionary_set_string_nocopy(track->metadata,
                             GAVL_META_COPYRIGHT,
                             bgav_convert_string(charset_cnv,
                                                 (char*)(audio_header +offset+1), len,
@@ -249,7 +249,7 @@ static int open_ra(bgav_demuxer_context_t * ctx)
       break;
     }
 
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "Real audio");
       
   return 1;

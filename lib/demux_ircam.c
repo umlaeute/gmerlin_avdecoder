@@ -318,14 +318,14 @@ static int open_ircam(bgav_demuxer_context_t * ctx)
       break;
     }
   
-  as->data.audio.format.samplerate = h.SampleFrequenz;
-  as->data.audio.format.num_channels = h.NumChannels;
+  as->data.audio.format->samplerate = h.SampleFrequenz;
+  as->data.audio.format->num_channels = h.NumChannels;
 
   if(ctx->input->total_bytes)
     {
     total_samples = (ctx->input->total_bytes - HEADER_SIZE) / as->data.audio.block_align;
     as->duration = total_samples;
-    ctx->tt->cur->duration =  gavl_samples_to_time(as->data.audio.format.samplerate, total_samples);
+    ctx->tt->cur->duration =  gavl_samples_to_time(as->data.audio.format->samplerate, total_samples);
     if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
       ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
     }
@@ -358,7 +358,7 @@ static int open_ircam(bgav_demuxer_context_t * ctx)
       break;
     }
 
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, format);
   
   bgav_input_skip(ctx->input, HEADER_SIZE - ctx->input->position);
@@ -413,7 +413,7 @@ static void seek_ircam(bgav_demuxer_context_t * ctx, int64_t time,
 
   s = &ctx->tt->cur->audio_streams[0];
 
-  sample = gavl_time_rescale(scale, s->data.audio.format.samplerate, time);
+  sample = gavl_time_rescale(scale, s->data.audio.format->samplerate, time);
     
   position =  s->data.audio.block_align * sample + HEADER_SIZE;
   bgav_input_seek(ctx->input, position, SEEK_SET);

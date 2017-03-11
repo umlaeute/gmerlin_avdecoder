@@ -79,19 +79,19 @@ static int init_speex(bgav_stream_t * s)
 #ifdef USE_FLOAT
   s->data.audio.format.sample_format = GAVL_SAMPLE_FLOAT;
 #else
-  s->data.audio.format.sample_format = GAVL_SAMPLE_S16;
+  s->data.audio.format->sample_format = GAVL_SAMPLE_S16;
 #endif
   
-  s->data.audio.format.num_channels = priv->header->nb_channels;
-  s->data.audio.format.samplerate = priv->header->rate;
-  s->data.audio.format.interleave_mode = GAVL_INTERLEAVE_ALL;
-  gavl_set_channel_setup(&s->data.audio.format);
+  s->data.audio.format->num_channels = priv->header->nb_channels;
+  s->data.audio.format->samplerate = priv->header->rate;
+  s->data.audio.format->interleave_mode = GAVL_INTERLEAVE_ALL;
+  gavl_set_channel_setup(s->data.audio.format);
 
   speex_decoder_ctl(priv->dec_state, SPEEX_GET_FRAME_SIZE, &priv->frame_size);
-  s->data.audio.format.samples_per_frame =
+  s->data.audio.format->samples_per_frame =
     priv->frame_size * priv->header->frames_per_packet;
   
-  priv->frame = gavl_audio_frame_create(&s->data.audio.format);
+  priv->frame = gavl_audio_frame_create(s->data.audio.format);
 
   /* Set stereo callback */
 
@@ -105,7 +105,7 @@ static int init_speex(bgav_stream_t * s)
     speex_decoder_ctl(priv->dec_state, SPEEX_SET_HANDLER, &callback);
     }
 
-  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(s->m, GAVL_META_FORMAT,
                     "Speex");
   return 1;
   }
@@ -129,21 +129,21 @@ static gavl_source_status_t decode_frame_speex(bgav_stream_t * s)
 #ifdef USE_FLOAT
     speex_decode(priv->dec_state, &priv->bits,
                  priv->frame->samples.f +
-                 i * priv->frame_size * s->data.audio.format.num_channels);
+                 i * priv->frame_size * s->data.audio.format->num_channels);
 #else
     speex_decode_int(priv->dec_state, &priv->bits,
                      priv->frame->samples.s_16 +
-                     i * priv->frame_size * s->data.audio.format.num_channels);
+                     i * priv->frame_size * s->data.audio.format->num_channels);
 #endif    
-    if(s->data.audio.format.num_channels > 1)
+    if(s->data.audio.format->num_channels > 1)
       {
 #ifdef USE_FLOAT
       speex_decode_stereo(priv->frame->samples.f +
-                          i * priv->frame_size * s->data.audio.format.num_channels,
+                          i * priv->frame_size * s->data.audio.format->num_channels,
                           priv->frame_size, &priv->stereo);
 #else
       speex_decode_stereo_int(priv->frame->samples.s_16 +
-                              i * priv->frame_size * s->data.audio.format.num_channels,
+                              i * priv->frame_size * s->data.audio.format->num_channels,
                               priv->frame_size, &priv->stereo);
 #endif    
       }
@@ -153,7 +153,7 @@ static gavl_source_status_t decode_frame_speex(bgav_stream_t * s)
   
 #ifdef USE_FLOAT
   for(i = 0;
-      i < priv->frame_size * priv->header->frames_per_packet * s->data.audio.format.num_channels;
+      i < priv->frame_size * priv->header->frames_per_packet * s->data.audio.format->num_channels;
       i++)
     {
     priv->frame->samples.f[i] /= 32768.0;
@@ -166,7 +166,7 @@ static gavl_source_status_t decode_frame_speex(bgav_stream_t * s)
   
   bgav_stream_done_packet_read(s, p);
   
-  gavl_audio_frame_copy_ptrs(&s->data.audio.format, s->data.audio.frame, priv->frame);
+  gavl_audio_frame_copy_ptrs(s->data.audio.format, s->data.audio.frame, priv->frame);
   
   return GAVL_SOURCE_OK;
   }

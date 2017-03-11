@@ -124,19 +124,19 @@ static int read_meta_data(bgav_demuxer_context_t * ctx, chunk_header_t * ret)
   switch(ret->fourcc)
     {
     case ID_NAME:
-      gavl_dictionary_set_string_nocopy(&ctx->tt->cur->metadata,
+      gavl_dictionary_set_string_nocopy(ctx->tt->cur->metadata,
                               GAVL_META_TITLE, buffer);
       break;
     case ID_COPY:
-      gavl_dictionary_set_string_nocopy(&ctx->tt->cur->metadata,
+      gavl_dictionary_set_string_nocopy(ctx->tt->cur->metadata,
                               GAVL_META_COPYRIGHT, buffer);
       break;
     case ID_AUTH:
-      gavl_dictionary_set_string_nocopy(&ctx->tt->cur->metadata,
+      gavl_dictionary_set_string_nocopy(ctx->tt->cur->metadata,
                               GAVL_META_AUTHOR, buffer);
       break;
     case ID_ANNO:
-      gavl_dictionary_set_string_nocopy(&ctx->tt->cur->metadata,
+      gavl_dictionary_set_string_nocopy(ctx->tt->cur->metadata,
                               GAVL_META_COMMENT, buffer);
       break;
     }
@@ -213,22 +213,22 @@ static int open_8svx(bgav_demuxer_context_t * ctx)
 
   as = bgav_track_add_audio_stream(ctx->tt->cur, ctx->opt);
   as->fourcc = BGAV_MK_FOURCC('t', 'w', 'o', 's');
-  as->data.audio.format.samplerate = hdr.samplesPerSec;
-  as->data.audio.format.num_channels = 1;
+  as->data.audio.format->samplerate = hdr.samplesPerSec;
+  as->data.audio.format->num_channels = 1;
   as->data.audio.block_align = 1;
   as->data.audio.bits_per_sample = BITSPERSAMPLES;
 
   total_samples = priv->data_size / as->data.audio.block_align;
   if(priv->data_size)
     {
-    ctx->tt->cur->duration =  gavl_samples_to_time(as->data.audio.format.samplerate, total_samples);
+    ctx->tt->cur->duration =  gavl_samples_to_time(as->data.audio.format->samplerate, total_samples);
     ctx->tt->cur->audio_streams->duration = total_samples;
     }
   
   if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
 
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "8SVX");
   ctx->index_mode = INDEX_MODE_PCM;
   return 1;
@@ -282,7 +282,7 @@ static void seek_8svx(bgav_demuxer_context_t * ctx, gavl_time_t time,
   int64_t sample;
   s = &ctx->tt->cur->audio_streams[0];
 
-  sample = gavl_time_rescale(scale, s->data.audio.format.samplerate, time);
+  sample = gavl_time_rescale(scale, s->data.audio.format->samplerate, time);
   
   position =  samples_to_bytes(s, sample) + ctx->data_start;
   bgav_input_seek(ctx->input, position, SEEK_SET);

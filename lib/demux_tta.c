@@ -107,8 +107,8 @@ static int open_tta(bgav_demuxer_context_t * ctx)
   /* Set up generic stuff */
   ctx->tt = bgav_track_table_create(1);
   s = bgav_track_add_audio_stream(ctx->tt->cur, ctx->opt);
-  s->data.audio.format.num_channels = h.num_channels;
-  s->data.audio.format.samplerate = h.samplerate;
+  s->data.audio.format->num_channels = h.num_channels;
+  s->data.audio.format->samplerate = h.samplerate;
   s->fourcc = BGAV_MK_FOURCC('T','T','A','1');
 
   /* Set up private stuff */
@@ -141,7 +141,7 @@ static int open_tta(bgav_demuxer_context_t * ctx)
     }
 
   ctx->tt->cur->duration =
-    gavl_time_unscale(s->data.audio.format.samplerate, h.data_length);
+    gavl_time_unscale(s->data.audio.format->samplerate, h.data_length);
 
   if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
@@ -149,7 +149,7 @@ static int open_tta(bgav_demuxer_context_t * ctx)
   
   priv->data_start = ctx->input->position;
 
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "True Audio");
 
   return 1;

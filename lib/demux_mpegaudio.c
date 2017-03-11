@@ -337,7 +337,7 @@ static int set_stream(bgav_demuxer_context_t * ctx)
 
   /* Get audio format */
   bgav_mpa_header_get_format(&priv->header,
-                             &s->data.audio.format);
+                             s->data.audio.format);
   
   if(!s->container_bitrate)
     {
@@ -426,12 +426,12 @@ static bgav_track_table_t * albw_2_track(bgav_demuxer_context_t* ctx,
                       &albw->tracks[i].end_pos,
                       &track_metadata);
     
-    gavl_dictionary_merge(&ret->tracks[i].metadata,
+    gavl_dictionary_merge(ret->tracks[i].metadata,
                         &track_metadata, global_metadata);
 
     end_pos = strrchr(albw->tracks[i].filename, '.');
     if(end_pos)
-      gavl_dictionary_set_string_nocopy(&ret->tracks[i].metadata, GAVL_META_LABEL,
+      gavl_dictionary_set_string_nocopy(ret->tracks[i].metadata, GAVL_META_LABEL,
                               gavl_strndup(albw->tracks[i].filename, end_pos));
     
     gavl_dictionary_free(&track_metadata);
@@ -511,7 +511,7 @@ static int open_mpegaudio(bgav_demuxer_context_t * ctx)
     ctx->tt->tracks[0].duration = get_duration(ctx,
                                                priv->data_start,
                                                priv->data_end);
-    gavl_dictionary_merge(&ctx->tt->tracks[0].metadata,
+    gavl_dictionary_merge(ctx->tt->tracks[0].metadata,
                         &metadata_v2, &metadata_v1);
     }
 
@@ -528,9 +528,9 @@ static int open_mpegaudio(bgav_demuxer_context_t * ctx)
 
   for(i = 0; i < ctx->tt->num_tracks; i++)
     {
-    gavl_dictionary_set_string(&ctx->tt->tracks[i].metadata, 
+    gavl_dictionary_set_string(ctx->tt->tracks[i].metadata, 
                       GAVL_META_FORMAT, "MPEG Audio");
-    gavl_dictionary_set_string(&ctx->tt->tracks[i].metadata,
+    gavl_dictionary_set_string(ctx->tt->tracks[i].metadata,
                       GAVL_META_MIMETYPE, "audio/mpeg");   
     }
   ctx->index_mode = INDEX_MODE_SIMPLE;
@@ -585,7 +585,7 @@ static void resync_mpegaudio(bgav_demuxer_context_t * ctx, bgav_stream_t * s)
   {
   mpegaudio_priv_t * priv;
   priv = ctx->priv;
-  priv->frames = STREAM_GET_SYNC(s) / s->data.audio.format.samples_per_frame;
+  priv->frames = STREAM_GET_SYNC(s) / s->data.audio.format->samples_per_frame;
   }
 
 static void seek_mpegaudio(bgav_demuxer_context_t * ctx, int64_t time,
@@ -599,7 +599,7 @@ static void seek_mpegaudio(bgav_demuxer_context_t * ctx, int64_t time,
   s = ctx->tt->cur->audio_streams;
 
   time -= gavl_time_rescale(scale,
-                            s->data.audio.format.samplerate,
+                            s->data.audio.format->samplerate,
                             s->data.audio.preroll);
   if(time < 0)
     time = 0;
@@ -620,7 +620,7 @@ static void seek_mpegaudio(bgav_demuxer_context_t * ctx, int64_t time,
   
   STREAM_SET_SYNC(s,
                   gavl_time_rescale(scale,
-                                    s->data.audio.format.samplerate, time));
+                                    s->data.audio.format->samplerate, time));
   
   pos += priv->data_start;
   bgav_input_seek(ctx->input, pos, SEEK_SET);

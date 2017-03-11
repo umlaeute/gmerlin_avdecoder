@@ -797,8 +797,8 @@ void bgav_video_parser_init_h264(bgav_video_parser_t * parser)
   parser->cleanup = cleanup_h264;
   parser->reset = reset_h264;
   
-  if(parser->s->data.video.format.interlace_mode == GAVL_INTERLACE_UNKNOWN)
-    parser->s->data.video.format.interlace_mode = GAVL_INTERLACE_MIXED;
+  if(parser->s->data.video.format->interlace_mode == GAVL_INTERLACE_UNKNOWN)
+    parser->s->data.video.format->interlace_mode = GAVL_INTERLACE_MIXED;
 
   /* Parse avc1 extradata */
   if(parser->s->fourcc == BGAV_MK_FOURCC('a', 'v', 'c', '1'))

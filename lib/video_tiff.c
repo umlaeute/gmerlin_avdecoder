@@ -250,15 +250,15 @@ static int init_tiff(bgav_stream_t * s)
   
   /* We support RGBA for streams with a depth of 32 */
 
-  if(!read_header_tiff(s, &s->data.video.format))
+  if(!read_header_tiff(s, s->data.video.format))
     return 0;
     
   if(s->data.video.depth == 32)
-    s->data.video.format.pixelformat = GAVL_RGBA_32;
+    s->data.video.format->pixelformat = GAVL_RGBA_32;
   else
-    s->data.video.format.pixelformat = GAVL_RGB_24;
+    s->data.video.format->pixelformat = GAVL_RGB_24;
 
-  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "TIFF");
+  gavl_dictionary_set_string(s->m, GAVL_META_FORMAT, "TIFF");
   return 1;
   }
 

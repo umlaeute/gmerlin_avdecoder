@@ -169,15 +169,15 @@ static int init_audio_stream(bgav_demuxer_context_t * ctx, bgav_stream_t * s,
     {
     s->data.audio.bits_per_sample = (flags & 2) ? 16 : 8;
       
-    s->data.audio.format.samplerate = (44100<<((flags>>2)&3))>>3;
-    s->data.audio.format.num_channels = (flags&1)+1;
+    s->data.audio.format->samplerate = (44100<<((flags>>2)&3))>>3;
+    s->data.audio.format->num_channels = (flags&1)+1;
       
     switch(flags >> 4)
       {
       case 0: /* Uncompressed, Big endian */
         s->fourcc = BGAV_MK_FOURCC('t', 'w', 'o', 's');
         s->index_mode = INDEX_MODE_SIMPLE;
-        s->data.audio.block_align = s->data.audio.format.num_channels *
+        s->data.audio.block_align = s->data.audio.format->num_channels *
           (s->data.audio.bits_per_sample / 8);
         s->duration = 0;
         break;
@@ -188,7 +188,7 @@ static int init_audio_stream(bgav_demuxer_context_t * ctx, bgav_stream_t * s,
            several packets */
         if(!bgav_input_get_data(ctx->input, &tmp_8, 1))
           return 0;
-        // ?? s->data.audio.format.num_channels * (((tmp_8 >> 6) + 2) * 4096 + 16 + 6);
+        // ?? s->data.audio.format->num_channels * (((tmp_8 >> 6) + 2) * 4096 + 16 + 6);
         break;
       case 2: /* MP3 */
         s->fourcc = BGAV_MK_FOURCC('.', 'm', 'p', '3');
@@ -199,13 +199,13 @@ static int init_audio_stream(bgav_demuxer_context_t * ctx, bgav_stream_t * s,
       case 3: /* Uncompressed, Little endian */
         s->fourcc = BGAV_MK_FOURCC('s', 'o', 'w', 't');
         s->index_mode = INDEX_MODE_SIMPLE;
-        s->data.audio.block_align = s->data.audio.format.num_channels *
+        s->data.audio.block_align = s->data.audio.format->num_channels *
           (s->data.audio.bits_per_sample / 8);
         s->duration = 0;
         break;
       case 5: /* NellyMoser */
-        s->data.audio.format.samplerate = 8000;
-        s->data.audio.format.num_channels = 1;
+        s->data.audio.format->samplerate = 8000;
+        s->data.audio.format->num_channels = 1;
           
         s->fourcc = BGAV_MK_FOURCC('N', 'E', 'L', 'L');
         ctx->index_mode = 0;
@@ -287,12 +287,12 @@ static int init_video_stream(bgav_demuxer_context_t * ctx, bgav_stream_t * s,
     }
       
   /* Set the framerate */
-  s->data.video.format.framerate_mode = GAVL_FRAMERATE_VARIABLE;
-  s->data.video.format.timescale = 1000;
+  s->data.video.format->framerate_mode = GAVL_FRAMERATE_VARIABLE;
+  s->data.video.format->timescale = 1000;
   
   /* Hopefully, FLV supports square pixels only */
-  s->data.video.format.pixel_width = 1;
-  s->data.video.format.pixel_height = 1;
+  s->data.video.format->pixel_width = 1;
+  s->data.video.format->pixel_height = 1;
 
   return 1;
   }
@@ -699,7 +699,7 @@ static int next_packet_flv(bgav_demuxer_context_t * ctx)
         s->ext_data = malloc(packet_size);
         if(bgav_input_read_data(ctx->input, s->ext_data, packet_size) < packet_size)
           return 0;
-        if(s->type == BGAV_STREAM_AUDIO)
+        if(s->type == GAVF_STREAM_AUDIO)
           priv->need_audio_extradata = 0;
         else
           priv->need_video_extradata = 0;
@@ -725,14 +725,14 @@ static int next_packet_flv(bgav_demuxer_context_t * ctx)
     p->position = position;
     if(p->data_size < packet_size) /* Got EOF in the middle of a packet */
       return 0;
-    if(s->type == BGAV_STREAM_AUDIO)
+    if(s->type == GAVF_STREAM_AUDIO)
       {
       if(s->data.audio.block_align)
         {
         if(priv->resync && !STREAM_HAS_SYNC(s))
           {
           priv->audio_sample_counter =
-            gavl_time_rescale(1000, s->data.audio.format.samplerate,
+            gavl_time_rescale(1000, s->data.audio.format->samplerate,
                               p->pts);
           STREAM_SET_SYNC(s, priv->audio_sample_counter);
           }
@@ -990,9 +990,9 @@ static int open_flv(bgav_demuxer_context_t * ctx)
     bgav_input_seek(ctx->input, pos, SEEK_SET);
     }
   
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "FLV");
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_MIMETYPE, "video/x-flv");
   
   return 1;
@@ -1006,7 +1006,7 @@ static void resync_flv(bgav_demuxer_context_t * ctx, bgav_stream_t * s)
   flv_priv_t * priv;
   priv = ctx->priv;
 
-  if(s->type == BGAV_STREAM_AUDIO)
+  if(s->type == GAVF_STREAM_AUDIO)
     {
     priv->audio_sample_counter = s->in_position;
     }

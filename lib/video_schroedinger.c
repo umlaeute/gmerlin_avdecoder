@@ -236,14 +236,14 @@ static void get_format(bgav_stream_t * s)
   format = schro_decoder_get_video_format(priv->dec);
 
   /* Get colormodel */
-  s->data.video.format.pixelformat = get_pixelformat(format);
+  s->data.video.format->pixelformat = get_pixelformat(format);
 
   /* Get size */
-  s->data.video.format.image_width = format->width;
-  s->data.video.format.image_height = format->height;
+  s->data.video.format->image_width = format->width;
+  s->data.video.format->image_height = format->height;
 
-  s->data.video.format.frame_width = format->width;
-  s->data.video.format.frame_height = format->height;
+  s->data.video.format->frame_width = format->width;
+  s->data.video.format->frame_height = format->height;
   
 #if 0
   if((vtrack->stream_cmodel == BC_YUV422P16) ||
@@ -261,24 +261,24 @@ static void get_format(bgav_stream_t * s)
   if(format->interlaced)
     {
     if(format->top_field_first)
-      s->data.video.format.interlace_mode = GAVL_INTERLACE_TOP_FIRST;
+      s->data.video.format->interlace_mode = GAVL_INTERLACE_TOP_FIRST;
     else
-      s->data.video.format.interlace_mode = GAVL_INTERLACE_BOTTOM_FIRST;
+      s->data.video.format->interlace_mode = GAVL_INTERLACE_BOTTOM_FIRST;
     }
   else
-    s->data.video.format.interlace_mode = GAVL_INTERLACE_NONE;
+    s->data.video.format->interlace_mode = GAVL_INTERLACE_NONE;
   
   /* Get pixel aspect */
-  s->data.video.format.pixel_width = 
+  s->data.video.format->pixel_width = 
     format->aspect_ratio_numerator;
-  s->data.video.format.pixel_height = 
+  s->data.video.format->pixel_height = 
     format->aspect_ratio_denominator;
 
   /* Get frame rate */
-  if(!s->data.video.format.timescale)
+  if(!s->data.video.format->timescale)
     {
-    s->data.video.format.timescale = format->frame_rate_numerator;
-    s->data.video.format.frame_duration = format->frame_rate_denominator;;
+    s->data.video.format->timescale = format->frame_rate_numerator;
+    s->data.video.format->frame_duration = format->frame_rate_denominator;;
     }
   
   free(format);
@@ -334,8 +334,8 @@ static gavl_source_status_t decode_picture(bgav_stream_t * s)
         //        fprintf(stderr, "State: SCHRO_DECODER_NEED_FRAME\n");
         frame = schro_frame_new_and_alloc(NULL,
                                           priv->frame_format,
-                                          s->data.video.format.frame_width,
-                                          s->data.video.format.frame_height);
+                                          s->data.video.format->frame_width,
+                                          s->data.video.format->frame_height);
         schro_decoder_add_output_picture (priv->dec, frame);
         //     fprintf(stderr, "Need frame %p\n", frame);
         break;
@@ -391,7 +391,7 @@ static int init_schroedinger(bgav_stream_t * s)
   if(decode_picture(s) != GAVL_SOURCE_OK) /* Get format */
     return 0;
 
-  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(s->m, GAVL_META_FORMAT,
                     "Dirac");
 
   if(!s->ext_data)

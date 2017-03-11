@@ -143,15 +143,15 @@ static int open_smaf(bgav_demuxer_context_t * ctx)
   if(!bgav_input_read_data(ctx->input, &params, 1)) 
     return 0;
   
-  s->data.audio.format.samplerate = mmf_rate(params & 0x0f);
+  s->data.audio.format->samplerate = mmf_rate(params & 0x0f);
   s->fourcc = BGAV_MK_FOURCC('S','M','A','F');
   s->data.audio.bits_per_sample = 4;
-  s->data.audio.format.num_channels = 1;
+  s->data.audio.format->num_channels = 1;
   s->data.audio.bits_per_sample = 4;
   s->container_bitrate = s->data.audio.bits_per_sample *
-    s->data.audio.format.samplerate;
+    s->data.audio.format->samplerate;
     
-  if(s->data.audio.format.samplerate < 0)
+  if(s->data.audio.format->samplerate < 0)
     {
     bgav_log(ctx->opt, BGAV_LOG_ERROR, LOG_DOMAIN,
              "Invalid samplerate");
@@ -189,7 +189,7 @@ static int open_smaf(bgav_demuxer_context_t * ctx)
     }
   priv->bytes_left = ch.size;
 
-  gavl_dictionary_set_string(&ctx->tt->cur->metadata, 
+  gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "SMAF Ringtone");
 
   return 1;

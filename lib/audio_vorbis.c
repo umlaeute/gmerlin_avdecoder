@@ -451,23 +451,23 @@ static int init_vorbis(bgav_stream_t * s)
   // #ifdef HAVE_VORBIS_SYNTHESIS_RESTART
   //  vorbis_synthesis_restart(&priv->dec_vd);
   // #endif  
-  s->data.audio.format.sample_format   = GAVL_SAMPLE_FLOAT;
-  s->data.audio.format.interleave_mode = GAVL_INTERLEAVE_NONE;
-  s->data.audio.format.samples_per_frame = 2048;
+  s->data.audio.format->sample_format   = GAVL_SAMPLE_FLOAT;
+  s->data.audio.format->interleave_mode = GAVL_INTERLEAVE_NONE;
+  s->data.audio.format->samples_per_frame = 2048;
 
   /* Set up audio format from the vorbis header overriding previous values */
-  s->data.audio.format.samplerate = priv->dec_vi.rate;
-  s->data.audio.format.num_channels = priv->dec_vi.channels;
+  s->data.audio.format->samplerate = priv->dec_vi.rate;
+  s->data.audio.format->num_channels = priv->dec_vi.channels;
 
   /* Samples per frame is just the maximum */
   s->src_flags |= GAVL_SOURCE_SRC_FRAMESIZE_MAX;
   
   /* Vorbis 5.1 mapping */
   
-  bgav_vorbis_set_channel_setup(&s->data.audio.format);
-  gavl_set_channel_setup(&s->data.audio.format);
+  bgav_vorbis_set_channel_setup(s->data.audio.format);
+  gavl_set_channel_setup(s->data.audio.format);
 
-  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT, "Ogg Vorbis");
+  gavl_dictionary_set_string(s->m, GAVL_META_FORMAT, "Ogg Vorbis");
   
   /* Preroll */
 
@@ -514,7 +514,7 @@ static gavl_source_status_t decode_frame_vorbis(bgav_stream_t * s)
     priv->dec_op.bytes = 0;
     }
   
-  for(i = 0; i < s->data.audio.format.num_channels; i++)
+  for(i = 0; i < s->data.audio.format->num_channels; i++)
     s->data.audio.frame->channels.f[i] = channels[i];
   
   vorbis_synthesis_read(&priv->dec_vd, samples_decoded);
@@ -815,8 +815,8 @@ static DWORD oggFormatToIndex(const bgav_stream_t *pwfx)
         
   for(n=0; n<ARRAYLEN(aOggFormatIndexToDetail); n++)
     {
-    if(pwfx->data.audio.format.samplerate!=aOggFormatIndexToDetail[n].nSamplesPerSec) continue;
-    if(pwfx->data.audio.format.num_channels!=aOggFormatIndexToDetail[n].nChannels     ) continue;
+    if(pwfx->data.audio.format->samplerate!=aOggFormatIndexToDetail[n].nSamplesPerSec) continue;
+    if(pwfx->data.audio.format->num_channels!=aOggFormatIndexToDetail[n].nChannels     ) continue;
     d = pwfx->container_bitrate/8 - aOggFormatIndexToDetail[n].nAvgBytesPerSec;
     if(d==0)
       {
@@ -876,11 +876,11 @@ static char * get_default_vorbis_header(bgav_stream_t * stream, int * len)
   vorbis_comment_init(&vc);
   vorbis_comment_add_tag(&vc,"ENCODER","vorbis.acm"); /* LOL */
   
-  vorbis_encode_init_vbr(&vi,stream->data.audio.format.num_channels,
-                         stream->data.audio.format.num_channels,aOggFormatIndexToDetail[format_index].flQuality);
+  vorbis_encode_init_vbr(&vi,stream->data.audio.format->num_channels,
+                         stream->data.audio.format->num_channels,aOggFormatIndexToDetail[format_index].flQuality);
   
-  //  vorbis_encode_init(&vi,stream->data.audio.format.num_channels,
-  //                     stream->data.audio.format.num_channels,bitrate, bitrate, bitrate);
+  //  vorbis_encode_init(&vi,stream->data.audio.format->num_channels,
+  //                     stream->data.audio.format->num_channels,bitrate, bitrate, bitrate);
   
   vorbis_analysis_init(&vd,&vi);
   vorbis_block_init(&vd,&vb);
