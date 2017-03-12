@@ -40,7 +40,6 @@
 
 typedef struct
   {
-  uint32_t data_size;
   int samples_per_block;
   int bytes_per_second;
   } svx_priv_t;
@@ -209,7 +208,7 @@ static int open_8svx(bgav_demuxer_context_t * ctx)
   ctx->data_start = ctx->input->position;
   ctx->flags |= BGAV_DEMUXER_HAS_DATA_START;
 
-  priv->data_size  = chunk_header.size;
+  ctx->data_size  = chunk_header.size;
 
   as = bgav_track_add_audio_stream(ctx->tt->cur, ctx->opt);
   as->fourcc = BGAV_MK_FOURCC('t', 'w', 'o', 's');
@@ -218,8 +217,8 @@ static int open_8svx(bgav_demuxer_context_t * ctx)
   as->data.audio.block_align = 1;
   as->data.audio.bits_per_sample = BITSPERSAMPLES;
 
-  total_samples = priv->data_size / as->data.audio.block_align;
-  if(priv->data_size)
+  total_samples = ctx->data_size / as->data.audio.block_align;
+  if(ctx->data_size)
     {
     ctx->tt->cur->duration =  gavl_samples_to_time(as->data.audio.format->samplerate, total_samples);
     ctx->tt->cur->audio_streams->duration = total_samples;
@@ -241,7 +240,6 @@ static int64_t samples_to_bytes(bgav_stream_t * s, int samples)
 
 static int next_packet_8svx(bgav_demuxer_context_t * ctx)
   {
-  svx_priv_t * priv;
   bgav_packet_t * p;
   bgav_stream_t * s;
   int bytes_read;
@@ -249,12 +247,10 @@ static int next_packet_8svx(bgav_demuxer_context_t * ctx)
     
   s = &ctx->tt->cur->audio_streams[0];
 
-  priv = ctx->priv;
-  
   bytes_to_read = samples_to_bytes(s, SAMPLES2READ);
   
-  if(ctx->input->position + bytes_to_read > ctx->data_start + priv->data_size)
-    bytes_to_read = ctx->data_start + priv->data_size - ctx->input->position;
+  if(ctx->input->position + bytes_to_read > ctx->data_start + ctx->data_size)
+    bytes_to_read = ctx->data_start + ctx->data_size - ctx->input->position;
 
   if(bytes_to_read <= 0)
     return 0;

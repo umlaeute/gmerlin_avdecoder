@@ -40,7 +40,6 @@ typedef struct
 
 typedef struct
   {
-  uint32_t data_size;
   int samples_per_block;
   int bytes_per_second;
   } au_priv_t;
@@ -178,22 +177,6 @@ static int open_au(bgav_demuxer_context_t * ctx)
   
   priv = calloc(1, sizeof(*priv));
   ctx->priv = priv;
-
-  /* Get data start and duration */
-
-  priv->data_size  = hdr.data_size;
-
-  if(priv->data_size == 0xFFFFFFFF)
-    priv->data_size = ctx->input->total_bytes;
-  priv->samples_per_block = samples_per_block;
-  if(priv->data_size)
-    {
-    ctx->tt->cur->audio_streams->duration =
-      pos_2_time(ctx, ctx->data_start + priv->data_size);
-    ctx->tt->cur->duration =
-      gavl_samples_to_time(as->data.audio.format->samplerate,
-                           ctx->tt->cur->audio_streams->duration);
-    }
   
   if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
@@ -202,7 +185,25 @@ static int open_au(bgav_demuxer_context_t * ctx)
 
   if(hdr.hdr_size > 24)
     bgav_input_skip(ctx->input, hdr.hdr_size - 24);
+
+  /* Get data start and duration */
+
   ctx->data_start = ctx->input->position;
+
+  if(ctx->input->total_bytes > 0)
+    ctx->data_size  = ctx->input->total_bytes - ctx->data_start;
+  
+  priv->samples_per_block = samples_per_block;
+
+  if(ctx->data_size)
+    {
+    ctx->tt->cur->audio_streams->duration =
+      pos_2_time(ctx, ctx->data_start + ctx->data_size);
+    ctx->tt->cur->duration =
+      gavl_samples_to_time(as->data.audio.format->samplerate,
+                           ctx->tt->cur->audio_streams->duration);
+    }
+  
   ctx->flags |= BGAV_DEMUXER_HAS_DATA_START;
 
   gavl_dictionary_set_string(ctx->tt->cur->metadata, 

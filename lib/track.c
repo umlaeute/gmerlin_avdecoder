@@ -473,8 +473,6 @@ void bgav_track_free(bgav_track_t * t)
   {
   int i;
   
-  gavl_dictionary_free(t->metadata);
-  
   if(t->audio_streams)
     {
     for(i = 0; i < t->num_audio_streams; i++)

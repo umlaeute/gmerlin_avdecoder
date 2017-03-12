@@ -245,6 +245,10 @@ static int open_flac(bgav_demuxer_context_t * ctx)
 
     }
   ctx->data_start = ctx->input->position;
+
+  if(ctx->input->total_bytes > 0)
+    ctx->data_size = ctx->input->total_bytes - ctx->input->position;
+  
   ctx->flags |= BGAV_DEMUXER_HAS_DATA_START;
   
   gavl_dictionary_set_string(ctx->tt->cur->metadata, 

@@ -515,7 +515,7 @@ struct bgav_stream_s
   /* Passed to gavl_[audio|video]_source_create() */
   int src_flags;
   
-  gavf_stream_footer_t stats;
+  gavf_stream_stats_t stats;
   
   /*
    *  Timestamp of the first frame in *output* timescale
@@ -1430,6 +1430,9 @@ struct bgav_demuxer_context_s
   */
   int64_t data_start;
 
+  /* Data size for simple formats */
+  int64_t data_size;
+    
   /* Used by MPEG style fileindex for catching
      packets, inside which no frame starts */
   
