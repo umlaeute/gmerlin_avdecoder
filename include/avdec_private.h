@@ -398,7 +398,7 @@ typedef enum
   s->ci.flags &= ~(GAVL_COMPRESSION_HAS_P_FRAMES|GAVL_COMPRESSION_HAS_B_FRAMES);
 
 #define STREAM_IS_STILL(s) \
-  (s->data.video.format->framerate_mode == GAVL_FRAMERATE_STILL)
+    ((s->type == GAVF_STREAM_VIDEO) && (s->data.video.format->framerate_mode == GAVL_FRAMERATE_STILL))
 
 typedef struct
   {
