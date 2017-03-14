@@ -143,18 +143,18 @@ static gavl_source_status_t decode_openjpeg(bgav_stream_t * s, gavl_video_frame_
             
       if(priv->need_format)
         {
-        s->data.video.format.image_width  = priv->img->x1 - priv->img->x0; 
-        s->data.video.format.image_height = priv->img->y1 - priv->img->y0; 
-        s->data.video.format.image_width  /= (1 << s->opt->shrink);
-        s->data.video.format.image_height /= (1 << s->opt->shrink);
+        s->data.video.format->image_width  = priv->img->x1 - priv->img->x0; 
+        s->data.video.format->image_height = priv->img->y1 - priv->img->y0; 
+        s->data.video.format->image_width  /= (1 << s->opt->shrink);
+        s->data.video.format->image_height /= (1 << s->opt->shrink);
         
-        s->data.video.format.frame_width  = s->data.video.format.image_width; 
-        s->data.video.format.frame_height = s->data.video.format.image_height; 
+        s->data.video.format->frame_width  = s->data.video.format->image_width; 
+        s->data.video.format->frame_height = s->data.video.format->image_height; 
         
 
         if(s->fourcc == BGAV_MK_FOURCC('R', '3', 'D', '1'))
           {
-          s->data.video.format.pixelformat = GAVL_RGB_48;
+          s->data.video.format->pixelformat = GAVL_RGB_48;
           }
         }
       s->flags |= STREAM_HAVE_FRAME;

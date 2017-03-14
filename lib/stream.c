@@ -126,6 +126,8 @@ void bgav_stream_init(bgav_stream_t * stream, const bgav_options_t * opt)
   stream->last_index_position = -1; 
   stream->index_position = -1;
   stream->opt = opt;
+
+  gavf_stream_stats_init(&stream->stats);
   }
 
 void bgav_stream_free(bgav_stream_t * s)

@@ -139,10 +139,12 @@ static int open_flac(bgav_demuxer_context_t * ctx)
         bgav_flac_streaminfo_init_stream(&priv->streaminfo, s);
         
         if(priv->streaminfo.total_samples)
+          {
+          s->stats.pts_end = priv->streaminfo.total_samples;
           ctx->tt->cur->duration =
             gavl_samples_to_time(priv->streaminfo.samplerate,
                                  priv->streaminfo.total_samples);
-          
+          }
         //        bgav_input_skip(ctx->input, size);
         break;
       case 1: // PADDING
@@ -247,7 +249,7 @@ static int open_flac(bgav_demuxer_context_t * ctx)
   ctx->data_start = ctx->input->position;
 
   if(ctx->input->total_bytes > 0)
-    ctx->data_size = ctx->input->total_bytes - ctx->input->position;
+    s->stats.total_bytes = ctx->input->total_bytes - ctx->input->position;
   
   ctx->flags |= BGAV_DEMUXER_HAS_DATA_START;
   

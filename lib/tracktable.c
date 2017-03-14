@@ -131,7 +131,12 @@ void bgav_track_table_remove_unsupported(bgav_track_table_t * t)
   {
   int i;
   for(i = 0; i < t->num_tracks; i++)
-    {
     bgav_track_remove_unsupported(&t->tracks[i]);
-    }
+  }
+
+void bgav_track_table_compute_info(bgav_track_table_t * t)
+  {
+  int i;
+  for(i = 0; i < t->num_tracks; i++)
+    bgav_track_compute_info(&t->tracks[i]);
   }

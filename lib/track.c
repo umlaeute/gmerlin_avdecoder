@@ -513,12 +513,14 @@ static void remove_stream(bgav_stream_t * stream_array, int index, int num)
 
 void bgav_track_remove_audio_stream(bgav_track_t * track, int stream)
   {
+  gavl_track_delete_audio_stream(track->info, stream);
   remove_stream(track->audio_streams, stream, track->num_audio_streams);
   track->num_audio_streams--;
   }
 
 void bgav_track_remove_video_stream(bgav_track_t * track, int stream)
   {
+  gavl_track_delete_video_stream(track->info, stream);
   /* Remove this stream from the subtitle streams as well */
   int i;
   for(i = 0; i < track->num_text_streams; i++)
@@ -548,12 +550,14 @@ void bgav_track_remove_subtitle_stream(bgav_track_t * track, int stream)
 
 void bgav_track_remove_text_stream(bgav_track_t * track, int stream)
   {
+  gavl_track_delete_text_stream(track->info, stream);
   remove_stream(track->text_streams, stream, track->num_text_streams);
   track->num_text_streams--;
   }
 
 void bgav_track_remove_overlay_stream(bgav_track_t * track, int stream)
   {
+  gavl_track_delete_overlay_stream(track->info, stream);
   remove_stream(track->overlay_streams, stream, track->num_overlay_streams);
   track->num_overlay_streams--;
   }
@@ -996,5 +1000,29 @@ void bgav_track_get_compression(bgav_track_t * t)
     s = &t->overlay_streams[i];
     s->action = BGAV_STREAM_MUTE;
     }
+
   t->flags |= TRACK_HAS_COMPRESSION;
   }
+
+void bgav_track_compute_info(bgav_track_t * t)
+  {
+  int i;  
+  bgav_stream_t * s;
+
+  for(i = 0; i < t->num_audio_streams; i++)
+    {
+    s = &t->audio_streams[i];
+    gavf_stream_stats_apply_audio(&s->stats, s->data.audio.format,
+                                  &s->ci, s->m);
+    }
+  for(i = 0; i < t->num_video_streams; i++)
+    {
+    s = &t->video_streams[i];
+    gavf_stream_stats_apply_video(&s->stats, s->data.video.format,
+                                  &s->ci, s->m);
+    }
+
+  
+  }
+
+

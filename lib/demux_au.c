@@ -191,14 +191,14 @@ static int open_au(bgav_demuxer_context_t * ctx)
   ctx->data_start = ctx->input->position;
 
   if(ctx->input->total_bytes > 0)
-    ctx->data_size  = ctx->input->total_bytes - ctx->data_start;
+    as->stats.total_bytes = ctx->input->total_bytes - ctx->data_start;
   
   priv->samples_per_block = samples_per_block;
 
-  if(ctx->data_size)
+  if(as->stats.total_bytes)
     {
     ctx->tt->cur->audio_streams->duration =
-      pos_2_time(ctx, ctx->data_start + ctx->data_size);
+      pos_2_time(ctx, ctx->data_start + as->stats.total_bytes);
     ctx->tt->cur->duration =
       gavl_samples_to_time(as->data.audio.format->samplerate,
                            ctx->tt->cur->audio_streams->duration);

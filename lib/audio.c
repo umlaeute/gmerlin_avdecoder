@@ -159,9 +159,6 @@ int bgav_audio_start(bgav_stream_t * s)
     
     if(!dec->init(s))
       return 0;
-
-    /* Some decoders get a first frame during decoding */
-    s->data.audio.frame_samples = s->data.audio.frame->valid_samples;
     
     if(!s->timescale)
       s->timescale = s->data.audio.format->samplerate;

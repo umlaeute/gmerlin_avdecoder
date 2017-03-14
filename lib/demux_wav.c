@@ -139,9 +139,9 @@ static int open_wav(bgav_demuxer_context_t * ctx)
   bgav_WAVEFORMAT_get_format(&wf, s);
   bgav_WAVEFORMAT_free(&wf);
   free(buf);
-  ctx->data_size = find_tag(ctx, BGAV_MK_FOURCC('d', 'a', 't', 'a'));
+  s->stats.total_bytes = find_tag(ctx, BGAV_MK_FOURCC('d', 'a', 't', 'a'));
 
-  if(ctx->data_size < 0)
+  if(s->stats.total_bytes < 0)
     goto fail;
   ctx->data_start = ctx->input->position;
 
@@ -149,9 +149,9 @@ static int open_wav(bgav_demuxer_context_t * ctx)
 
   if(!priv->info &&
      (ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE) &&
-     (ctx->input->total_bytes - 12 > ctx->data_start + ctx->data_size))
+     (ctx->input->total_bytes - 12 > ctx->data_start + s->stats.total_bytes))
     {
-    bgav_input_seek(ctx->input, ctx->data_start + ctx->data_size, SEEK_SET);
+    bgav_input_seek(ctx->input, ctx->data_start + s->stats.total_bytes, SEEK_SET);
     if(bgav_RIFFINFO_probe(ctx->input))
       {
       priv->info = bgav_RIFFINFO_read(ctx->input);
@@ -186,13 +186,13 @@ static int open_wav(bgav_demuxer_context_t * ctx)
   if(ctx->tt->cur->audio_streams[0].data.audio.bits_per_sample)
     {
     ctx->index_mode = INDEX_MODE_PCM;
-    s->duration = ctx->data_size / s->data.audio.block_align;
+    s->duration = s->stats.total_bytes / s->data.audio.block_align;
     ctx->tt->cur->duration = gavl_time_unscale(s->data.audio.format->samplerate,
                                                s->duration);
     }
   else
     ctx->tt->cur->duration
-      = ((int64_t)ctx->data_size * (int64_t)GAVL_TIME_SCALE) / 
+      = ((int64_t)s->stats.total_bytes * (int64_t)GAVL_TIME_SCALE) / 
       (ctx->tt->cur->audio_streams[0].codec_bitrate / 8);
 
   bgav_demuxer_init_cue(ctx);
@@ -219,9 +219,9 @@ static int next_packet_wav(bgav_demuxer_context_t * ctx)
 
   bytes_to_read = priv->packet_size;
   if(ctx->input->position + bytes_to_read >=
-     ctx->data_start + ctx->data_size)
+     ctx->data_start + s->stats.total_bytes)
     {
-    bytes_to_read = ctx->data_start + ctx->data_size -
+    bytes_to_read = ctx->data_start + s->stats.total_bytes -
       ctx->input->position;
     }
   

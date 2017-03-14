@@ -595,7 +595,6 @@ struct bgav_stream_s
       bgav_audio_parser_t * parser;
 
       gavl_audio_frame_t * frame;
-      int frame_samples;
       
       gavl_audio_source_t * source;
       
@@ -751,6 +750,7 @@ bgav_stream_t * bgav_track_get_subtitle_stream(bgav_track_t * t, int index);
 int bgav_track_foreach(bgav_track_t * t,
                      int (*action)(void * priv, bgav_stream_t * s), void * priv);
 
+void bgav_track_compute_info(bgav_track_t * t);
 
 /* Clear all buffers (call BEFORE seeking) */
 
@@ -827,6 +827,8 @@ void bgav_track_table_merge_metadata(bgav_track_table_t*,
                                      bgav_metadata_t * m);
 
 void bgav_track_table_remove_unsupported(bgav_track_table_t * t);
+
+void bgav_track_table_compute_info(bgav_track_table_t * t);
 
 /* Options (shared between inputs, demuxers and decoders) */
 
@@ -1431,7 +1433,7 @@ struct bgav_demuxer_context_s
   int64_t data_start;
 
   /* Data size for simple formats */
-  int64_t data_size;
+// int64_t data_size;
     
   /* Used by MPEG style fileindex for catching
      packets, inside which no frame starts */

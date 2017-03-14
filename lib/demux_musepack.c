@@ -184,7 +184,7 @@ static int open_mpc(bgav_demuxer_context_t * ctx)
     else if(apetag)
       bgav_ape_tag_2_metadata(apetag, &end_metadata);
     
-    gavl_dictionary_merge(&ctx->tt->cur->metadata,
+    gavl_dictionary_merge(ctx->tt->cur->metadata,
                         &start_metadata, &end_metadata);
     gavl_dictionary_free(&start_metadata);
     gavl_dictionary_free(&end_metadata);
@@ -192,13 +192,13 @@ static int open_mpc(bgav_demuxer_context_t * ctx)
   
   else if(ctx->input->id3v2)
     bgav_id3v2_2_metadata(ctx->input->id3v2,
-                          &ctx->tt->cur->metadata);
+                          ctx->tt->cur->metadata);
   else if(id3v1)
     bgav_id3v1_2_metadata(id3v1,
-                          &ctx->tt->cur->metadata);
+                          ctx->tt->cur->metadata);
   else if(apetag)
     bgav_ape_tag_2_metadata(apetag,
-                            &ctx->tt->cur->metadata);
+                            ctx->tt->cur->metadata);
   
   if(id3v1)
     bgav_id3v1_destroy(id3v1);
@@ -220,22 +220,22 @@ static int open_mpc(bgav_demuxer_context_t * ctx)
   
   s = bgav_track_add_audio_stream(ctx->tt->cur, ctx->opt);
   
-  s->data.audio.format.samplerate    = priv->si.sample_freq;
-  s->data.audio.format.num_channels  = priv->si.channels;
-  s->data.audio.format.sample_format = GAVL_SAMPLE_FLOAT;
-  s->data.audio.format.interleave_mode = GAVL_INTERLEAVE_ALL;
-  s->data.audio.format.samples_per_frame = MPC_FRAME_LENGTH;
-  gavl_set_channel_setup(&s->data.audio.format);
+  s->data.audio.format->samplerate    = priv->si.sample_freq;
+  s->data.audio.format->num_channels  = priv->si.channels;
+  s->data.audio.format->sample_format = GAVL_SAMPLE_FLOAT;
+  s->data.audio.format->interleave_mode = GAVL_INTERLEAVE_ALL;
+  s->data.audio.format->samples_per_frame = MPC_FRAME_LENGTH;
+  gavl_set_channel_setup(s->data.audio.format);
   
   s->fourcc = BGAV_MK_FOURCC('g', 'a', 'v', 'l');
 
   s->timescale = priv->si.sample_freq;
   
-  gavl_dictionary_set_string(&s->m, GAVL_META_FORMAT,
+  gavl_dictionary_set_string(s->m, GAVL_META_FORMAT,
                     "Musepack");
   
   ctx->tt->cur->duration =
-    gavl_samples_to_time(s->data.audio.format.samplerate,
+    gavl_samples_to_time(s->data.audio.format->samplerate,
                          mpc_streaminfo_get_length_samples(&priv->si));
 
   if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
@@ -259,7 +259,7 @@ static int next_packet_mpc(bgav_demuxer_context_t * ctx)
   //  bgav_packet_alloc(p, MPC_DECODER_BUFFER_LENGTH * sizeof(float));
 
   if(!p->audio_frame)
-    p->audio_frame = gavl_audio_frame_create(&s->data.audio.format);
+    p->audio_frame = gavl_audio_frame_create(s->data.audio.format);
   
   result = mpc_decoder_decode(&priv->dec,
                               p->audio_frame->samples.f, 0, 0);

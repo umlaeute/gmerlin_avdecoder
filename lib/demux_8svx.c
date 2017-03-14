@@ -208,17 +208,16 @@ static int open_8svx(bgav_demuxer_context_t * ctx)
   ctx->data_start = ctx->input->position;
   ctx->flags |= BGAV_DEMUXER_HAS_DATA_START;
 
-  ctx->data_size  = chunk_header.size;
-
   as = bgav_track_add_audio_stream(ctx->tt->cur, ctx->opt);
+  as->stats.total_bytes = chunk_header.size;
   as->fourcc = BGAV_MK_FOURCC('t', 'w', 'o', 's');
   as->data.audio.format->samplerate = hdr.samplesPerSec;
   as->data.audio.format->num_channels = 1;
   as->data.audio.block_align = 1;
   as->data.audio.bits_per_sample = BITSPERSAMPLES;
 
-  total_samples = ctx->data_size / as->data.audio.block_align;
-  if(ctx->data_size)
+  total_samples = as->stats.total_bytes / as->data.audio.block_align;
+  if(as->stats.total_bytes)
     {
     ctx->tt->cur->duration =  gavl_samples_to_time(as->data.audio.format->samplerate, total_samples);
     ctx->tt->cur->audio_streams->duration = total_samples;
@@ -249,8 +248,8 @@ static int next_packet_8svx(bgav_demuxer_context_t * ctx)
 
   bytes_to_read = samples_to_bytes(s, SAMPLES2READ);
   
-  if(ctx->input->position + bytes_to_read > ctx->data_start + ctx->data_size)
-    bytes_to_read = ctx->data_start + ctx->data_size - ctx->input->position;
+  if(ctx->input->position + bytes_to_read > ctx->data_start + s->stats.total_bytes)
+    bytes_to_read = ctx->data_start + s->stats.total_bytes - ctx->input->position;
 
   if(bytes_to_read <= 0)
     return 0;

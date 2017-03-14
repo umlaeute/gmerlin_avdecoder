@@ -146,7 +146,9 @@ int bgav_init(bgav_t * ret)
     ret->input->tt = ret->tt;
     bgav_track_table_ref(ret->input->tt);
     }
-  
+ 
+  bgav_track_table_compute_info(ret->tt);
+ 
   return 1;
     
   fail:
