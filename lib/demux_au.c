@@ -197,11 +197,8 @@ static int open_au(bgav_demuxer_context_t * ctx)
 
   if(as->stats.total_bytes)
     {
-    ctx->tt->cur->audio_streams->duration =
+    ctx->tt->cur->audio_streams->stats.pts_end =
       pos_2_time(ctx, ctx->data_start + as->stats.total_bytes);
-    ctx->tt->cur->duration =
-      gavl_samples_to_time(as->data.audio.format->samplerate,
-                           ctx->tt->cur->audio_streams->duration);
     }
   
   ctx->flags |= BGAV_DEMUXER_HAS_DATA_START;

@@ -326,7 +326,7 @@ static int open_ape(bgav_demuxer_context_t * ctx)
   s->data.audio.format->num_channels = priv->h.channels;
   s->data.audio.bits_per_sample = priv->h.bps;
   s->fourcc = BGAV_MK_FOURCC('.', 'a', 'p', 'e');
-  s->duration = priv->h.blocksperframe * (priv->h.totalframes -1) +
+  s->stats.pts_end = priv->h.blocksperframe * (priv->h.totalframes -1) +
     priv->h.finalframeblocks;
 
   s->ext_size = APE_EXTRADATA_SIZE;
@@ -335,9 +335,6 @@ static int open_ape(bgav_demuxer_context_t * ctx)
   BGAV_16LE_2_PTR(priv->h.compressiontype, s->ext_data+2);
   BGAV_16LE_2_PTR(priv->h.formatflags, s->ext_data+4);
   
-  ctx->tt->cur->duration =
-    gavl_samples_to_time(priv->h.samplerate,
-                         s->duration);
   gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "APE");
 

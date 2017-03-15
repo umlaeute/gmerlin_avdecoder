@@ -186,9 +186,7 @@ static int open_wav(bgav_demuxer_context_t * ctx)
   if(ctx->tt->cur->audio_streams[0].data.audio.bits_per_sample)
     {
     ctx->index_mode = INDEX_MODE_PCM;
-    s->duration = s->stats.total_bytes / s->data.audio.block_align;
-    ctx->tt->cur->duration = gavl_time_unscale(s->data.audio.format->samplerate,
-                                               s->duration);
+    s->stats.pts_end = s->stats.total_bytes / s->data.audio.block_align;
     }
   else
     ctx->tt->cur->duration

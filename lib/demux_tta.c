@@ -140,8 +140,7 @@ static int open_tta(bgav_demuxer_context_t * ctx)
     priv->seek_table[i] = BGAV_PTR_2_32LE(ptr); ptr+=4;
     }
 
-  ctx->tt->cur->duration =
-    gavl_time_unscale(s->data.audio.format->samplerate, h.data_length);
+  s->stats.pts_end = h.data_length;
 
   if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     ctx->flags |= BGAV_DEMUXER_CAN_SEEK;

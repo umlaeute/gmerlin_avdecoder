@@ -1022,7 +1022,8 @@ void bgav_track_compute_info(bgav_track_t * t)
                                   &s->ci, s->m);
     }
 
-  
+  if(t->duration == GAVL_TIME_UNDEFINED)
+    bgav_track_calc_duration(t);
   }
 
 

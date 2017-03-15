@@ -51,7 +51,6 @@ static int64_t bytes_2_samples(int64_t bytes)
 static int open_gsm(bgav_demuxer_context_t * ctx)
   {
   bgav_stream_t * as;
-  int64_t total_samples;
   
   /* Create track */
   ctx->tt = bgav_track_table_create(1);
@@ -66,10 +65,7 @@ static int open_gsm(bgav_demuxer_context_t * ctx)
   
   if(ctx->input->total_bytes)
     {
-    total_samples = bytes_2_samples(ctx->input->total_bytes); 
-    ctx->tt->cur->duration = 
-      gavl_samples_to_time(as->data.audio.format->samplerate, total_samples);
-
+    as->stats.pts_end = bytes_2_samples(ctx->input->total_bytes);
     if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
       ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
     }

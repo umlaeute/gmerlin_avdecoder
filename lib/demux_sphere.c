@@ -271,15 +271,13 @@ static int open_sphere(bgav_demuxer_context_t * ctx)
 
   if(ctx->input->total_bytes)
     {
-    total_samples = (ctx->input->total_bytes - HEADERSIZE) / as->data.audio.block_align;
-    ctx->tt->cur->duration =  gavl_samples_to_time(as->data.audio.format->samplerate, total_samples);
+    as->stats.pts_end = (ctx->input->total_bytes - HEADERSIZE) / as->data.audio.block_align;
     if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
       ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
     }
   else if(h.SampleCount)
     {
-    ctx->tt->cur->audio_streams->duration = h.SampleCount;
-    ctx->tt->cur->duration =  gavl_samples_to_time(as->data.audio.format->samplerate, h.SampleCount);
+    ctx->tt->cur->audio_streams->stats.pts_end = h.SampleCount;
     if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
       ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
     }
