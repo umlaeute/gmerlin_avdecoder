@@ -163,10 +163,8 @@ static int open_wavpack(bgav_demuxer_context_t * ctx)
 
   gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "Wavpack");
-  ctx->tt->cur->duration =
-    gavl_time_unscale(s->data.audio.format->samplerate, h.total_samples);
 
-  s->duration = h.total_samples;
+  s->stats.pts_end = h.total_samples;
   
   if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     ctx->flags |= BGAV_DEMUXER_CAN_SEEK;

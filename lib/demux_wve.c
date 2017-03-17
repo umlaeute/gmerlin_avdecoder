@@ -136,9 +136,7 @@ static int open_wve(bgav_demuxer_context_t * ctx)
             case 0x85: // Num samples
               if(!read_arbitrary(ctx->input, &arbitrary))
                 return 0;
-              ctx->tt->cur->duration =
-                gavl_time_unscale(as->data.audio.format->samplerate,
-                                  arbitrary);
+              as->stats.pts_end = arbitrary;
               break;
             case 0x8a: // End of subheader
               if(!read_arbitrary(ctx->input, &arbitrary))
