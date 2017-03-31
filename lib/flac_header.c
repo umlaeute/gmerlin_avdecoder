@@ -111,7 +111,7 @@ void bgav_flac_streaminfo_init_stream(bgav_flac_streaminfo_t * si, bgav_stream_t
       break;
     }
   if(si->total_samples)
-    s->duration = si->total_samples;
+    s->stats.pts_end = si->total_samples;
   }
 
 #define ADVANCE(num) \

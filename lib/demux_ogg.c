@@ -2066,7 +2066,7 @@ static int next_packet_ogg(bgav_demuxer_context_t * ctx)
           stream_priv->frame_counter++;
 
           if(s->action == BGAV_STREAM_PARSE)
-            s->duration =
+            s->stats.pts_end =
               s->data.video.format->frame_duration * stream_priv->frame_counter;
         
           set_packet_pos(priv, stream_priv, &page_continued, p);
@@ -2161,7 +2161,7 @@ static int next_packet_ogg(bgav_demuxer_context_t * ctx)
             p->pts = stream_priv->prev_granulepos;
           
           if((s->action == BGAV_STREAM_PARSE) && (priv->op.granulepos > 0))
-            s->duration = priv->op.granulepos;
+            s->stats.pts_end = priv->op.granulepos;
 
           if(priv->op.granulepos >= 0)
             p->end_pts = priv->op.granulepos;
@@ -2209,7 +2209,7 @@ static int next_packet_ogg(bgav_demuxer_context_t * ctx)
           set_packet_pos(priv, stream_priv, &page_continued, p);
 
           if(s->action == BGAV_STREAM_PARSE)
-            s->duration = granulepos + subtitle_duration;
+            s->stats.pts_end = granulepos + subtitle_duration;
         
           bgav_stream_done_packet_write(s, p);
           }

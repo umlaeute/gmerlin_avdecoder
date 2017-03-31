@@ -98,7 +98,7 @@ static void dump_index(bgav_stream_t * s)
                      s->file_index->entries[i+1].position-s->file_index->entries[i].position
                      );
       else
-        bgav_dprintf(" D: %"PRId64"\n", s->duration-s->file_index->entries[i].pts);
+        bgav_dprintf(" D: %"PRId64"\n", s->stats.pts_end - s->file_index->entries[i].pts);
       }
     }
   }
@@ -129,7 +129,7 @@ void bgav_file_index_dump(bgav_t * b)
       bgav_dprintf("   Maximum packet size: %d\n",
                    b->tt->tracks[i].audio_streams[j].ci.max_packet_size);
       bgav_dprintf("   Duration: %"PRId64", entries: %d\n",
-                   b->tt->tracks[i].audio_streams[j].duration,
+                   bgav_stream_get_duration(&b->tt->tracks[i].audio_streams[j]),
                    s->file_index->num_entries);
       
       dump_index(&b->tt->tracks[i].audio_streams[j]);
@@ -152,7 +152,7 @@ void bgav_file_index_dump(bgav_t * b)
         bgav_dprintf("   Frame Duration: %d\n", s->data.video.format->frame_duration);
       
       bgav_dprintf("   Duration: %"PRId64", entries: %d\n",
-                   b->tt->tracks[i].video_streams[j].duration,
+                   bgav_stream_get_duration(&b->tt->tracks[i].video_streams[j]),
                    s->file_index->num_entries);
       dump_index(&b->tt->tracks[i].video_streams[j]);
       }
@@ -166,7 +166,7 @@ void bgav_file_index_dump(bgav_t * b)
                    s->stats.pts_start);
       bgav_dprintf("   Maximum packet size: %d\n",
                    s->ci.max_packet_size);
-      bgav_dprintf("   Duration: %"PRId64"\n", s->duration);
+      bgav_dprintf("   Duration: %"PRId64"\n", bgav_stream_get_duration(s));
       dump_index(s);
       }
     for(j = 0; j < b->tt->tracks[i].num_overlay_streams; j++)
@@ -179,7 +179,7 @@ void bgav_file_index_dump(bgav_t * b)
                    s->stats.pts_start);
       bgav_dprintf("   Maximum packet size: %d\n",
                    s->ci.max_packet_size);
-      bgav_dprintf("   Duration: %"PRId64"\n", s->duration);
+      bgav_dprintf("   Duration: %"PRId64"\n", bgav_stream_get_duration(s));
       dump_index(s);
       }
     }
@@ -407,7 +407,7 @@ file_index_read_stream(bgav_input_context_t * input, bgav_stream_t * s)
   
   if(!bgav_input_read_64_be(input, (uint64_t*)&s->stats.pts_start))
     return NULL;
-  if(!bgav_input_read_64_be(input, (uint64_t*)&s->duration))
+  if(!bgav_input_read_64_be(input, (uint64_t*)&s->stats.pts_end))
     return NULL;
   if(!bgav_input_read_32_be(input, &ret->num_entries))
     return NULL;
@@ -478,7 +478,7 @@ file_index_write_stream(FILE * output,
     }
   
   write_64(output, s->stats.pts_start);
-  write_64(output, s->duration);
+  write_64(output, s->stats.pts_end);
   write_32(output, idx->num_entries);
 
   for(i = 0; i < idx->num_entries; i++)
@@ -505,7 +505,7 @@ static void update_duration(bgav_stream_t * s, int scale,
   {
   gavl_time_t duration1;
   
-  duration1 = gavl_time_unscale(scale, s->duration);
+  duration1 = gavl_time_unscale(scale, s->stats.pts_end);
   if((*duration == GAVL_TIME_UNDEFINED) || (duration1 > *duration))
     *duration = duration1;
   }
@@ -890,8 +890,8 @@ static void flush_stream_simple(bgav_stream_t * s, int force)
       {
       bgav_file_index_append_packet(s->file_index,
                                     p->position, t, p->flags, p->tc);
-      if(t + p->duration >= s->duration)
-        s->duration = t + p->duration;
+      if(t + p->duration >= s->stats.pts_end)
+        s->stats.pts_end = t + p->duration;
       }
     bgav_stream_done_packet_read(s, p);
     }
@@ -1038,7 +1038,7 @@ static int build_file_index_si_parse_audio(bgav_t * b, int track, int stream)
   bgav_set_audio_stream(b, stream, BGAV_STREAM_PARSE);
   bgav_start(b);
   b->demuxer->request_stream = &b->tt->cur->audio_streams[stream];
-  s->duration = 0; 
+  s->stats.pts_end = 0; 
 
   if(s->index_mode == INDEX_MODE_SIMPLE)
     {

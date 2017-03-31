@@ -54,6 +54,19 @@ int bgav_stream_start(bgav_stream_t * stream)
   return result;
   }
 
+int64_t bgav_stream_get_duration(bgav_stream_t * s)
+  {
+  int64_t ret;
+  if(s->stats.pts_end == GAVL_TIME_UNDEFINED)
+    return GAVL_TIME_UNDEFINED;
+  
+  ret = s->stats.pts_end;
+
+  if(s->stats.pts_start != GAVL_TIME_UNDEFINED)
+    ret -= s->stats.pts_start;
+  return ret;
+  }  
+
 void bgav_stream_stop(bgav_stream_t * s)
   {
   if((s->action == BGAV_STREAM_DECODE) ||

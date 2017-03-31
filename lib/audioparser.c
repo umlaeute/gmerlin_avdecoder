@@ -171,7 +171,7 @@ static int parse_frame(bgav_audio_parser_t * parser,
     {
     if(p->position == parser->s->file_index->num_entries-1)
       {
-      p->duration = parser->s->duration -
+      p->duration = parser->s->stats.pts_end -
         parser->s->file_index->entries[parser->s->file_index->num_entries-1].pts;
       }
     else

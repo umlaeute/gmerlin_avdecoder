@@ -523,7 +523,7 @@ struct bgav_stream_s
    */
   
   //  int64_t start_time;
-  int64_t duration;
+//  int64_t duration;
   
   /* The track, where this stream belongs */
   bgav_track_t * track;
@@ -637,6 +637,8 @@ void bgav_stream_set_from_gavl(bgav_stream_t * s,
 
 int bgav_streams_foreach(bgav_stream_t * s, int num,
                          int (*action)(void * priv, bgav_stream_t * s), void * priv);
+
+int64_t bgav_stream_get_duration(bgav_stream_t * s);
 
 /* Read for a packet source */
 gavl_source_status_t

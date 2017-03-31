@@ -429,7 +429,7 @@ void bgav_demuxer_init_cue(bgav_demuxer_context_t * ctx)
   if(cue)
     {
     ctx->edl =
-      bgav_cue_get_edl(cue, ctx->tt->cur->audio_streams[0].duration);
+      bgav_cue_get_edl(cue, bgav_stream_get_duration(&ctx->tt->cur->audio_streams[0]));
     bgav_cue_destroy(cue);
     ctx->edl->url = gavl_strdup(ctx->input->filename);
     }

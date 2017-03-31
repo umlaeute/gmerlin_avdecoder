@@ -179,7 +179,7 @@ static int init_audio_stream(bgav_demuxer_context_t * ctx, bgav_stream_t * s,
         s->index_mode = INDEX_MODE_SIMPLE;
         s->data.audio.block_align = s->data.audio.format->num_channels *
           (s->data.audio.bits_per_sample / 8);
-        s->duration = 0;
+        s->stats.pts_end = 0;
         break;
       case 1: /* Flash ADPCM */
         s->fourcc = BGAV_MK_FOURCC('F', 'L', 'A', '1');
@@ -194,14 +194,14 @@ static int init_audio_stream(bgav_demuxer_context_t * ctx, bgav_stream_t * s,
         s->fourcc = BGAV_MK_FOURCC('.', 'm', 'p', '3');
         s->index_mode = INDEX_MODE_SIMPLE;
         s->flags |= STREAM_PARSE_FULL;
-        s->duration = 0;
+        s->stats.pts_end = 0;
         break;
       case 3: /* Uncompressed, Little endian */
         s->fourcc = BGAV_MK_FOURCC('s', 'o', 'w', 't');
         s->index_mode = INDEX_MODE_SIMPLE;
         s->data.audio.block_align = s->data.audio.format->num_channels *
           (s->data.audio.bits_per_sample / 8);
-        s->duration = 0;
+        s->stats.pts_end = 0;
         break;
       case 5: /* NellyMoser */
         s->data.audio.format->samplerate = 8000;
@@ -221,7 +221,7 @@ static int init_audio_stream(bgav_demuxer_context_t * ctx, bgav_stream_t * s,
         s->stats.pts_start = GAVL_TIME_UNDEFINED;
         s->index_mode = INDEX_MODE_SIMPLE;
         // ctx->index_mode = 0;
-        s->duration = 0;
+        s->stats.pts_end = 0;
         priv->need_audio_extradata = 1;
         break;
       default: /* Set some nonsense so we can finish initializing */
@@ -961,7 +961,7 @@ static int open_flv(bgav_demuxer_context_t * ctx)
     if(ctx->tt->cur->duration != GAVL_TIME_UNDEFINED)
       {
       ctx->tt->cur->video_streams->index_mode = INDEX_MODE_SIMPLE;
-      ctx->tt->cur->video_streams->duration = 0;
+      ctx->tt->cur->video_streams->stats.pts_end = 0;
       }
     else
       ctx->index_mode = 0;

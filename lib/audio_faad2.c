@@ -230,8 +230,8 @@ static int init_faad2(bgav_stream_t * s)
 
     s->ci.flags |= GAVL_COMPRESSION_SBR;
     
-    if(s->duration)
-      s->duration *= 2;
+    if(s->stats.pts_end)
+      s->stats.pts_end *= 2;
     }
   else
     {

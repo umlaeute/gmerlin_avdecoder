@@ -65,28 +65,28 @@ int bgav_can_seek_sample(bgav_t * bgav)
 
 int64_t bgav_audio_duration(bgav_t * bgav, int stream)
   {
-  return bgav->tt->cur->audio_streams[stream].duration;
+  return bgav_stream_get_duration(&bgav->tt->cur->audio_streams[stream]);
   }
 
 int64_t bgav_video_duration(bgav_t * bgav, int stream)
   {
-  return bgav->tt->cur->video_streams[stream].duration;
+  return bgav_stream_get_duration(&bgav->tt->cur->video_streams[stream]);
   }
 
 int64_t bgav_subtitle_duration(bgav_t * bgav, int stream)
   {
   bgav_stream_t * s = bgav_track_get_subtitle_stream(bgav->tt->cur, stream);
-  return s->duration;
+  return bgav_stream_get_duration(s);
   }
 
 int64_t bgav_text_duration(bgav_t * bgav, int stream)
   {
-  return bgav->tt->cur->text_streams[stream].duration;
+  return bgav_stream_get_duration(&bgav->tt->cur->text_streams[stream]);
   }
 
 int64_t bgav_overlay_duration(bgav_t * bgav, int stream)
   {
-  return bgav->tt->cur->overlay_streams[stream].duration;
+  return bgav_stream_get_duration(&bgav->tt->cur->overlay_streams[stream]);
   }
 
 int64_t bgav_audio_start_time(bgav_t * bgav, int stream)
@@ -108,7 +108,7 @@ void bgav_seek_audio(bgav_t * bgav, int stream, int64_t sample)
 
   // fprintf(stderr, "Seek audio: %ld\n", sample);
   
-  if(sample >= s->duration) /* EOF */
+  if(sample >= s->stats.pts_end) /* EOF */
     {
     s->flags |= STREAM_EOF_C;
     return;
@@ -174,7 +174,7 @@ void bgav_seek_video(bgav_t * bgav, int stream, int64_t time)
   
   //  fprintf(stderr, "Seek video: %ld\n", time);
   
-  if(time >= s->duration) /* EOF */
+  if(time >= s->stats.pts_end) /* EOF */
     {
     s->flags |= STREAM_EOF_C;
     return;
@@ -263,7 +263,7 @@ int64_t bgav_video_stream_keyframe_before(bgav_stream_t * s, int64_t time)
     }
   else /* Fileindex */
     {
-    if(time >= s->duration)
+    if(time >= s->stats.pts_end)
       pos = s->file_index->num_entries-1;
     else
       pos = file_index_seek(s->file_index, time);
@@ -310,7 +310,7 @@ int64_t bgav_video_stream_keyframe_after(bgav_stream_t * s, int64_t time)
     }
   else if(s->file_index) /* Fileindex */
     {
-    if(time >= s->duration)
+    if(time >= s->stats.pts_end)
       {
       return GAVL_TIME_UNDEFINED;
       }

@@ -339,7 +339,7 @@ static void build_superindex(bgav_demuxer_context_t * ctx)
                                  s, priv->rdao[audio_pos] + offset,
                                  priv->rdas[audio_pos] - offset,
                                  s->stream_id,
-                                 s->duration,
+                                 s->stats.pts_end,
                                  1, duration);
       audio_pos++;
       }
@@ -353,11 +353,11 @@ static void build_superindex(bgav_demuxer_context_t * ctx)
                                  s, priv->rdvo[video_pos] + offset,
                                  priv->rdvs[video_pos] - offset,
                                  s->stream_id,
-                                 s->duration,
+                                 s->stats.pts_end,
                                  1, duration);
       video_pos++;
       }
-    s->duration += duration;
+    s->stats.pts_end += duration;
     }
   }
 

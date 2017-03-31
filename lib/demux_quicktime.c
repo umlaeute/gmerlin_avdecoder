@@ -547,10 +547,10 @@ static void build_index(bgav_demuxer_context_t * ctx)
                      bgav_s,
                      i, chunk_offset,
                      stream_id,
-                     bgav_s->duration + s->first_pts,
+                     bgav_s->stats.pts_end,
                      check_keyframe(s), chunk_samples, packet_size);
           
-          bgav_s->duration += chunk_samples;
+          bgav_s->stats.pts_end += chunk_samples;
           
           chunk_offset += packet_size;
           /* Advance stts */
@@ -588,10 +588,10 @@ static void build_index(bgav_demuxer_context_t * ctx)
                    bgav_s,
                    i, chunk_offset,
                    stream_id,
-                   bgav_s->duration + s->first_pts,
+                   bgav_s->stats.pts_end,
                    check_keyframe(s), chunk_samples, 0);
         /* Time to sample */
-        bgav_s->duration += chunk_samples;
+        bgav_s->stats.pts_end += chunk_samples;
         if(s->stts_pos >= 0)
           {
           s->stts_count++;
@@ -650,7 +650,7 @@ static void build_index(bgav_demuxer_context_t * ctx)
                      bgav_s,
                      i, chunk_offset,
                      -1,
-                     bgav_s->duration + pts_offset + s->first_pts,
+                     bgav_s->stats.pts_end + pts_offset + s->first_pts,
                      check_keyframe(s),
                      duration,
                      packet_size);
@@ -662,7 +662,7 @@ static void build_index(bgav_demuxer_context_t * ctx)
                      bgav_s,
                      i, chunk_offset,
                      stream_id,
-                     bgav_s->duration + pts_offset + s->first_pts,
+                     bgav_s->stats.pts_end + pts_offset + s->first_pts,
                      check_keyframe(s),
                      duration,
                      packet_size);
@@ -670,7 +670,7 @@ static void build_index(bgav_demuxer_context_t * ctx)
           }
         chunk_offset += packet_size;
 
-        bgav_s->duration += duration;
+        bgav_s->stats.pts_end += duration;
 
         /* Time to sample */
         if(s->stts_pos >= 0)
@@ -725,13 +725,13 @@ static void build_index(bgav_demuxer_context_t * ctx)
                    bgav_s,
                    i, chunk_offset,
                    stream_id,
-                   bgav_s->duration + s->first_pts,
+                   bgav_s->stats.pts_end,
                    check_keyframe(s), duration,
                    packet_size);
         
         chunk_offset += packet_size;
 
-        bgav_s->duration += duration;
+        bgav_s->stats.pts_end += duration;
         
         /* Time to sample */
         if(s->stts_pos >= 0)
@@ -1942,7 +1942,7 @@ static void fix_index(bgav_demuxer_context_t * ctx)
       if(ctx->si->entries[j].size == 13)
         {
         ctx->si->entries[j].stream_id = -1;
-        s->duration -= ctx->si->entries[j].duration;
+        s->stats.pts_end -= ctx->si->entries[j].duration;
         }
       /* Update last index position */
       j--;

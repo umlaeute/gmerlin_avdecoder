@@ -425,7 +425,7 @@ static void add_index_packet(bgav_superindex_t * si, bgav_stream_t * stream,
                                offset,
                                size,
                                stream->stream_id,
-                               stream->duration,
+                               stream->stats.pts_end,
                                1, 0);
       
     /* Increase block count */
@@ -458,7 +458,7 @@ static void add_index_packet(bgav_superindex_t * si, bgav_stream_t * stream,
     if ((avi_as->strh.dwSampleSize == 0) && (avi_as->strh.dwScale > 1))
       {
       /* variable bitrate */
-      stream->duration = (samplerate * (gavl_time_t)avi_as->total_blocks *
+      stream->stats.pts_end = (samplerate * (gavl_time_t)avi_as->total_blocks *
               (gavl_time_t)avi_as->strh.dwScale) / avi_as->strh.dwRate;
       
       }
@@ -470,14 +470,14 @@ static void add_index_packet(bgav_superindex_t * si, bgav_stream_t * stream,
       //                at->wavex->nBlockAlign, at->dwSampleSize);
       if(stream->data.audio.block_align)
         {
-        stream->duration =
+        stream->stats.pts_end =
           ((gavl_time_t)avi_as->total_bytes * (gavl_time_t)avi_as->strh.dwScale *
            samplerate) /
           (stream->data.audio.block_align * avi_as->strh.dwRate);
         }
       else
         {
-        stream->duration =
+        stream->stats.pts_end =
           (samplerate * (gavl_time_t)avi_as->total_bytes *
            (gavl_time_t)avi_as->strh.dwScale) /
           (avi_as->strh.dwSampleSize * avi_as->strh.dwRate);
@@ -499,14 +499,14 @@ static void add_index_packet(bgav_superindex_t * si, bgav_stream_t * stream,
                                  offset,
                                  size,
                                  stream->stream_id,
-                                 stream->duration,
+                                 stream->stats.pts_end,
                                  keyframe, 0);
       }
     else /* If we have zero size, the framerate will be nonconstant */
       {
       stream->data.video.format->framerate_mode = GAVL_FRAMERATE_VARIABLE;
       }
-    stream->duration += stream->data.video.format->frame_duration;
+    stream->stats.pts_end += stream->data.video.format->frame_duration;
     }
   
   }
@@ -995,7 +995,7 @@ static void indx_build_superindex(bgav_demuxer_context_t * ctx)
   for(i = 0; i < ctx->tt->cur->num_video_streams; i++)
     {
     avi_vs = ctx->tt->cur->video_streams[i].priv;
-    ctx->tt->cur->video_streams[i].duration = 0;
+    ctx->tt->cur->video_streams[i].stats.pts_end = 0;
     if(!avi_vs->has_indx)
       return;
 
@@ -1191,6 +1191,7 @@ static int init_audio_stream(bgav_demuxer_context_t * ctx,
   avi_as = calloc(1, sizeof(*avi_as));
   bg_as->priv = avi_as;
   bg_as->cleanup = cleanup_stream_avi;
+
   memcpy(&avi_as->strh, strh, sizeof(*strh));
   
   while(keep_going)
@@ -1264,7 +1265,7 @@ static int init_video_stream(bgav_demuxer_context_t * ctx,
   bg_vs = bgav_track_add_video_stream(ctx->tt->cur, ctx->opt);
   
   bg_vs->cleanup = cleanup_stream_avi;
-
+  bg_vs->stats.pts_end = 0;
   avi_vs = calloc(1, sizeof(*avi_vs));
 
   memcpy(&avi_vs->strh, strh, sizeof(*strh));
@@ -1716,12 +1717,12 @@ static void idx1_build_superindex(bgav_demuxer_context_t * ctx)
     avi_as = ctx->tt->cur->audio_streams[i].priv;
     avi_as->total_bytes = 0;
     avi_as->total_blocks = 0;
-    ctx->tt->cur->audio_streams[i].duration = 0;
+    ctx->tt->cur->audio_streams[i].stats.pts_end = 0;
     }
 
   for(i = 0; i < ctx->tt->cur->num_video_streams; i++)
     {
-    ctx->tt->cur->video_streams[i].duration = 0;
+    ctx->tt->cur->video_streams[i].stats.pts_end = 0;
     }
 
   ctx->si = bgav_superindex_create(avi->idx1.num_entries);
@@ -2220,7 +2221,7 @@ static int next_packet_avi(bgav_demuxer_context_t * ctx)
         p->pts = avi_vs->frame_counter * s->data.video.format->frame_duration;
         avi_vs->frame_counter++;
         if(s->action == BGAV_STREAM_PARSE)
-          s->duration = avi_vs->frame_counter * s->data.video.format->frame_duration;
+          s->stats.pts_end = avi_vs->frame_counter * s->data.video.format->frame_duration;
         
         if(!avi_vs->is_keyframe || avi_vs->is_keyframe(p->data)) 
           PACKET_SET_KEYFRAME(p);
@@ -2233,7 +2234,7 @@ static int next_packet_avi(bgav_demuxer_context_t * ctx)
           p->pts = avi_as->sample_counter;
           avi_as->sample_counter += p->data_size / s->data.audio.block_align;
           if(s->action == BGAV_STREAM_PARSE)
-            s->duration = avi_as->sample_counter;
+            s->stats.pts_end = avi_as->sample_counter;
           PACKET_SET_KEYFRAME(p);
           }
         }
@@ -2247,7 +2248,7 @@ static int next_packet_avi(bgav_demuxer_context_t * ctx)
     avi_vs = s->priv;
     avi_vs->frame_counter++;
     if(s->action == BGAV_STREAM_PARSE)
-      s->duration = avi_vs->frame_counter * s->data.video.format->frame_duration;
+      s->stats.pts_end = avi_vs->frame_counter * s->data.video.format->frame_duration;
     }
 
   
