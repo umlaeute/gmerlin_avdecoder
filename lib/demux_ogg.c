@@ -1416,7 +1416,6 @@ static void get_metadata(bgav_track_t * track)
 
 static int open_ogg(bgav_demuxer_context_t * ctx)
   {
-  gavl_time_t stream_duration;
   int i, j;
   track_priv_t * track_priv_1, * track_priv_2;
   bgav_track_t * last_track;
@@ -1509,7 +1508,7 @@ static int open_ogg(bgav_demuxer_context_t * ctx)
     for(i = 0; i < ctx->tt->num_tracks; i++)
       get_last_granulepos(ctx, &ctx->tt->tracks[i]);
 
-    /* Get the duration and reset all streams */
+    /* Reset all streams */
 
     for(i = 0; i < ctx->tt->num_tracks; i++)
       {
@@ -1519,13 +1518,6 @@ static int open_ogg(bgav_demuxer_context_t * ctx)
           ctx->tt->tracks[i].audio_streams[j].priv;
 
         ogg_stream_reset(&stream_priv->os);
-        
-        stream_duration =
-          granulepos_2_time(&ctx->tt->tracks[i].audio_streams[j],
-                            stream_priv->last_granulepos);
-        if((ctx->tt->tracks[i].duration == GAVL_TIME_UNDEFINED) ||
-           (ctx->tt->tracks[i].duration < stream_duration))
-          ctx->tt->tracks[i].duration = stream_duration;
         }
 
       for(j = 0; j < ctx->tt->tracks[i].num_video_streams; j++)
@@ -1534,13 +1526,6 @@ static int open_ogg(bgav_demuxer_context_t * ctx)
           ctx->tt->tracks[i].video_streams[j].priv;
 
         ogg_stream_reset(&stream_priv->os);
-        
-        stream_duration =
-          granulepos_2_time(&ctx->tt->tracks[i].video_streams[j],
-                            stream_priv->last_granulepos);
-        if((ctx->tt->tracks[i].duration == GAVL_TIME_UNDEFINED) ||
-           (ctx->tt->tracks[i].duration < stream_duration))
-          ctx->tt->tracks[i].duration = stream_duration;
         }
       for(j = 0; j < ctx->tt->tracks[i].num_text_streams; j++)
         {
@@ -2064,11 +2049,7 @@ static int next_packet_ogg(bgav_demuxer_context_t * ctx)
             s->data.video.format->frame_duration * stream_priv->frame_counter;
           
           stream_priv->frame_counter++;
-
-          if(s->action == BGAV_STREAM_PARSE)
-            s->stats.pts_end =
-              s->data.video.format->frame_duration * stream_priv->frame_counter;
-        
+          
           set_packet_pos(priv, stream_priv, &page_continued, p);
           bgav_stream_done_packet_write(s, p);
           }
@@ -2314,7 +2295,8 @@ static void seek_ogg(bgav_demuxer_context_t * ctx, int64_t time, int scale)
   track_priv_t * track_priv;
   stream_priv_t * stream_priv;
   int64_t filepos;
-
+  gavl_time_t dur = gavl_track_get_duration(ctx->tt->cur->info);
+  
   //  fprintf(stderr, "seek_ogg %ld %d\n", time, scale);
 
   // Seeking to 0 is handled specially:
@@ -2331,8 +2313,7 @@ static void seek_ogg(bgav_demuxer_context_t * ctx, int64_t time, int scale)
   track_priv = ctx->tt->cur->priv;
   filepos = track_priv->start_pos +
     (int64_t)((double)gavl_time_unscale(scale, time) /
-              (double)(ctx->tt->cur->duration) *
-              (track_priv->end_pos - track_priv->start_pos));
+              dur * (track_priv->end_pos - track_priv->start_pos));
   if(filepos <= track_priv->start_pos)
     filepos = find_first_page(ctx, track_priv->start_pos, track_priv->end_pos,
                               NULL, NULL);

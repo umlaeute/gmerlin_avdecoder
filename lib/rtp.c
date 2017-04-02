@@ -889,8 +889,8 @@ int bgav_demuxer_rtp_open(bgav_demuxer_context_t * ctx,
     }
 
   /* Check for duration */
-  ctx->tt->cur->duration = get_duration(sdp);
-
+  gavl_track_set_duration(ctx->tt->cur->info, get_duration(sdp));
+  
   priv->num_streams = ctx->tt->cur->num_audio_streams +
     ctx->tt->cur->num_video_streams;
   /* Create the stream array */

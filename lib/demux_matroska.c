@@ -817,10 +817,11 @@ static int open_matroska(bgav_demuxer_context_t * ctx)
 
   /* get duration */
   if(p->segment_info.Duration > 0.0)
-    ctx->tt->cur->duration =
-      gavl_seconds_to_time(p->segment_info.Duration * 
-                           p->segment_info.TimecodeScale * 1.0e-9);
-
+    {
+    gavl_track_set_duration(ctx->tt->cur->info,
+                            gavl_seconds_to_time(p->segment_info.Duration * 
+                                                 p->segment_info.TimecodeScale * 1.0e-9));
+    }
   /* Set seekable flag */
   if(p->have_cues && (ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE))
     ctx->flags |= BGAV_DEMUXER_CAN_SEEK;

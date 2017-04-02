@@ -153,8 +153,10 @@ static int open_adif(bgav_demuxer_context_t * ctx)
       ((unsigned int)buf[5 + skip_size]<<11) |
       ((unsigned int)buf[6 + skip_size]<<3) |
       ((unsigned int)buf[7 + skip_size] & 0xE0);
-    ctx->tt->cur->duration = (GAVL_TIME_SCALE * (priv->data_size) * 8) /
-      (ctx->tt->cur->audio_streams[0].container_bitrate);
+
+    gavl_track_set_duration(ctx->tt->cur->info,
+                            (GAVL_TIME_SCALE * (priv->data_size) * 8) /
+                            (ctx->tt->cur->audio_streams[0].container_bitrate));
     }
 
 #if 0 // Name is moved to metadata 

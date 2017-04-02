@@ -185,7 +185,6 @@ static int open_sphere(bgav_demuxer_context_t * ctx)
   sphere_header_t h;
   bgav_stream_t * as;
   int bytes_per_sample;
-  int64_t total_samples;
   
   ctx->tt = bgav_track_table_create(1);
 

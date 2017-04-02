@@ -33,6 +33,7 @@
 #include <gavl/compression.h>
 #include <gavl/numptr.h>
 #include <gavl/utils.h>
+#include <gavl/trackinfo.h>
 
 #define BGAV_MK_FOURCC(a, b, c, d) ((a<<24)|(b<<16)|(c<<8)|d)
 
@@ -522,9 +523,6 @@ struct bgav_stream_s
    *  must be set by bgav_start()
    */
   
-  //  int64_t start_time;
-//  int64_t duration;
-  
   /* The track, where this stream belongs */
   bgav_track_t * track;
   bgav_file_index_t * file_index;
@@ -692,7 +690,6 @@ int bgav_stream_skipto(bgav_stream_t * s, int64_t * time, int scale);
 struct bgav_track_s
   {
   // char * name;
-  gavl_time_t duration;
   bgav_metadata_t * metadata;
 
   int num_audio_streams;
@@ -797,8 +794,6 @@ void bgav_track_dump(bgav_t * b, bgav_track_t * t);
 
 int bgav_track_has_sync(bgav_track_t * t);
 
-/* Calculate duration from stream durations */
-void bgav_track_calc_duration(bgav_track_t * t);
 
 void bgav_track_reset_index_positions(bgav_track_t * t);
 
@@ -1205,7 +1200,10 @@ void bgav_superindex_merge_fileindex(bgav_superindex_t * idx, bgav_stream_t * s)
 void bgav_superindex_set_size(bgav_superindex_t * ret, int size);
 
 void bgav_superindex_set_coding_types(bgav_superindex_t * idx,
-                                     bgav_stream_t * s);
+                                      bgav_stream_t * s);
+
+void bgav_superindex_set_stream_stats(bgav_superindex_t * idx,
+                                      bgav_stream_t * s);
 
 /* timecode.c */
 

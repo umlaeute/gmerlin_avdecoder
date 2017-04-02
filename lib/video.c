@@ -635,7 +635,7 @@ static gavl_frame_table_t * create_frame_table_fi(bgav_stream_t * s)
     }
 
   /* Flush last frame */
-  gavl_frame_table_append_entry(ret, s->duration - last_time);
+  gavl_frame_table_append_entry(ret, s->stats.pts_end - last_time);
 
   for(i = 0; i < fi->tt.num_entries; i++)
     {

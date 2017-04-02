@@ -792,8 +792,8 @@ static void handle_metadata(bgav_demuxer_context_t * ctx)
     ctx->tt->cur->video_streams[0].container_bitrate = (int)(number*1000);
 
   if(meta_object_find_number(obj, num_obj, "duration", &number) && (number != 0.0))
-    ctx->tt->cur->duration = gavl_seconds_to_time(number);
-
+    gavl_track_set_duration(ctx->tt->cur->info, gavl_seconds_to_time(number));
+  
   if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     {
     obj1 = meta_object_find(obj, num_obj, "keyframes");
@@ -869,6 +869,7 @@ static void seek_flv(bgav_demuxer_context_t * ctx, int64_t time, int scale)
 
 static int open_flv(bgav_demuxer_context_t * ctx)
   {
+  gavl_time_t duration;
   int64_t pos;
   uint8_t flags;
   uint32_t data_offset, tmp;
@@ -882,7 +883,6 @@ static int open_flv(bgav_demuxer_context_t * ctx)
   /* Create track */
 
   ctx->tt = bgav_track_table_create(1);
-  ctx->tt->cur->duration = GAVL_TIME_UNDEFINED;
   
   /* Skip signature */
   bgav_input_skip(ctx->input, 4);
@@ -956,9 +956,11 @@ static int open_flv(bgav_demuxer_context_t * ctx)
   
   handle_metadata(ctx);
 
+  duration = gavl_track_get_duration(ctx->tt->cur->info);
+  
   if(ctx->tt->cur->num_video_streams)
     {
-    if(ctx->tt->cur->duration != GAVL_TIME_UNDEFINED)
+    if(duration != GAVL_TIME_UNDEFINED)
       {
       ctx->tt->cur->video_streams->index_mode = INDEX_MODE_SIMPLE;
       ctx->tt->cur->video_streams->stats.pts_end = 0;
@@ -970,7 +972,7 @@ static int open_flv(bgav_demuxer_context_t * ctx)
   /* Get the duration from the timestamp of the last packet if
      the stream is seekable */
   
-  if((ctx->tt->cur->duration == GAVL_TIME_UNDEFINED) &&
+  if((duration == GAVL_TIME_UNDEFINED) &&
      (ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE))
     {
     pos = ctx->input->position;
@@ -980,10 +982,7 @@ static int open_flv(bgav_demuxer_context_t * ctx)
       bgav_input_seek(ctx->input, -((int64_t)tmp+4), SEEK_END);
       
       if(flv_tag_read(ctx->input, &t))
-        {
-        ctx->tt->cur->duration =
-          gavl_time_unscale(1000, t.timestamp);
-        }
+        gavl_track_set_duration(ctx->tt->cur->info, gavl_time_unscale(1000, t.timestamp));
       else
         bgav_log(ctx->opt, BGAV_LOG_WARNING, LOG_DOMAIN, "Getting duration from last timestamp failed");
       }

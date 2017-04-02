@@ -847,11 +847,9 @@ int bgav_demux_rm_open_with_header(bgav_demuxer_context_t * ctx,
   
   /* Update global fields */
 
-  if(!h->prop.duration)
-    track->duration = GAVL_TIME_UNDEFINED;
-  else
-    track->duration = h->prop.duration * (GAVL_TIME_SCALE / 1000); 
-    
+  if(h->prop.duration)
+    gavl_track_set_duration(track->info, h->prop.duration * (GAVL_TIME_SCALE / 1000));
+  
   priv->need_first_timestamp = 1;
   
   if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)

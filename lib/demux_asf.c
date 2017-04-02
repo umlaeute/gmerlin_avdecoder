@@ -534,8 +534,11 @@ static int open_asf(bgav_demuxer_context_t * ctx)
         goto fail;
 
       if(asf->hdr.send_time)
-        ctx->tt->cur->duration = (asf->hdr.send_time - asf->hdr.preroll) 
-          / (10000000/GAVL_TIME_SCALE);
+        {
+        gavl_track_set_duration(ctx->tt->cur->info,
+                                (asf->hdr.send_time - asf->hdr.preroll) 
+                                / (10000000/GAVL_TIME_SCALE));
+        }
       }
     /* Stream properties */
     else if(bgav_GUID_equal(&guid, &guid_stream_header))
@@ -1142,7 +1145,7 @@ static void seek_asf(bgav_demuxer_context_t * ctx, int64_t time, int scale)
   asf->packets_read =
     (int64_t)((double)asf->hdr.packets_count *
               (gavl_time_to_seconds(gavl_time_unscale(scale, time))/
-               gavl_time_to_seconds(ctx->tt->cur->duration)));
+               gavl_time_to_seconds(gavl_track_get_duration(ctx->tt->cur->info))));
   
   filepos = ctx->data_start +
     ctx->packet_size * asf->packets_read;

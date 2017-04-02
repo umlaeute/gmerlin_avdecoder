@@ -40,7 +40,7 @@
 
 /* Version must be increased each time the fileformat
    changes */
-#define INDEX_VERSION 8
+#define INDEX_VERSION 10
 
 static void dump_index(bgav_stream_t * s)
   {
@@ -405,10 +405,40 @@ file_index_read_stream(bgav_input_context_t * input, bgav_stream_t * s)
       break;
     }
   
+#if 0
+  write_32(output, s->stats.size_min);
+  write_32(output, s->stats.size_max);
+  
+  write_64(output, s->stats.duration_min);
+  write_64(output, s->stats.duration_max);
+  
+  write_64(output, s->stats.pts_start);
+  write_64(output, s->stats.pts_end);
+
+  write_64(output, s->stats.total_bytes);
+  write_64(output, s->stats.total_packets);
+#endif
+
+  if(!bgav_input_read_32_be(input, (uint32_t*)&s->stats.size_min))
+    return NULL;
+  if(!bgav_input_read_32_be(input, (uint32_t*)&s->stats.size_max))
+    return NULL;
+
+  if(!bgav_input_read_64_be(input, (uint64_t*)&s->stats.duration_min))
+    return NULL;
+  if(!bgav_input_read_64_be(input, (uint64_t*)&s->stats.duration_max))
+    return NULL;
+  
   if(!bgav_input_read_64_be(input, (uint64_t*)&s->stats.pts_start))
     return NULL;
   if(!bgav_input_read_64_be(input, (uint64_t*)&s->stats.pts_end))
     return NULL;
+
+  if(!bgav_input_read_64_be(input, (uint64_t*)&s->stats.total_bytes))
+    return NULL;
+  if(!bgav_input_read_64_be(input, (uint64_t*)&s->stats.total_packets))
+    return NULL;
+  
   if(!bgav_input_read_32_be(input, &ret->num_entries))
     return NULL;
   
@@ -476,9 +506,19 @@ file_index_write_stream(FILE * output,
     case GAVF_STREAM_MSG:
       break;
     }
+
+  write_32(output, s->stats.size_min);
+  write_32(output, s->stats.size_max);
+  
+  write_64(output, s->stats.duration_min);
+  write_64(output, s->stats.duration_max);
   
   write_64(output, s->stats.pts_start);
   write_64(output, s->stats.pts_end);
+
+  write_64(output, s->stats.total_bytes);
+  write_64(output, s->stats.total_packets);
+  
   write_32(output, idx->num_entries);
 
   for(i = 0; i < idx->num_entries; i++)
@@ -500,16 +540,6 @@ file_index_write_stream(FILE * output,
     }
   }
 
-static void update_duration(bgav_stream_t * s, int scale,
-                            gavl_time_t * duration)
-  {
-  gavl_time_t duration1;
-  
-  duration1 = gavl_time_unscale(scale, s->stats.pts_end);
-  if((*duration == GAVL_TIME_UNDEFINED) || (duration1 > *duration))
-    *duration = duration1;
-  }
-
 static void set_has_file_index_s(bgav_stream_t * s,
                                  bgav_demuxer_context_t * demuxer)
   {
@@ -517,6 +547,9 @@ static void set_has_file_index_s(bgav_stream_t * s,
     return;
   s->first_index_position = 0;
   s->last_index_position = s->file_index->num_entries-1;
+
+  
+  
   }
 
 static void set_has_file_index(bgav_t * b)
@@ -527,23 +560,17 @@ static void set_has_file_index(bgav_t * b)
   for(i = 0; i < b->tt->num_tracks; i++)
     {
     b->tt->tracks[i].flags |= (TRACK_HAS_FILE_INDEX|TRACK_SAMPLE_ACCURATE);
-    b->tt->tracks[i].duration = GAVL_TIME_UNDEFINED;
     
     //    if(b->tt->tracks[i].duration == GAVL_TIME_UNDEFINED)
     //      {
     for(j= 0; j <b->tt->tracks[i].num_audio_streams; j++)
       {
       s = &b->tt->tracks[i].audio_streams[j];
-      update_duration(s, s->data.audio.format->samplerate,
-                      &b->tt->tracks[i].duration);
       set_has_file_index_s(s, b->demuxer);
       }
     for(j= 0; j <b->tt->tracks[i].num_video_streams; j++)
       {
       s = &b->tt->tracks[i].video_streams[j];
-      update_duration(s,
-                      s->data.video.format->timescale,
-                      &b->tt->tracks[i].duration);
       set_has_file_index_s(s, b->demuxer);
       }
 
@@ -553,8 +580,6 @@ static void set_has_file_index(bgav_t * b)
       
       if(!(s->flags & STREAM_SUBREADER))
         {
-        update_duration(s, s->timescale,
-                        &b->tt->tracks[i].duration);
         set_has_file_index_s(s, b->demuxer);
         }
       }
@@ -565,13 +590,12 @@ static void set_has_file_index(bgav_t * b)
       
       if(!(s->flags & STREAM_SUBREADER))
         {
-        update_duration(s, s->timescale,
-                        &b->tt->tracks[i].duration);
         set_has_file_index_s(s, b->demuxer);
         }
       }
 
-
+    
+    
     // }
     }
   b->demuxer->flags |= BGAV_DEMUXER_CAN_SEEK;
@@ -971,11 +995,13 @@ static int bgav_build_file_index_parseall(bgav_t * b)
       {
       b->tt->cur->audio_streams[j].file_index = bgav_file_index_create();
       bgav_set_audio_stream(b, j, BGAV_STREAM_PARSE);
+      gavf_stream_stats_init(&b->tt->cur->audio_streams[j].stats);
       }
     for(j = 0; j < b->tt->cur->num_video_streams; j++)
       {
       b->tt->cur->video_streams[j].file_index = bgav_file_index_create();
       bgav_set_video_stream(b, j, BGAV_STREAM_PARSE);
+      gavf_stream_stats_init(&b->tt->cur->video_streams[j].stats);
       }
     for(j = 0; j < b->tt->cur->num_text_streams; j++)
       {
@@ -983,6 +1009,7 @@ static int bgav_build_file_index_parseall(bgav_t * b)
         {
         b->tt->cur->text_streams[j].file_index = bgav_file_index_create();
         bgav_set_text_stream(b, j, BGAV_STREAM_PARSE);
+        gavf_stream_stats_init(&b->tt->cur->text_streams[j].stats);
         }
       }
     for(j = 0; j < b->tt->cur->num_overlay_streams; j++)
@@ -991,6 +1018,7 @@ static int bgav_build_file_index_parseall(bgav_t * b)
         {
         b->tt->cur->overlay_streams[j].file_index = bgav_file_index_create();
         bgav_set_overlay_stream(b, j, BGAV_STREAM_PARSE);
+        gavf_stream_stats_init(&b->tt->cur->overlay_streams[j].stats);
         }
       }
 
@@ -1036,6 +1064,7 @@ static int build_file_index_si_parse_audio(bgav_t * b, int track, int stream)
   
   s->file_index = bgav_file_index_create();
   bgav_set_audio_stream(b, stream, BGAV_STREAM_PARSE);
+  gavf_stream_stats_init(&s->stats);
   bgav_start(b);
   b->demuxer->request_stream = &b->tt->cur->audio_streams[stream];
   s->stats.pts_end = 0; 
@@ -1067,6 +1096,7 @@ static int build_file_index_si_parse_video(bgav_t * b, int track, int stream)
   
   s->file_index = bgav_file_index_create();
   bgav_set_video_stream(b, stream, BGAV_STREAM_PARSE);
+  gavf_stream_stats_init(&s->stats);
   bgav_start(b);
   b->demuxer->request_stream = s;
   

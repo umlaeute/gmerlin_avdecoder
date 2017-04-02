@@ -424,24 +424,13 @@ void bgav_track_dump(bgav_t * b, bgav_track_t * t)
   int i;
   const char * description;
   
-  char duration_string[GAVL_TIME_STRING_LEN];
-  
   description = bgav_get_description(b);
   
   bgav_dprintf( "Format:   %s\n", (description ? description : 
                                    "Not specified"));
   bgav_dprintf( "Seekable: %s\n",
                 ((b->demuxer->flags & BGAV_DEMUXER_CAN_SEEK) ? "Yes" : "No"));
-
-  bgav_dprintf( "Duration: ");
-  if(t->duration != GAVL_TIME_UNDEFINED)
-    {
-    gavl_time_prettyprint(t->duration, duration_string);
-    bgav_dprintf( "%s\n", duration_string);
-    }
-  else
-    bgav_dprintf( "Not specified (maybe live)\n");
-
+  
   bgav_diprintf(2, "Metadata\n");
   gavl_dictionary_dump(t->metadata, 4);
   bgav_dprintf("\n");
@@ -520,9 +509,9 @@ void bgav_track_remove_audio_stream(bgav_track_t * track, int stream)
 
 void bgav_track_remove_video_stream(bgav_track_t * track, int stream)
   {
+  int i;
   gavl_track_delete_video_stream(track->info, stream);
   /* Remove this stream from the subtitle streams as well */
-  int i;
   for(i = 0; i < track->num_text_streams; i++)
     {
     if(track->text_streams[i].data.subtitle.video_stream ==
@@ -733,65 +722,6 @@ int bgav_track_skipto(bgav_track_t * track, int64_t * time, int scale)
   return 1;
   }
 
-typedef struct
-  {
-  bgav_track_t * t;
-  } calc_duration_t;
-
-static int calc_duration_audio(void * priv, bgav_stream_t * s)
-  {
-  gavl_time_t test_duration;
-  calc_duration_t * cd = priv;
-  
-  test_duration =
-      gavl_time_unscale(s->data.audio.format->samplerate,
-                        s->duration);
-  if(cd->t->duration < test_duration)
-    cd->t->duration = test_duration;
-  
-  return 1;
-  }
-
-static int calc_duration_video(void * priv, bgav_stream_t * s)
-  {
-  gavl_time_t test_duration;
-  calc_duration_t * cd = priv;
-  
-  test_duration =
-      gavl_time_unscale(s->data.video.format->timescale,
-                        s->duration);
-  if(cd->t->duration < test_duration)
-    cd->t->duration = test_duration;
-  
-  return 1;
-  }
-
-static int calc_duration_subtitle(void * priv, bgav_stream_t * s)
-  {
-  gavl_time_t test_duration;
-  calc_duration_t * cd = priv;
-  
-  test_duration = gavl_time_unscale(s->timescale, s->duration);
-  if(cd->t->duration < test_duration)
-    cd->t->duration = test_duration;
-  
-  return 1;
-  }
-  
-void bgav_track_calc_duration(bgav_track_t * t)
-  {
-  calc_duration_t cd;
-  cd.t = t;
-
-  bgav_streams_foreach(t->audio_streams, t->num_audio_streams,
-                       calc_duration_audio, &cd);
-  bgav_streams_foreach(t->video_streams, t->num_video_streams,
-                       calc_duration_video, &cd);
-  bgav_streams_foreach(t->text_streams, t->num_text_streams,
-                       calc_duration_subtitle, &cd);
-  bgav_streams_foreach(t->overlay_streams, t->num_overlay_streams,
-                       calc_duration_subtitle, &cd);
-  }
 
 
 int bgav_track_has_sync(bgav_track_t * t)
@@ -1004,6 +934,7 @@ void bgav_track_get_compression(bgav_track_t * t)
   t->flags |= TRACK_HAS_COMPRESSION;
   }
 
+
 void bgav_track_compute_info(bgav_track_t * t)
   {
   int i;  
@@ -1014,16 +945,38 @@ void bgav_track_compute_info(bgav_track_t * t)
     s = &t->audio_streams[i];
     gavf_stream_stats_apply_audio(&s->stats, s->data.audio.format,
                                   &s->ci, s->m);
+    gavl_dictionary_set_int(s->m, GAVL_META_STREAM_PACKET_TIMESCALE, s->timescale);
+    gavl_dictionary_set_int(s->m, GAVL_META_STREAM_SAMPLE_TIMESCALE, s->data.audio.format->samplerate);
     }
   for(i = 0; i < t->num_video_streams; i++)
     {
     s = &t->video_streams[i];
     gavf_stream_stats_apply_video(&s->stats, s->data.video.format,
                                   &s->ci, s->m);
+    gavl_dictionary_set_int(s->m, GAVL_META_STREAM_PACKET_TIMESCALE, s->timescale);
+    gavl_dictionary_set_int(s->m, GAVL_META_STREAM_SAMPLE_TIMESCALE, s->data.video.format->timescale);
+
+    }
+  
+  for(i = 0; i < t->num_text_streams; i++)
+    {
+    s = &t->text_streams[i];
+    gavf_stream_stats_apply_subtitle(&s->stats, s->m);
+
+    gavl_dictionary_set_int(s->m, GAVL_META_STREAM_PACKET_TIMESCALE, s->timescale);
+    gavl_dictionary_set_int(s->m, GAVL_META_STREAM_SAMPLE_TIMESCALE, s->timescale);
     }
 
-  if(t->duration == GAVL_TIME_UNDEFINED)
-    bgav_track_calc_duration(t);
+  for(i = 0; i < t->num_overlay_streams; i++)
+    {
+    s = &t->overlay_streams[i];
+    gavf_stream_stats_apply_subtitle(&s->stats, s->m);
+    
+    gavl_dictionary_set_int(s->m, GAVL_META_STREAM_PACKET_TIMESCALE, s->timescale);
+    gavl_dictionary_set_int(s->m, GAVL_META_STREAM_SAMPLE_TIMESCALE, s->data.video.format->timescale);
+    }
+  
+  gavl_track_compute_duration(t->info);
   }
 
 

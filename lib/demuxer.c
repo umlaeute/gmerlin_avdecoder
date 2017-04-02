@@ -386,9 +386,6 @@ static void init_superindex(bgav_demuxer_context_t * ctx)
       i++;
       }
     }
-  
-  if(ctx->tt->cur->duration == GAVL_TIME_UNDEFINED)
-    bgav_track_calc_duration(ctx->tt->cur);
   }
 
 static void check_interleave(bgav_demuxer_context_t * ctx)

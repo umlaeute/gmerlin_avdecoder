@@ -436,9 +436,9 @@ static bgav_track_table_t * albw_2_track(bgav_demuxer_context_t* ctx,
     
     gavl_dictionary_free(&track_metadata);
     
-    ret->tracks[i].duration = get_duration(ctx,
-                                           albw->tracks[i].start_pos,
-                                           albw->tracks[i].end_pos);
+    gavl_track_set_duration(ret->tracks[i].info, get_duration(ctx,
+                                                              albw->tracks[i].start_pos,
+                                                              albw->tracks[i].end_pos));
     }
   
   return ret;
@@ -508,9 +508,10 @@ static int open_mpegaudio(bgav_demuxer_context_t * ctx)
       priv->data_end   = (id3v1) ? ctx->input->total_bytes - 128 :
         ctx->input->total_bytes;
       }
-    ctx->tt->tracks[0].duration = get_duration(ctx,
-                                               priv->data_start,
-                                               priv->data_end);
+
+    gavl_track_set_duration(ctx->tt->tracks[0].info, get_duration(ctx,
+                                                                  priv->data_start,
+                                                                  priv->data_end));
     gavl_dictionary_merge(ctx->tt->tracks[0].metadata,
                         &metadata_v2, &metadata_v1);
     }
@@ -610,12 +611,12 @@ static void seek_mpegaudio(bgav_demuxer_context_t * ctx, int64_t time,
       bgav_xing_get_seek_position(&priv->xing,
                                   100.0 *
                                   (float)gavl_time_unscale(scale, time) /
-                                  (float)(ctx->tt->cur->duration));
+                                  (float)(gavl_track_get_duration(ctx->tt->cur->info)));
     }
   else /* CBR */
     {
     pos = ((priv->data_end - priv->data_start) *
-           gavl_time_unscale(scale, time)) / ctx->tt->cur->duration;
+           gavl_time_unscale(scale, time)) / gavl_track_get_duration(ctx->tt->cur->info);
     }
   
   STREAM_SET_SYNC(s,

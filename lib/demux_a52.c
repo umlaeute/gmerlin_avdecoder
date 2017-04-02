@@ -93,9 +93,10 @@ static int open_a52(bgav_demuxer_context_t * ctx)
   if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
 
-  ctx->tt->cur->duration
-    = ((int64_t)priv->data_size * (int64_t)GAVL_TIME_SCALE) / 
-    (s->container_bitrate / 8);
+  gavl_track_set_duration(ctx->tt->cur->info,
+                          ((int64_t)priv->data_size * (int64_t)GAVL_TIME_SCALE) / 
+                          (s->container_bitrate / 8));
+
   ctx->index_mode = INDEX_MODE_SIMPLE;
 
   gavl_dictionary_set_string(ctx->tt->cur->metadata, 

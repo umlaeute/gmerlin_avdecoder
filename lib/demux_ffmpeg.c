@@ -742,7 +742,7 @@ static int open_ffmpeg(bgav_demuxer_context_t * ctx)
   
   if((priv->avfc->duration != 0) && (priv->avfc->duration != AV_NOPTS_VALUE))
     {
-    ctx->tt->cur->duration = (priv->avfc->duration * GAVL_TIME_SCALE) / AV_TIME_BASE;
+    gavl_track_set_duration(ctx->tt->cur->info, (priv->avfc->duration * GAVL_TIME_SCALE) / AV_TIME_BASE);
     
     if(priv->avfc->iformat->read_seek)
       ctx->flags |= BGAV_DEMUXER_CAN_SEEK;

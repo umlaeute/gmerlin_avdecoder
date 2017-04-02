@@ -333,7 +333,7 @@ static void init_sector_mode(bgav_demuxer_context_t * ctx)
 #endif
 
   /* If we already have the duration, stop here. */
-  if(ctx->tt->cur->duration != GAVL_TIME_UNDEFINED)
+  if(gavl_track_get_duration(ctx->tt->cur->info) != GAVL_TIME_UNDEFINED)
     {
     if(priv->goto_sector)
       priv->goto_sector(ctx, 0);
@@ -378,9 +378,8 @@ static void init_sector_mode(bgav_demuxer_context_t * ctx)
       else
         priv->total_sectors -= SCAN_SECTORS;
       }
-    
-    ctx->tt->cur->duration =
-      ((int64_t)(scr_end - scr_start) * GAVL_TIME_SCALE) / 90000;
+
+    gavl_track_set_duration(ctx->tt->cur->info, ((int64_t)(scr_end - scr_start) * GAVL_TIME_SCALE) / 90000);
     
     priv->goto_sector(ctx, 0);
     
@@ -939,16 +938,16 @@ static void get_duration(bgav_demuxer_context_t * ctx)
       }
     scr_end = priv->pack_header.scr;
 
-    ctx->tt->cur->duration =
-      ((int64_t)(scr_end - scr_start) * GAVL_TIME_SCALE) / 90000;
-
+    gavl_track_set_duration(ctx->tt->cur->info, 
+                            ((int64_t)(scr_end - scr_start) * GAVL_TIME_SCALE) / 90000);
+    
     bgav_input_seek(ctx->input, ctx->data_start, SEEK_SET);
     }
   else if(ctx->input->total_bytes && priv->pack_header.mux_rate)
     {
-    ctx->tt->cur->duration =
-      (ctx->input->total_bytes * GAVL_TIME_SCALE)/
-      (priv->pack_header.mux_rate*50);
+    gavl_track_set_duration(ctx->tt->cur->info, 
+                            (ctx->input->total_bytes * GAVL_TIME_SCALE)/
+                            (priv->pack_header.mux_rate*50));
     }
   }
 
@@ -1114,7 +1113,7 @@ static int open_mpegps(bgav_demuxer_context_t * ctx)
     need_streams = 1;
     }
   
-  if(ctx->tt->cur->duration == GAVL_TIME_UNDEFINED)
+  if(gavl_track_get_duration(ctx->tt->cur->info) == GAVL_TIME_UNDEFINED)
     get_duration(ctx);
   
   if(need_streams)
@@ -1172,6 +1171,8 @@ static void seek_normal(bgav_demuxer_context_t * ctx, int64_t time,
   mpegps_priv_t * priv;
   int64_t file_position;
   uint32_t header = 0;
+
+  gavl_time_t dur = gavl_track_get_duration(ctx->tt->cur->info);
   
   priv = ctx->priv;
   
@@ -1179,7 +1180,7 @@ static void seek_normal(bgav_demuxer_context_t * ctx, int64_t time,
   /* Using double is ugly, but in integer, this can overflow for large file (even in 64 bit).
      We do iterative seeking at this point anyway. */
   file_position = ctx->data_start +
-    (int64_t)(priv->data_size * (double)gavl_time_unscale(scale, time)/(double)ctx->tt->cur->duration + 0.5);
+    (int64_t)(priv->data_size * (double)gavl_time_unscale(scale, time)/(double)dur + 0.5);
 
   if(file_position <= ctx->data_start)
     file_position = ctx->data_start+1;
@@ -1212,12 +1213,13 @@ static void seek_sector(bgav_demuxer_context_t * ctx, gavl_time_t time,
   {
   mpegps_priv_t * priv;
   int64_t sector;
+  gavl_time_t duration = gavl_track_get_duration(ctx->tt->cur->info);
   
   priv = ctx->priv;
   
   //  file_position = (priv->pack_header.mux_rate*50*time)/GAVL_TIME_SCALE;
   sector = (priv->total_sectors * gavl_time_unscale(scale, time))/
-    ctx->tt->cur->duration;
+    duration;
   
   if(sector < 0)
     sector = 0;

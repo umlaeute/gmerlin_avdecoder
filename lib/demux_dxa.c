@@ -159,11 +159,10 @@ static int open_dxa(bgav_demuxer_context_t * ctx)
   
   priv->frames = frames;
 
-  ctx->tt->cur->duration =
-    gavl_time_unscale(vs->data.video.format->timescale,
-                      (int64_t)(priv->frames) * 
-                      vs->data.video.format->frame_duration);
-  
+  vs->stats.pts_end =
+    (int64_t)(priv->frames) * 
+    vs->data.video.format->frame_duration;
+    
   /* Check for audio stream */
 
   if(!bgav_input_read_fourcc(ctx->input, &fourcc))

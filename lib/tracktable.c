@@ -40,8 +40,6 @@ bgav_track_table_t * bgav_track_table_create(int num_tracks)
       {
       ret->tracks[i].info = gavl_append_track(&ret->info);
       ret->tracks[i].metadata = gavl_track_get_metadata_nc(ret->tracks[ret->num_tracks].info);
-      
-      ret->tracks[i].duration = GAVL_TIME_UNDEFINED;
       }
     ret->num_tracks = num_tracks;
     ret->cur = ret->tracks;
@@ -57,8 +55,6 @@ bgav_track_t * bgav_track_table_append_track(bgav_track_table_t * t)
   
   t->tracks = realloc(t->tracks, sizeof(*t->tracks) * (t->num_tracks+1));
   memset(&t->tracks[t->num_tracks], 0, sizeof(t->tracks[t->num_tracks]));
-  t->tracks[t->num_tracks].duration = GAVL_TIME_UNDEFINED;
-
   t->tracks[t->num_tracks].info = gavl_append_track(&t->info);
   t->tracks[t->num_tracks].metadata = gavl_track_get_metadata_nc(t->tracks[t->num_tracks].info);
   

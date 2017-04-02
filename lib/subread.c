@@ -905,9 +905,9 @@ static int init_spumux(bgav_stream_t * s)
   
   do{
     tmp = bgav_yml_get_attribute_i(priv->cur, "end");
-    s->duration = parse_time_spumux(tmp,
-                                    s->data.subtitle.video.format->timescale,
-                                    s->data.subtitle.video.format->frame_duration);
+    s->stats.pts_end = parse_time_spumux(tmp,
+                                         s->data.subtitle.video.format->timescale,
+                                         s->data.subtitle.video.format->frame_duration);
     } while(advance_current_spumux(s));
   
   if(!init_current_spumux(s))

@@ -180,6 +180,7 @@ static int open_vqa(bgav_demuxer_context_t * ctx)
   s->data.video.format->pixel_height = 1;
   s->data.video.format->timescale = h.FrameRate;
   s->data.video.format->frame_duration = 1;
+  s->stats.pts_end = h.NumFrames * s->data.video.format->frame_duration;
   
   /* Initialize audio stream */
   if(h.Freq || ((h.Version == 1) && (h.Flags == 1)))
@@ -203,10 +204,7 @@ static int open_vqa(bgav_demuxer_context_t * ctx)
     
     s->data.audio.bits_per_sample = h.Bits;
     }
-
-  ctx->tt->cur->duration =
-    gavl_time_unscale(h.FrameRate, h.NumFrames);
-
+  
   ctx->data_start = ctx->input->position;
   ctx->flags |= BGAV_DEMUXER_HAS_DATA_START;
 

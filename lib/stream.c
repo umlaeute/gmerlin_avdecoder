@@ -140,7 +140,8 @@ void bgav_stream_init(bgav_stream_t * stream, const bgav_options_t * opt)
   stream->index_position = -1;
   stream->opt = opt;
 
-  gavf_stream_stats_init(&stream->stats);
+  /* Better to have everything zero for a while */
+  //  gavf_stream_stats_init(&stream->stats);
   }
 
 void bgav_stream_free(bgav_stream_t * s)
@@ -233,7 +234,6 @@ void bgav_stream_dump(bgav_stream_t * s)
     bgav_dprintf("Unspecified\n");
 
   bgav_dprintf("  Timescale:         %d\n", s->timescale);
-  bgav_dprintf("  Duration:          %"PRId64"\n", s->duration);
   bgav_dprintf("  MaxPacketSize:     ");
   if(s->ci.max_packet_size)
     bgav_dprintf("%d\n", s->ci.max_packet_size);
@@ -383,6 +383,14 @@ bgav_stream_get_packet_read(bgav_stream_t * s, bgav_packet_t ** ret)
     s->max_packet_size_tmp = p->data_size;
   
   *ret = p;
+
+  if(s->action == BGAV_STREAM_PARSE)
+    {
+    gavf_stream_stats_update_params(&s->stats,
+                                    p->pts, p->duration, p->data_size,
+                                    p->flags & 0x0000ffff);
+    }
+    
   return GAVL_SOURCE_OK;
   }
 

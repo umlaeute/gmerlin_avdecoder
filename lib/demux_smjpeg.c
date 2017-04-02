@@ -59,9 +59,9 @@ static int open_smjpeg(bgav_demuxer_context_t * ctx)
   /* Duration in milliseconds */
   if(!bgav_input_read_32_be(ctx->input, &tmp_32))
     return 0;
-  
-  ctx->tt->cur->duration = gavl_time_unscale(1000, tmp_32);
 
+  gavl_track_set_duration(ctx->tt->cur->info, gavl_time_unscale(1000, tmp_32));
+  
   while(!done)
     {
     if(!bgav_input_read_fourcc(ctx->input, &fourcc))

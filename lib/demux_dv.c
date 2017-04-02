@@ -101,9 +101,7 @@ static int open_dv(bgav_demuxer_context_t * ctx)
   if(ctx->input->total_bytes)
     {
     total_frames = ctx->input->total_bytes / priv->frame_size;
-    ctx->tt->cur->duration =
-      gavl_frames_to_time(vs->data.video.format->timescale, vs->data.video.format->frame_duration,
-                          total_frames);
+    vs->stats.pts_end = (int64_t)total_frames * vs->data.video.format->frame_duration;
     }
   
   if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)

@@ -237,7 +237,6 @@ static int open_ircam(bgav_demuxer_context_t * ctx)
   {
   ircam_header_t h;
   bgav_stream_t * as;
-  int64_t total_samples;
   const char * format;
   
   /* Create track */

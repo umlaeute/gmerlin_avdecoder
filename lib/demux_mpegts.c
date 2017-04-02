@@ -628,10 +628,10 @@ static int get_program_durations(bgav_demuxer_context_t * ctx)
     if(priv->programs[i].initialized)
       {
       if(priv->programs[i].end_pcr > priv->programs[i].start_pcr)
-        ctx->tt->tracks[i].duration =
-          gavl_time_unscale(90000,
-                            priv->programs[i].end_pcr -
-                            priv->programs[i].start_pcr);
+        gavl_track_set_duration(ctx->tt->tracks[i].info,
+                                gavl_time_unscale(90000,
+                                                  priv->programs[i].end_pcr -
+                                                  priv->programs[i].start_pcr));
       else
         return 0;
       }
@@ -1788,10 +1788,13 @@ static void seek_mpegts(bgav_demuxer_context_t * ctx, int64_t time, int scale)
   int64_t total_packets;
   int64_t packet;
   int64_t position;
+  gavl_time_t duration;
   
   mpegts_t * priv;
   priv = ctx->priv;
 
+  duration = gavl_track_get_duration(ctx->tt->cur->info);
+  
   reset_streams_priv(ctx->tt->cur);
   
   total_packets =
@@ -1800,7 +1803,7 @@ static void seek_mpegts(bgav_demuxer_context_t * ctx, int64_t time, int scale)
   packet =
     (int64_t)((double)total_packets *
               (double)gavl_time_unscale(scale, time) /
-              (double)(ctx->tt->cur->duration)+0.5);
+              (double)(duration)+0.5);
   
   position = priv->first_packet_pos + packet * priv->packet_size;
 

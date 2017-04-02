@@ -176,14 +176,12 @@ static int open_gavf(bgav_demuxer_context_t * ctx)
   
   if(gavl_dictionary_get_long(&ph->m, GAVL_META_APPROX_DURATION, &duration))
     {
-    ctx->tt->cur->duration = duration;
-    
     if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
       ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
     }
   
   gavl_dictionary_set_string(ctx->tt->cur->metadata, 
-                    GAVL_META_FORMAT, "GAVF");
+                             GAVL_META_FORMAT, "GAVF");
 
   
   return 1;

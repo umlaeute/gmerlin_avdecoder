@@ -190,15 +190,12 @@ static int open_thp(bgav_demuxer_context_t * ctx)
       if(priv->h.version == VERSION_1_1)
         bgav_input_skip(ctx->input, 4); // unknown
 
-      ctx->tt->cur->duration =
-        gavl_time_unscale(s->data.video.format->timescale,
-                          (int64_t)(priv->h.numFrames) * 
-                          s->data.video.format->frame_duration);
-
+      s->stats.pts_end = (int64_t)(priv->h.numFrames) * 
+        s->data.video.format->frame_duration;
       }
     else if(components[i] == 1) // Audio
       {
-      uint32_t samplerate, num_channels;
+      uint32_t samplerate, num_channels, num_samples;
 
       if(ctx->tt->cur->num_audio_streams)
         break;
@@ -207,13 +204,15 @@ static int open_thp(bgav_demuxer_context_t * ctx)
       s->stream_id = AUDIO_ID;
 
       if(!bgav_input_read_32_be(ctx->input, &num_channels) ||
-         !bgav_input_read_32_be(ctx->input, &samplerate))
+         !bgav_input_read_32_be(ctx->input, &samplerate) ||
+         !bgav_input_read_32_be(ctx->input, &num_samples))
         return 0;
       
       s->data.audio.format->samplerate   = samplerate;
       s->data.audio.format->num_channels = num_channels;
 
-      bgav_input_skip(ctx->input, 4); // numSamples
+      s->stats.pts_end = num_samples;
+      
       if(priv->h.version == VERSION_1_1)
         bgav_input_skip(ctx->input, 4); // numData
       }

@@ -146,9 +146,7 @@ int bgav_init(bgav_t * ret)
     ret->input->tt = ret->tt;
     bgav_track_table_ref(ret->input->tt);
     }
- 
-  bgav_track_table_compute_info(ret->tt);
- 
+  
   return 1;
     
   fail:
@@ -209,6 +207,9 @@ int bgav_open(bgav_t * ret, const char * location)
       ret->demuxer &&
       !(ret->demuxer->flags & BGAV_DEMUXER_CAN_SEEK)))
     bgav_set_sample_accurate(ret);
+  
+  bgav_track_table_compute_info(ret->tt);
+  
   return 1;
   fail:
 
@@ -267,7 +268,7 @@ void bgav_dump(bgav_t * bgav)
 
 gavl_time_t bgav_get_duration(bgav_t * bgav, int track)
   {
-  return bgav->tt->tracks[track].duration;
+  return gavl_track_get_duration(bgav->tt->tracks[track].info);
   }
 
 const char * bgav_get_track_name(bgav_t * b, int track)
@@ -485,6 +486,7 @@ int bgav_start(bgav_t * b)
     {
     return 0;
     }
+  bgav_track_compute_info(b->tt->cur);
   return 1;
   }
 

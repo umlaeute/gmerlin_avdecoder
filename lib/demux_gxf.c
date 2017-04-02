@@ -518,11 +518,8 @@ static int open_gxf(bgav_demuxer_context_t * ctx)
       }
 
     if(priv->last_field > priv->first_field)
-      ctx->tt->cur->duration =
-        gavl_time_unscale(vs->data.video.format->timescale,
-                          (int64_t)vs->data.video.format->frame_duration *
-                          (priv->last_field - priv->first_field) /
-                          priv->num_fields);
+      vs->stats.pts_end = (int64_t)vs->data.video.format->frame_duration *
+        (priv->last_field - priv->first_field) / priv->num_fields;
     }
   
   return 1;

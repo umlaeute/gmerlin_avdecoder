@@ -484,9 +484,9 @@ static int open_nsv(bgav_demuxer_context_t * ctx)
     {
     /* Duration */
     if(p->fh.file_len != 0xFFFFFFFF)
-      ctx->tt->cur->duration =
-        gavl_time_unscale(1000, p->fh.file_len);
-
+      gavl_track_set_duration(ctx->tt->cur->info,
+                              gavl_time_unscale(1000, p->fh.file_len));
+    
     /* Metadata */
     if(p->fh.metadata.title)
       gavl_dictionary_set_string(ctx->tt->cur->metadata,
@@ -754,13 +754,14 @@ static void seek_nsv(bgav_demuxer_context_t * ctx, int64_t time, int scale)
   bgav_stream_t * vs, *as;
   nsv_sync_header_t sh;
   uint32_t fourcc;
-
+  gavl_time_t duration = gavl_track_get_duration(ctx->tt->cur->info);
+  
   priv = ctx->priv;
-
+  
   if(!priv->fh.toc.frames) /* TOC version 1 */
     {
     index_position =
-      (uint32_t)((double)gavl_time_unscale(scale, time) / (double)(ctx->tt->cur->duration) *
+      (uint32_t)((double)gavl_time_unscale(scale, time) / (double)duration *
                  priv->fh.toc_size + 0.5);
     if(index_position >= priv->fh.toc_size)
       index_position = priv->fh.toc_size - 1;

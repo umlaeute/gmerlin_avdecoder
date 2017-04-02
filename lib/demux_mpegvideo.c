@@ -141,8 +141,6 @@ static int open_mpegvideo(bgav_demuxer_context_t * ctx)
   ctx->data_start = ctx->input->position;
   ctx->flags |= BGAV_DEMUXER_HAS_DATA_START;
   
-  ctx->tt->cur->duration = GAVL_TIME_UNDEFINED;
-
   gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "Elementary video stream");
   ctx->index_mode = INDEX_MODE_MIXED;

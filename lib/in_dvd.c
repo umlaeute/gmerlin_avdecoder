@@ -293,9 +293,11 @@ static int setup_track(bgav_input_context_t * ctx,
   dvd_t * dvd = ctx->priv;
   int cell_offset;
   gavl_dictionary_t * cl;
+  gavl_time_t duration = 0;
   
   ttsrpt = dvd->vmg_ifo->tt_srpt;
-
+  
+  
   /* Open VTS */
 
   //  fprintf(stderr, "TITLE SET NR: %d\n", ttsrpt->title[title].title_set_nr); 
@@ -392,17 +394,17 @@ static int setup_track(bgav_input_context_t * ctx,
   /* Get duration */
   cl = gavl_dictionary_add_chapter_list(new_track->metadata, GAVL_TIME_SCALE);
   
-  new_track->duration = 0;
-  
   for(i = 0; i < track_priv->num_chapters; i++)
     {
-    gavl_chapter_list_insert(cl, i, new_track->duration, NULL);
-    new_track->duration += track_priv->chapters[i].duration;
+    gavl_chapter_list_insert(cl, i, duration, NULL);
+    duration += track_priv->chapters[i].duration;
     }
 
-  if(new_track->duration < MIN_DURATION)
+  if(duration < MIN_DURATION)
     goto fail;
- 
+
+  gavl_track_set_duration(new_track->info, duration);
+  
   /* Setup streams */
 
   pgc_id = vts_ptt_srpt->title[ttn - 1].ptt[0].pgcn;

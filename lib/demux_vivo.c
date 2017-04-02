@@ -499,7 +499,7 @@ static int open_vivo(bgav_demuxer_context_t * ctx)
   gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "Vivo");
 
-  ctx->tt->cur->duration = (GAVL_TIME_SCALE * (int64_t)(priv->header.duration)) / 1000;
+  gavl_track_set_duration(ctx->tt->cur->info, (GAVL_TIME_SCALE * (int64_t)(priv->header.duration)) / 1000);
 
   ctx->data_start = ctx->input->position;
   ctx->flags |= BGAV_DEMUXER_HAS_DATA_START;

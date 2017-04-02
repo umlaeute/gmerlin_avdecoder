@@ -300,10 +300,8 @@ static int open_avs(bgav_demuxer_context_t * ctx)
   s->data.video.format->frame_duration = 1;
   s->data.video.depth = 8;
   
-  ctx->tt->cur->duration =
-    gavl_time_unscale(s->data.video.format->timescale,
-                      BGAV_PTR_2_32LE(&header[12]));
-
+  s->stats.pts_end = BGAV_PTR_2_32LE(&header[12]);
+  
   ctx->data_start = ctx->input->position;
   ctx->flags |= BGAV_DEMUXER_HAS_DATA_START;
   

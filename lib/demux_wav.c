@@ -189,10 +189,10 @@ static int open_wav(bgav_demuxer_context_t * ctx)
     s->stats.pts_end = s->stats.total_bytes / s->data.audio.block_align;
     }
   else
-    ctx->tt->cur->duration
-      = ((int64_t)s->stats.total_bytes * (int64_t)GAVL_TIME_SCALE) / 
-      (ctx->tt->cur->audio_streams[0].codec_bitrate / 8);
-
+    gavl_track_set_duration(ctx->tt->cur->info,
+                            ((int64_t)s->stats.total_bytes * (int64_t)GAVL_TIME_SCALE) / 
+                            (ctx->tt->cur->audio_streams[0].codec_bitrate / 8));
+  
   bgav_demuxer_init_cue(ctx);
   
   return 1;

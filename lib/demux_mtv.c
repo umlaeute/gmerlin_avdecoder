@@ -158,9 +158,9 @@ static int open_mtv(bgav_demuxer_context_t * ctx)
 
   if(ctx->input->total_bytes)
     {
-    ctx->tt->cur->duration =
-      gavl_time_unscale(ctx->tt->cur->video_streams[0].data.video.format->timescale,
-                        (ctx->input->total_bytes - MTV_HEADER_SIZE) / priv->sync_size);
+    ctx->tt->cur->video_streams[0].stats.pts_end = 
+      (ctx->input->total_bytes - MTV_HEADER_SIZE) / priv->sync_size;
+    
     if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
       ctx->flags |= BGAV_DEMUXER_CAN_SEEK;
     }

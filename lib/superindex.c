@@ -59,7 +59,13 @@ void bgav_superindex_set_sbr(bgav_superindex_t * si, bgav_stream_t * s)
   int i;
   
   s->timescale *= 2;
-  s->duration *= 2;
+
+  if(s->stats.pts_start != GAVL_TIME_UNDEFINED)
+    s->stats.pts_start *= 2;
+
+  if(s->stats.pts_end != GAVL_TIME_UNDEFINED)
+    s->stats.pts_end *= 2;
+
   s->data.audio.format->samplerate *= 2;
   
   for(i = 0; i < si->num_entries; i++)
@@ -140,7 +146,7 @@ void bgav_superindex_set_durations(bgav_superindex_t * idx,
   /* Special case if there is only one chunk */
   if(s->first_index_position == s->last_index_position)
     {
-    idx->entries[s->first_index_position].duration = s->duration;
+    idx->entries[s->first_index_position].duration = bgav_stream_get_duration(s);
     return;
     }
   
@@ -159,7 +165,7 @@ void bgav_superindex_set_durations(bgav_superindex_t * idx,
       }
     i++;
     }
-  idx->entries[s->last_index_position].duration = s->duration -
+  idx->entries[s->last_index_position].duration = s->stats.pts_end -
     idx->entries[s->last_index_position].pts;
   }
 
@@ -327,6 +333,26 @@ void bgav_superindex_set_coding_types(bgav_superindex_t * idx,
   
   }
 
+void bgav_superindex_set_stream_stats(bgav_superindex_t * idx,
+                                      bgav_stream_t * s)
+  {
+  int i;
+  gavf_stream_stats_init(&s->stats);
+  
+  for(i = 0; i < idx->num_entries; i++)
+    {
+    if(idx->entries[i].stream_id != s->stream_id)
+      continue;
+    
+    gavf_stream_stats_update_params(&s->stats,
+                                    idx->entries[i].pts,
+                                    idx->entries[i].duration,
+                                    idx->entries[i].size,
+                                    idx->entries[i].flags & 0xFFFF);
+    }
+  }
+
+
 void bgav_superindex_seek(bgav_superindex_t * idx,
                           bgav_stream_t * s,
                           int64_t * time, int scale)
@@ -436,7 +462,7 @@ merge_fileindex_audio(bgav_superindex_t * idx, bgav_stream_t * s)
     }
   
   /* Set pts for all packets, in which no frames start */
-  pts = s->duration;
+  pts = s->stats.pts_end;
   for(i = s->last_index_position; i >= s->first_index_position; i--)
     {
     if(idx->entries[i].stream_id != s->stream_id)
