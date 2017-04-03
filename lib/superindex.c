@@ -120,16 +120,6 @@ void bgav_superindex_add_packet(bgav_superindex_t * idx,
       s->first_index_position = idx->num_entries;
     if(s->last_index_position < idx->num_entries)
       s->last_index_position = idx->num_entries;
-
-    /* Update stats */
-    s->stats.total_bytes += size;
-
-    if(s->stats.pts_start == GAVL_TIME_UNDEFINED)
-      {
-      s->stats.pts_start = timestamp;
-      }
-    if(s->stats.pts_end < timestamp + duration)
-      s->stats.pts_end = timestamp + duration;
     }
   
   idx->num_entries++;

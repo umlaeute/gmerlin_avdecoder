@@ -338,6 +338,7 @@ static void init_superindex(bgav_demuxer_context_t * ctx)
     else
       {
       bgav_superindex_set_durations(ctx->si, &ctx->tt->cur->audio_streams[i]);
+      bgav_superindex_set_stream_stats(ctx->si, &ctx->tt->cur->audio_streams[i]);
       i++;
       }
     }
@@ -355,6 +356,7 @@ static void init_superindex(bgav_demuxer_context_t * ctx)
       {
       bgav_superindex_set_durations(ctx->si, &ctx->tt->cur->video_streams[i]);
       bgav_superindex_set_coding_types(ctx->si, &ctx->tt->cur->video_streams[i]);
+      bgav_superindex_set_stream_stats(ctx->si, &ctx->tt->cur->video_streams[i]);
       i++;
       }
     }
@@ -367,8 +369,7 @@ static void init_superindex(bgav_demuxer_context_t * ctx)
     else
       {
       bgav_superindex_set_durations(ctx->si, &ctx->tt->cur->text_streams[i]);
-      ctx->tt->cur->text_streams[i].stats.pts_start =
-        ctx->si->entries[ctx->tt->cur->text_streams[i].first_index_position].pts;
+      bgav_superindex_set_stream_stats(ctx->si, &ctx->tt->cur->text_streams[i]);
       i++;
       }
     }
@@ -381,8 +382,7 @@ static void init_superindex(bgav_demuxer_context_t * ctx)
     else
       {
       bgav_superindex_set_durations(ctx->si, &ctx->tt->cur->overlay_streams[i]);
-      ctx->tt->cur->overlay_streams[i].stats.pts_start =
-        ctx->si->entries[ctx->tt->cur->overlay_streams[i].first_index_position].pts;
+      bgav_superindex_set_stream_stats(ctx->si, &ctx->tt->cur->overlay_streams[i]);
       i++;
       }
     }
