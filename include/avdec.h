@@ -1286,6 +1286,24 @@ BGAV_PUBLIC
 const bgav_metadata_t * bgav_get_metadata(bgav_t * bgav,int track);
 
 /** \ingroup track
+ *  \brief Get media information
+ *  \param bgav A decoder instance
+ *  \param 
+ *  \returns A dictionary containing the media information
+ *
+ *  This replaces all bgav_get_* functions. It returns a dictionary,
+ *  which contains the tracks which, in turn, contain the A/V streams
+ *
+ *  The API for extracing the infos is in gavl/trackinfo.h
+ *  The returned dictionary can be passed to gavl_get_num_tracks and
+ *  gavl_get_track.
+ */
+
+BGAV_PUBLIC
+const gavl_dictionary_t * bgav_get_media_info(bgav_t * bgav);
+
+  
+/** \ingroup track
  *  \brief Select a track
  *  \param bgav A decoder instance
  *  \param track Track index (starts with 0)

@@ -328,7 +328,7 @@ static const codec_info_t audio_codecs[] =
 static void init_stream_common(mkv_t * m,
                                bgav_stream_t * s,
                                bgav_mkv_track_t * track,
-                               const codec_info_t * codecs)
+                               const codec_info_t * codecs, int set_lang)
   {
   int i = 0;
   const codec_info_t * info = NULL;
@@ -338,9 +338,15 @@ static void init_stream_common(mkv_t * m,
   s->timescale = 1000000000 / m->segment_info.TimecodeScale;
 
   s->stats.pts_start = GAVL_TIME_UNDEFINED;
-  
-  if(track->Language)
-    gavl_dictionary_set_string(s->m, GAVL_META_LANGUAGE, track->Language);
+
+  if(set_lang)
+    {
+    if(track->Language)
+      gavl_dictionary_set_string(s->m, GAVL_META_LANGUAGE, track->Language);
+    else
+      // Seems to be default on most files found in the wild
+      gavl_dictionary_set_string(s->m, GAVL_META_LANGUAGE, "eng");
+    }
   
   if(!codecs)
     return;
@@ -382,7 +388,7 @@ static int init_audio(bgav_demuxer_context_t * ctx,
   mkv_t * m = ctx->priv;
   
   s = bgav_track_add_audio_stream(ctx->tt->cur, ctx->opt);
-  init_stream_common(m, s, track, audio_codecs);
+  init_stream_common(m, s, track, audio_codecs, 1);
 
   fmt = s->data.audio.format;
   a = &track->audio;
@@ -425,7 +431,7 @@ static int init_video(bgav_demuxer_context_t * ctx,
   mkv_t * m = ctx->priv;
   
   s = bgav_track_add_video_stream(ctx->tt->cur, ctx->opt);
-  init_stream_common(m, s, track, video_codecs);
+  init_stream_common(m, s, track, video_codecs, 0);
 
   fmt = s->data.video.format;
   v = &track->video;
@@ -531,7 +537,7 @@ static int init_subtitle(bgav_demuxer_context_t * ctx,
   if(!s)
     return 1;
   
-  init_stream_common(m, s, track, NULL);
+  init_stream_common(m, s, track, NULL, 1);
   s->index_mode = INDEX_MODE_SIMPLE;
   return 1;
   }

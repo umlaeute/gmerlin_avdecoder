@@ -260,6 +260,11 @@ void bgav_close(bgav_t * b)
   }
 
 
+const gavl_dictionary_t * bgav_get_media_info(bgav_t * bgav)
+  {
+  return bgav->tt->info;
+  }
+
 void bgav_dump(bgav_t * bgav)
   {
   bgav_track_dump(bgav, bgav->tt->cur);
