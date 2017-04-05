@@ -233,10 +233,8 @@ static int open_mpc(bgav_demuxer_context_t * ctx)
   
   gavl_dictionary_set_string(s->m, GAVL_META_FORMAT,
                     "Musepack");
-  
-  ctx->tt->cur->duration =
-    gavl_samples_to_time(s->data.audio.format->samplerate,
-                         mpc_streaminfo_get_length_samples(&priv->si));
+ 
+  s->stats.pts_end = mpc_streaminfo_get_length_samples(&priv->si);
 
   if(ctx->input->flags & BGAV_INPUT_CAN_SEEK_BYTE)
     ctx->flags |= BGAV_DEMUXER_CAN_SEEK;

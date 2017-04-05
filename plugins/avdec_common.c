@@ -294,7 +294,7 @@ int bg_avdec_start(void * priv)
     }
   for(i = 0; i < avdec->current_track->num_video_streams; i++)
     {
-    gavl_video_format_copy(&(avdec->current_track->video_streams[i].format),
+    gavl_video_format_copy(&(avdec->current_track->video_streams[i].fmt),
                            bgav_get_video_format(avdec->dec, i));
 
     gavl_dictionary_merge2(&avdec->current_track->video_streams[i].m,
@@ -309,7 +309,7 @@ int bg_avdec_start(void * priv)
     }
   for(i = 0; i < avdec->current_track->num_audio_streams; i++)
     {
-    gavl_audio_format_copy(&(avdec->current_track->audio_streams[i].format),
+    gavl_audio_format_copy(&(avdec->current_track->audio_streams[i].fmt),
                            bgav_get_audio_format(avdec->dec, i));
 
     gavl_dictionary_merge2(&avdec->current_track->audio_streams[i].m,
@@ -343,7 +343,7 @@ int bg_avdec_start(void * priv)
       bgav_overlay_duration(avdec->dec, i);
     
     format = bgav_get_overlay_format(avdec->dec, i);
-    gavl_video_format_copy(&avdec->current_track->overlay_streams[i].format,
+    gavl_video_format_copy(&avdec->current_track->overlay_streams[i].fmt,
                            format);
     }
   return 1;
@@ -384,7 +384,7 @@ int bg_avdec_init(avdec_priv * avdec)
 
       for(j = 0; j < avdec->track_info[i].num_audio_streams; j++)
         {
-        gavl_audio_format_copy(&(avdec->track_info[i].audio_streams[j].format),
+        gavl_audio_format_copy(&(avdec->track_info[i].audio_streams[j].fmt),
                                bgav_get_audio_format_t(avdec->dec, i, j));
 
         gavl_dictionary_copy(&(avdec->track_info[i].audio_streams[j].m),
@@ -400,7 +400,7 @@ int bg_avdec_init(avdec_priv * avdec)
 
       for(j = 0; j < avdec->track_info[i].num_video_streams; j++)
         {
-        gavl_video_format_copy(&(avdec->track_info[i].video_streams[j].format),
+        gavl_video_format_copy(&(avdec->track_info[i].video_streams[j].fmt),
                                bgav_get_video_format_t(avdec->dec, i, j));
 
         gavl_dictionary_copy(&(avdec->track_info[i].video_streams[j].m),
@@ -477,11 +477,11 @@ int bg_avdec_set_track(void * priv, int track)
   
   /* Get formats (need them for compressed output */
   for(i = 0; i < avdec->current_track->num_audio_streams; i++)
-    gavl_audio_format_copy(&(avdec->current_track->audio_streams[i].format),
+    gavl_audio_format_copy(&(avdec->current_track->audio_streams[i].fmt),
                            bgav_get_audio_format(avdec->dec, i));
 
   for(i = 0; i < avdec->current_track->num_video_streams; i++)
-    gavl_video_format_copy(&(avdec->current_track->video_streams[i].format),
+    gavl_video_format_copy(&(avdec->current_track->video_streams[i].fmt),
                            bgav_get_video_format(avdec->dec, i));
 
   
