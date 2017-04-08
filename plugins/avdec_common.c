@@ -300,12 +300,6 @@ int bg_avdec_start(void * priv)
     gavl_dictionary_merge2(&avdec->current_track->video_streams[i].md,
                            bgav_get_video_metadata(avdec->dec, i));
     
-    avdec->current_track->video_streams[i].duration =
-      bgav_video_duration(avdec->dec, i);
-
-    avdec->current_track->video_streams[i].pts_offset = 
-      bgav_video_start_time(avdec->dec, i);
-    
     }
   for(i = 0; i < avdec->current_track->num_astreams; i++)
     {
@@ -327,20 +321,12 @@ int bg_avdec_start(void * priv)
     gavl_dictionary_merge2(&avdec->current_track->text_streams[i].md,
                          bgav_get_text_metadata(avdec->dec, i));
     
-    avdec->current_track->text_streams[i].duration =
-      bgav_text_duration(avdec->dec, i);
-
-    avdec->current_track->text_streams[i].timescale = 
-      bgav_get_text_timescale(avdec->dec, i);
     }
 
   for(i = 0; i < avdec->current_track->num_ostreams; i++)
     {
     gavl_dictionary_merge2(&avdec->current_track->overlay_streams[i].md,
                          bgav_get_overlay_metadata(avdec->dec, i));
-    
-    avdec->current_track->overlay_streams[i].duration =
-      bgav_overlay_duration(avdec->dec, i);
     
     format = bgav_get_overlay_format(avdec->dec, i);
     gavl_video_format_copy(&avdec->current_track->overlay_streams[i].fmt,
