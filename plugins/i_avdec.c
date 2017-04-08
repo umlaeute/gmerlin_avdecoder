@@ -60,7 +60,7 @@ static int open_common(avdec_priv * avdec)
       // gavl_dictionary_set_string(&avdec->track_info[i].metadata,
       //                   GAVL_META_LABEL, name);
 #endif
-      gavl_dictionary_copy(&avdec->track_info[i].metadata,
+      gavl_dictionary_copy(&avdec->track_info[i].md,
                          bgav_redirector_get_metadata(avdec->dec, i));
       }
     return 1;

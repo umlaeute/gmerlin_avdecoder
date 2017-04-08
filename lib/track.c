@@ -977,6 +977,7 @@ void bgav_track_compute_info(bgav_track_t * t)
     }
   
   gavl_track_compute_duration(t->info);
+  
   }
 
 

@@ -294,42 +294,37 @@ int bg_avdec_start(void * priv)
     }
   for(i = 0; i < avdec->current_track->num_vstreams; i++)
     {
-    gavl_video_format_copy(&(avdec->current_track->video_streams[i].fmt),
+    gavl_video_format_copy(&(avdec->current_track->vstreams[i].fmt),
                            bgav_get_video_format(avdec->dec, i));
 
-    gavl_dictionary_merge2(&avdec->current_track->video_streams[i].md,
+    gavl_dictionary_merge2(&avdec->current_track->vstreams[i].md,
                            bgav_get_video_metadata(avdec->dec, i));
     
     }
   for(i = 0; i < avdec->current_track->num_astreams; i++)
     {
-    gavl_audio_format_copy(&(avdec->current_track->audio_streams[i].fmt),
+    gavl_audio_format_copy(&(avdec->current_track->astreams[i].fmt),
                            bgav_get_audio_format(avdec->dec, i));
 
-    gavl_dictionary_merge2(&avdec->current_track->audio_streams[i].md,
+    gavl_dictionary_merge2(&avdec->current_track->astreams[i].md,
                          bgav_get_audio_metadata(avdec->dec, i));
     
-    avdec->current_track->audio_streams[i].duration =
-      bgav_audio_duration(avdec->dec, i);
-
-    avdec->current_track->audio_streams[i].pts_offset = 
-      bgav_audio_start_time(avdec->dec, i);
     }
 
   for(i = 0; i < avdec->current_track->num_tstreams; i++)
     {
-    gavl_dictionary_merge2(&avdec->current_track->text_streams[i].md,
+    gavl_dictionary_merge2(&avdec->current_track->tstreams[i].md,
                          bgav_get_text_metadata(avdec->dec, i));
     
     }
 
   for(i = 0; i < avdec->current_track->num_ostreams; i++)
     {
-    gavl_dictionary_merge2(&avdec->current_track->overlay_streams[i].md,
+    gavl_dictionary_merge2(&avdec->current_track->ostreams[i].md,
                          bgav_get_overlay_metadata(avdec->dec, i));
     
-    format = bgav_get_overlay_format(avdec->dec, i);
-    gavl_video_format_copy(&avdec->current_track->overlay_streams[i].fmt,
+   format = bgav_get_overlay_format(avdec->dec, i);
+    gavl_video_format_copy(&avdec->current_track->ostreams[i].fmt,
                            format);
     }
   return 1;
@@ -345,7 +340,6 @@ int bg_avdec_init(avdec_priv * avdec)
   {
   int i, j;
   const bgav_metadata_t * m;
-  gavl_time_t duration;
   
   avdec->num_tracks = bgav_num_tracks(avdec->dec);
   avdec->track_info = calloc(avdec->num_tracks, sizeof(*(avdec->track_info)));
@@ -356,20 +350,15 @@ int bg_avdec_init(avdec_priv * avdec)
     bg_track_info_set_num_video_streams(&avdec->track_info[i], bgav_num_video_streams(avdec->dec, i));
     bg_track_info_set_num_text_streams(&avdec->track_info[i], bgav_num_text_streams(avdec->dec, i));
     bg_track_info_set_num_overlay_streams(&avdec->track_info[i], bgav_num_overlay_streams(avdec->dec, i));
-
-    if(bgav_can_seek(avdec->dec))
-      gavl_dictionary_set_int(&avdec->track_info[i].metadata, GAVL_META_CAN_SEEK, 1);
-    if(bgav_can_pause(avdec->dec))
-      gavl_dictionary_set_int(&avdec->track_info[i].metadata, GAVL_META_CAN_PAUSE, 1);
-    
+        
     if(avdec->track_info[i].num_astreams)
       {
       for(j = 0; j < avdec->track_info[i].num_astreams; j++)
         {
-        gavl_audio_format_copy(&(avdec->track_info[i].audio_streams[j].fmt),
+        gavl_audio_format_copy(&(avdec->track_info[i].astreams[j].fmt),
                                bgav_get_audio_format_t(avdec->dec, i, j));
 
-        gavl_dictionary_copy(&(avdec->track_info[i].audio_streams[j].md),
+        gavl_dictionary_copy(&(avdec->track_info[i].astreams[j].md),
                            bgav_get_audio_metadata_t(avdec->dec, i, j));
         
         }
@@ -378,10 +367,10 @@ int bg_avdec_init(avdec_priv * avdec)
       {
       for(j = 0; j < avdec->track_info[i].num_vstreams; j++)
         {
-        gavl_video_format_copy(&(avdec->track_info[i].video_streams[j].fmt),
+        gavl_video_format_copy(&(avdec->track_info[i].vstreams[j].fmt),
                                bgav_get_video_format_t(avdec->dec, i, j));
 
-        gavl_dictionary_copy(&(avdec->track_info[i].video_streams[j].md),
+        gavl_dictionary_copy(&(avdec->track_info[i].vstreams[j].md),
                            bgav_get_video_metadata_t(avdec->dec, i, j));
         
         }
@@ -391,7 +380,7 @@ int bg_avdec_init(avdec_priv * avdec)
       for(j = 0; j < avdec->track_info[i].num_tstreams; j++)
         {
         int idx = j + avdec->track_info[i].num_ostreams;
-        gavl_dictionary_copy(&(avdec->track_info[i].text_streams[j].md),
+        gavl_dictionary_copy(&(avdec->track_info[i].tstreams[j].md),
                            bgav_get_text_metadata_t(avdec->dec, i, idx));
         }
       }
@@ -399,22 +388,16 @@ int bg_avdec_init(avdec_priv * avdec)
       {
       for(j = 0; j < avdec->track_info[i].num_ostreams; j++)
         {
-        gavl_dictionary_copy(&(avdec->track_info[i].overlay_streams[j].md),
+        gavl_dictionary_copy(&(avdec->track_info[i].ostreams[j].md),
                            bgav_get_overlay_metadata_t(avdec->dec, i, j));
         }
       }
     
-    duration = bgav_get_duration(avdec->dec, i);
-
-    if(duration != GAVL_TIME_UNDEFINED)
-      gavl_dictionary_set_long(&avdec->track_info[i].metadata,
-                             GAVL_META_APPROX_DURATION, duration);
-        
     /* Get metadata */
     
     m = bgav_get_metadata(avdec->dec, i);
     
-    gavl_dictionary_copy(&avdec->track_info[i].metadata, m);
+    gavl_dictionary_copy(&avdec->track_info[i].md, m);
 
     }
   return 1;
@@ -447,11 +430,11 @@ int bg_avdec_set_track(void * priv, int track)
   
   /* Get formats (need them for compressed output */
   for(i = 0; i < avdec->current_track->num_astreams; i++)
-    gavl_audio_format_copy(&(avdec->current_track->audio_streams[i].fmt),
+    gavl_audio_format_copy(&(avdec->current_track->astreams[i].fmt),
                            bgav_get_audio_format(avdec->dec, i));
 
   for(i = 0; i < avdec->current_track->num_vstreams; i++)
-    gavl_video_format_copy(&(avdec->current_track->video_streams[i].fmt),
+    gavl_video_format_copy(&(avdec->current_track->vstreams[i].fmt),
                            bgav_get_video_format(avdec->dec, i));
 
   
@@ -474,8 +457,8 @@ static void metadata_change_callback(void * priv,
 
   if(avdec->current_track)
     {
-    gavl_dictionary_copy(&avdec->current_track->metadata,
-                       metadata);
+    gavl_dictionary_copy(bg_track_info_get_metadata_nc(avdec->current_track),
+                         metadata);
 
     fprintf(stderr, "Metadata callback %p %p\n",
             avdec->bg_callbacks, avdec->bg_callbacks->metadata_changed);
@@ -484,7 +467,7 @@ static void metadata_change_callback(void * priv,
     if(avdec->bg_callbacks && avdec->bg_callbacks->metadata_changed)
       {
       avdec->bg_callbacks->metadata_changed(avdec->bg_callbacks->data,
-                                            &avdec->current_track->metadata);
+                                            bg_track_info_get_metadata(avdec->current_track));
       }
     }
   }

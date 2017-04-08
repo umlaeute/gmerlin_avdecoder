@@ -146,6 +146,24 @@ int bgav_init(bgav_t * ret)
     ret->input->tt = ret->tt;
     bgav_track_table_ref(ret->input->tt);
     }
+
+  if(bgav_can_seek(ret) || 
+     bgav_can_pause(ret))
+    {
+    int i;
+
+    for(i = 0; i < ret->tt->num_tracks; i++)
+      {
+      if(bgav_can_seek(ret))
+        gavl_dictionary_set_int(ret->tt->tracks[i].metadata, GAVL_META_CAN_SEEK, 1);
+      if(bgav_can_pause(ret))
+        gavl_dictionary_set_int(ret->tt->tracks[i].metadata, GAVL_META_CAN_PAUSE, 1);
+      
+      }
+    }
+  
+     
+
   
   return 1;
     
@@ -209,6 +227,7 @@ int bgav_open(bgav_t * ret, const char * location)
     bgav_set_sample_accurate(ret);
   
   bgav_track_table_compute_info(ret->tt);
+  
   
   return 1;
   fail:
