@@ -1300,7 +1300,7 @@ const bgav_metadata_t * bgav_get_metadata(bgav_t * bgav,int track);
  */
 
 BGAV_PUBLIC
-const gavl_dictionary_t * bgav_get_media_info(bgav_t * bgav);
+gavl_dictionary_t * bgav_get_media_info(bgav_t * bgav);
 
   
 /** \ingroup track

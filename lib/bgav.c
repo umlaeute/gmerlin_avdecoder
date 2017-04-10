@@ -279,7 +279,7 @@ void bgav_close(bgav_t * b)
   }
 
 
-const gavl_dictionary_t * bgav_get_media_info(bgav_t * bgav)
+gavl_dictionary_t * bgav_get_media_info(bgav_t * bgav)
   {
   return &bgav->tt->info;
   }

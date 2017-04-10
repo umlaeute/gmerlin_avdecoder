@@ -37,6 +37,7 @@
 
 static int open_common(avdec_priv * avdec)
   {
+#ifndef NEW_STREAMINFO_API
   int i;
   //  const char * str;
   if(bgav_is_redirector(avdec->dec))
@@ -45,26 +46,12 @@ static int open_common(avdec_priv * avdec)
     avdec->track_info = calloc(avdec->num_tracks, sizeof(*(avdec->track_info)));
     for(i = 0; i < avdec->num_tracks; i++)
       {
-#if 0
-      const char * name;
-      str = bgav_redirector_get_url(avdec->dec, i);
-      avdec->track_info[i].url = gavl_strrep(avdec->track_info[i].url, str);
-      
-      str = bgav_redirector_get_name(avdec->dec, i);
-
-      if(str)
-        name = str;
-      else
-        name = avdec->track_info[i].url;
-
-      // gavl_dictionary_set_string(&avdec->track_info[i].metadata,
-      //                   GAVL_META_LABEL, name);
-#endif
       gavl_dictionary_copy(&avdec->track_info[i].md,
-                         bgav_redirector_get_metadata(avdec->dec, i));
+                           bgav_redirector_get_metadata(avdec->dec, i));
       }
     return 1;
     }
+#endif
   return bg_avdec_init(avdec);
   }
 
@@ -443,10 +430,14 @@ const bg_input_plugin_t the_plugin =
     .open_io = open_io_avdec,
     .set_callbacks = bg_avdec_set_callbacks,
   /* For file and network plugins, this can be NULL */
+#ifdef NEW_STREAMINFO_API
+    .get_media_info = bg_avdec_get_media_info,
+#else
     .get_num_tracks = bg_avdec_get_num_tracks,
+    .get_track_info = bg_avdec_get_track_info,
+#endif
     .get_edl  = bg_avdec_get_edl,
     /* Return track information */
-    .get_track_info = bg_avdec_get_track_info,
 
     /* Set track */
     .set_track =             bg_avdec_set_track,

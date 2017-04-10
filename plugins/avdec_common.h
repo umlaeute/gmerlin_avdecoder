@@ -38,7 +38,6 @@ void * bg_avdec_create();
 
 void bg_avdec_close(void * priv);
 void bg_avdec_destroy(void * priv);
-bg_track_info_t * bg_avdec_get_track_info(void * priv, int track);
 
 gavl_video_source_t *
 bg_avdec_get_video_source(void * priv, int stream);
@@ -107,9 +106,15 @@ void
 bg_avdec_set_parameter(void * p, const char * name,
                        const gavl_value_t * val);
 
+#ifdef NEW_STREAMINFO_API
+gavl_dictionary_t * bg_avdec_get_media_info(void * p);
+#else
 int bg_avdec_get_num_tracks(void * p);
+bg_track_info_t * bg_avdec_get_track_info(void * priv, int track);
+#endif
 
 int bg_avdec_set_track(void * priv, int track);
+
 
 void bg_avdec_set_callbacks(void * priv,
                             bg_input_callbacks_t * callbacks);

@@ -170,6 +170,20 @@ void bg_avdec_destroy(void * priv)
   free(avdec);
   }
 
+#ifdef NEW_STREAMINFO_API
+gavl_dictionary_t * bg_avdec_get_media_info(void * p)
+  {
+  avdec_priv * avdec = p;
+  return bgav_get_media_info(avdec->dec);
+  }
+
+#else
+int bg_avdec_get_num_tracks(void * p)
+  {
+  avdec_priv * avdec = p;
+  return avdec->num_tracks;
+  }
+
 bg_track_info_t * bg_avdec_get_track_info(void * priv, int track)
   {
   avdec_priv * avdec = priv;
@@ -181,6 +195,8 @@ bg_track_info_t * bg_avdec_get_track_info(void * priv, int track)
     return NULL;
   return &(avdec->track_info[track]);
   }
+#endif
+
 
 const gavl_edl_t * bg_avdec_get_edl(void * priv)
   {
@@ -409,12 +425,6 @@ bg_avdec_set_parameter(void * p, const char * name,
   {
   avdec_priv * avdec = p;
   bg_avdec_option_set_parameter(avdec->opt, name, val);
-  }
-
-int bg_avdec_get_num_tracks(void * p)
-  {
-  avdec_priv * avdec = p;
-  return avdec->num_tracks;
   }
 
 
