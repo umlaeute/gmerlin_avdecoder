@@ -168,18 +168,22 @@ static int read_toc(vcd_priv * priv, char ** iso_label)
   return 1;
   }
 
-static void toc_2_tt(bgav_input_context_t * ctx)
+static void toc_2_tt(bgav_input_context_t * ctx, char * disk_name)
   {
   int index;
   bgav_stream_t * stream;
   bgav_track_t * track;
+  gavl_dictionary_t * m;
   int i;
   
   vcd_priv * priv;
   priv = ctx->priv;
   
   ctx->tt = bgav_track_table_create(priv->num_video_tracks);
-    
+
+  m = gavl_track_get_metadata_nc(&ctx->tt->info);
+  gavl_dictionary_set_string_nocopy(m, GAVL_META_DISK_NAME, disk_name);    
+
   index = 0;
   for(i = 1; i < priv->num_tracks; i++)
     {
@@ -222,7 +226,7 @@ static int open_vcd(bgav_input_context_t * ctx, const char * url, char ** r)
   int i;
   vcd_priv * priv;
   const char * pos;
-
+  char * disk_name = NULL;
   //  bgav_find_devices_vcd();
     
   priv = calloc(1, sizeof(*priv));
@@ -263,13 +267,15 @@ static int open_vcd(bgav_input_context_t * ctx, const char * url, char ** r)
   
   /* Read TOC */
   
-  if(!read_toc(priv, &ctx->disc_name))
+  if(!read_toc(priv, &disk_name))
     {
     bgav_log(ctx->opt, BGAV_LOG_ERROR, LOG_DOMAIN,
              "read_toc failed for %s", url);
     return 0;
     }
-  toc_2_tt(ctx);
+  toc_2_tt(ctx, disk_name);
+
+
 
   /* Set up sector stuff */
 

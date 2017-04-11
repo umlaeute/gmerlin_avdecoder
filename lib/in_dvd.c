@@ -740,11 +740,9 @@ static int open_dvd(bgav_input_context_t * ctx, const char * url, char ** r)
     }
 
   /* Get disc name */
-  if(!DVDUDFVolumeInfo(priv->dvd_reader, volid, 32,
+  if(DVDUDFVolumeInfo(priv->dvd_reader, volid, 32,
                       volsetid, 128))
-    {
-    ctx->disc_name = gavl_strdup(volid);
-    }
+    volid[0] = '\0';
     
   /* Open Video Manager */
 
@@ -761,6 +759,12 @@ static int open_dvd(bgav_input_context_t * ctx, const char * url, char ** r)
 
   /* Create track table */
   ctx->tt = bgav_track_table_create(0);
+
+  if(volid[0] != '\0')
+    {
+    gavl_dictionary_t * m = gavl_track_get_metadata_nc(&ctx->tt->info);
+    gavl_dictionary_set_string(m, GAVL_META_DISK_NAME, volid);
+    }
 
   for(i = 0; i < ttsrpt->nr_of_srpts; i++)
     {

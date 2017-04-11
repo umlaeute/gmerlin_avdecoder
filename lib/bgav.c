@@ -537,9 +537,10 @@ bgav_options_t * bgav_get_options(bgav_t * b)
 
 const char * bgav_get_disc_name(bgav_t * bgav)
   {
-  if(bgav->input)
-    return bgav->input->disc_name;
-  return NULL;
+  const gavl_dictionary_t * m;
+
+  m = gavl_track_get_metadata(&bgav->tt->info);
+  return gavl_dictionary_get_string(m, GAVL_META_DISK_NAME);
   }
 
 gavl_edl_t * bgav_get_edl(bgav_t * bgav)

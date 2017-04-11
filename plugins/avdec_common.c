@@ -69,12 +69,15 @@ void * bg_avdec_create()
 void bg_avdec_close(void * priv)
   {
   avdec_priv * avdec = priv;
+#ifndef NEW_STREAMINFO_API
   int i;
+#endif
   if(avdec->dec)
     {
     bgav_close(avdec->dec);
     avdec->dec = NULL;
     }
+#ifndef NEW_STREAMINFO_API
   if(avdec->track_info)
     {
     for(i = 0; i < avdec->num_tracks; i++)
@@ -82,6 +85,7 @@ void bg_avdec_close(void * priv)
     free(avdec->track_info);
     avdec->track_info = NULL;
     }
+#endif
   }
 
 int bg_avdec_get_audio_compression_info(void * priv, int stream,
@@ -300,14 +304,16 @@ int bg_avdec_set_overlay_stream(void * priv,
 
 int bg_avdec_start(void * priv)
   {
+#ifndef NEW_STREAMINFO_API
   int i;
   const gavl_video_format_t * format;
+#endif
   avdec_priv * avdec = priv;
   
   if(!bgav_start(avdec->dec))
-    {
     return 0;
-    }
+
+#ifndef NEW_STREAMINFO_API
   for(i = 0; i < avdec->current_track->num_vstreams; i++)
     {
     gavl_video_format_copy(&(avdec->current_track->vstreams[i].fmt),
@@ -343,6 +349,7 @@ int bg_avdec_start(void * priv)
     gavl_video_format_copy(&avdec->current_track->ostreams[i].fmt,
                            format);
     }
+#endif
   return 1;
   }
 
@@ -352,6 +359,7 @@ void bg_avdec_seek(void * priv, int64_t * t, int scale)
   bgav_seek_scaled(avdec->dec, t, scale);
   }
 
+#ifndef NEW_STREAMINFO_API
 int bg_avdec_init(avdec_priv * avdec)
   {
   int i, j;
@@ -418,6 +426,8 @@ int bg_avdec_init(avdec_priv * avdec)
     }
   return 1;
   }
+#endif
+
 
 void
 bg_avdec_set_parameter(void * p, const char * name,
@@ -436,6 +446,9 @@ int bg_avdec_set_track(void * priv, int track)
   
   if(!bgav_select_track(avdec->dec, track))
     return 0;
+#ifdef NEW_STREAMINFO_API
+  avdec->current_track = gavl_get_track_nc(bgav_get_media_info(avdec->dec), track);
+#else
   avdec->current_track = &(avdec->track_info[track]);
   
   /* Get formats (need them for compressed output */
@@ -446,7 +459,7 @@ int bg_avdec_set_track(void * priv, int track)
   for(i = 0; i < avdec->current_track->num_vstreams; i++)
     gavl_video_format_copy(&(avdec->current_track->vstreams[i].fmt),
                            bgav_get_video_format(avdec->dec, i));
-
+#endif
   
   return 1;
   }

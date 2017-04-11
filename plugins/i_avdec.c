@@ -35,9 +35,9 @@
 
 #include "avdec_common.h"
 
+#ifndef NEW_STREAMINFO_API
 static int open_common(avdec_priv * avdec)
   {
-#ifndef NEW_STREAMINFO_API
   int i;
   //  const char * str;
   if(bgav_is_redirector(avdec->dec))
@@ -51,9 +51,9 @@ static int open_common(avdec_priv * avdec)
       }
     return 1;
     }
-#endif
   return bg_avdec_init(avdec);
   }
+#endif
 
 static int read_callback(void * priv, uint8_t * data, int len)
   {
@@ -80,7 +80,11 @@ static int open_io_avdec(void * priv, gavf_io_t * io)
                           gavf_io_filename(io), gavf_io_mimetype(io),
                           gavf_io_total_bytes(io)))
     return 0;
+#ifdef NEW_STREAMINFO_API
+  return 1;
+#else
   return open_common(avdec);
+#endif
   }
 
 static int open_avdec(void * priv, const char * location)

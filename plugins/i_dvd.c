@@ -45,7 +45,11 @@ static int open_dvd(void * priv, const char * location)
   
   if(!bgav_open_dvd(avdec->dec, location))
     return 0;
+#ifdef NEW_STREAMINFO_API
+  return 1;
+#else
   return bg_avdec_init(avdec);
+#endif
   }
 
 static bg_device_info_t * find_devices_dvd()
@@ -114,15 +118,23 @@ const bg_input_plugin_t the_plugin =
     .set_callbacks = bg_avdec_set_callbacks,
     /* Open file/device */
     .open = open_dvd,
-    .get_disc_name = bg_avdec_get_disc_name,
+
 #if LIBCDIO_VERSION_NUM >= 78
     .eject_disc = bgav_eject_disc,
 #endif
-    //    .set_callbacks = set_callbacks_avdec,
-  /* For file and network plugins, this can be NULL */
+
+#ifdef NEW_STREAMINFO_API
+    .get_media_info = bg_avdec_get_media_info,
+
+#else
+    /* For file and network plugins, this can be NULL */
     .get_num_tracks = bg_avdec_get_num_tracks,
     /* Return track information */
     .get_track_info = bg_avdec_get_track_info,
+
+    .get_disc_name = bg_avdec_get_disc_name,
+
+#endif
 
     /* Set track */
     .set_track =             bg_avdec_set_track,
