@@ -99,7 +99,11 @@ static int open_avdec(void * priv, const char * location)
   
   if(!bgav_open(avdec->dec, location))
     return 0;
+#ifdef NEW_STREAMINFO_API
+  return 1;
+#else
   return open_common(avdec);
+#endif
   }
 
 
