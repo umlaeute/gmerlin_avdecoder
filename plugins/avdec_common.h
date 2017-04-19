@@ -23,11 +23,6 @@
 
 typedef struct
   {
-#ifndef NEW_STREAMINFO_API
-  bg_track_info_t * track_info;
-  int num_tracks;
-#endif
-
   bg_track_info_t * current_track;
   int num_tracks;
   bgav_t * dec;
@@ -100,10 +95,6 @@ void bg_avdec_seek(void * priv, int64_t * t, int scale);
 
 gavl_frame_table_t * bg_avdec_get_frame_table(void * priv, int stream);
 
-#ifndef NEW_STREAMINFO_API
-int bg_avdec_init(avdec_priv * avdec);
-#endif
-
 
 const char * bg_avdec_get_disc_name(void * priv);
 
@@ -112,12 +103,7 @@ void
 bg_avdec_set_parameter(void * p, const char * name,
                        const gavl_value_t * val);
 
-#ifdef NEW_STREAMINFO_API
 gavl_dictionary_t * bg_avdec_get_media_info(void * p);
-#else
-int bg_avdec_get_num_tracks(void * p);
-bg_track_info_t * bg_avdec_get_track_info(void * priv, int track);
-#endif
 
 int bg_avdec_set_track(void * priv, int track);
 

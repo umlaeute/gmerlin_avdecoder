@@ -35,25 +35,6 @@
 
 #include "avdec_common.h"
 
-#ifndef NEW_STREAMINFO_API
-static int open_common(avdec_priv * avdec)
-  {
-  int i;
-  //  const char * str;
-  if(bgav_is_redirector(avdec->dec))
-    {
-    avdec->num_tracks = bgav_redirector_get_num_urls(avdec->dec);
-    avdec->track_info = calloc(avdec->num_tracks, sizeof(*(avdec->track_info)));
-    for(i = 0; i < avdec->num_tracks; i++)
-      {
-      gavl_dictionary_copy(&avdec->track_info[i].md,
-                           bgav_redirector_get_metadata(avdec->dec, i));
-      }
-    return 1;
-    }
-  return bg_avdec_init(avdec);
-  }
-#endif
 
 static int read_callback(void * priv, uint8_t * data, int len)
   {
@@ -80,11 +61,7 @@ static int open_io_avdec(void * priv, gavf_io_t * io)
                           gavf_io_filename(io), gavf_io_mimetype(io),
                           gavf_io_total_bytes(io)))
     return 0;
-#ifdef NEW_STREAMINFO_API
   return 1;
-#else
-  return open_common(avdec);
-#endif
   }
 
 static int open_avdec(void * priv, const char * location)
@@ -99,11 +76,7 @@ static int open_avdec(void * priv, const char * location)
   
   if(!bgav_open(avdec->dec, location))
     return 0;
-#ifdef NEW_STREAMINFO_API
   return 1;
-#else
-  return open_common(avdec);
-#endif
   }
 
 
@@ -438,12 +411,7 @@ const bg_input_plugin_t the_plugin =
     .open_io = open_io_avdec,
     .set_callbacks = bg_avdec_set_callbacks,
   /* For file and network plugins, this can be NULL */
-#ifdef NEW_STREAMINFO_API
     .get_media_info = bg_avdec_get_media_info,
-#else
-    .get_num_tracks = bg_avdec_get_num_tracks,
-    .get_track_info = bg_avdec_get_track_info,
-#endif
     .get_edl  = bg_avdec_get_edl,
     /* Return track information */
 
