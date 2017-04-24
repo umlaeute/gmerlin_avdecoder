@@ -96,21 +96,25 @@ static int probe_p2xml(bgav_input_context_t * input)
   }
 
 static void init_stream(bgav_yml_node_t * node,
-                        gavl_edl_stream_t * s, char * filename,
+                        gavl_dictionary_t * s, char * filename,
                         int duration, int edit_unit_num,
                         int edit_unit_den)
   {
   gavl_edl_segment_t * seg;
   seg = gavl_edl_add_segment(s);
-  seg->url = filename;
-  seg->speed_num = 1;
-  seg->speed_den = 1;
-  seg->src_time = 0;
-  seg->dst_time = 0;
-  seg->dst_duration = -1;
-  s->timescale = edit_unit_den;
-  seg->timescale = edit_unit_den;
-  seg->dst_duration = duration * edit_unit_num;
+
+  gavl_edl_segment_set(seg,
+                       0,
+                       0,
+                       edit_unit_den,
+                       0,
+                       0,
+                       duration * edit_unit_num);
+
+  gavl_edl_segment_set_url(seg, filename);
+
+  gavl_dictionary_set_int(gavl_stream_get_metadata_nc(s),
+                          GAVL_META_STREAM_SAMPLE_TIMESCALE, edit_unit_den);
   }
 
 static int open_p2xml(bgav_demuxer_context_t * ctx)
@@ -121,8 +125,9 @@ static int open_p2xml(bgav_demuxer_context_t * ctx)
   char * directory_parent = NULL;
   char * ptr;
   bgav_yml_node_t * node;
-  gavl_edl_track_t * t = NULL;
-  gavl_edl_stream_t * s;
+  gavl_dictionary_t * t = NULL;
+  gavl_dictionary_t * s;
+  gavl_dictionary_t * edl;
   const char * root_name = NULL;
   char * filename;
   char * tmp_string;
@@ -164,8 +169,8 @@ static int open_p2xml(bgav_demuxer_context_t * ctx)
     goto fail;
   
 
-  ctx->edl = gavl_edl_create();
-  t = gavl_edl_add_track(ctx->edl);
+  edl = gavl_edl_create(&ctx->tt->info);
+  t = gavl_append_track(edl);
   
   node = yml->children;
 
@@ -207,10 +212,10 @@ static int open_p2xml(bgav_demuxer_context_t * ctx)
       {
       if(root_name && audio_directory)
         {
-        filename = find_audio_file(audio_directory, root_name, t->num_audio_streams);
+        filename = find_audio_file(audio_directory, root_name, gavl_track_get_num_audio_streams(t));
         if(filename)
           {
-          s = gavl_edl_add_audio_stream(t);
+          s = gavl_track_append_audio_stream(t);
           init_stream(node, s, filename,
                       duration, edit_unit_num, edit_unit_den);
           }
@@ -228,7 +233,7 @@ static int open_p2xml(bgav_demuxer_context_t * ctx)
         filename = find_file_nocase(video_directory, tmp_string);
         if(filename)
           {
-          s = gavl_edl_add_video_stream(t);
+          s = gavl_track_append_video_stream(t);
           init_stream(node, s, filename,
                       duration, edit_unit_num, edit_unit_den);
           }

@@ -1095,7 +1095,7 @@ void bgav_close(bgav_t * bgav);
  */
 
 BGAV_PUBLIC
-gavl_edl_t * bgav_get_edl(bgav_t * bgav);
+const gavl_dictionary_t * bgav_get_edl(bgav_t * bgav);
 
 /***************************************************
  * Check for redirecting: You MUST check if you opened

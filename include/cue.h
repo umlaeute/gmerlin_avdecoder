@@ -23,7 +23,10 @@ typedef struct bgav_cue_s bgav_cue_t;
 
 bgav_cue_t *
 bgav_cue_read(bgav_input_context_t * audio_file);
-gavl_edl_t * bgav_cue_get_edl(bgav_cue_t *, int64_t total_samples);
+
+gavl_dictionary_t * bgav_cue_get_edl(bgav_cue_t *, int64_t total_samples,
+                                     gavl_dictionary_t * parent);
+
 void bgav_cue_destroy(bgav_cue_t *);
 
 // Not implemented

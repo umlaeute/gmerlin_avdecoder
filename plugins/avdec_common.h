@@ -31,7 +31,7 @@ typedef struct
   bg_input_callbacks_t * bg_callbacks;
   } avdec_priv;
 
-const gavl_edl_t * bg_avdec_get_edl(void * priv);
+// const gavl_dictionary_t * bg_avdec_get_edl(void * priv);
 
 void * bg_avdec_create();
 

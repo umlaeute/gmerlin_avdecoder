@@ -543,12 +543,9 @@ const char * bgav_get_disc_name(bgav_t * bgav)
   return gavl_dictionary_get_string(m, GAVL_META_DISK_NAME);
   }
 
-gavl_edl_t * bgav_get_edl(bgav_t * bgav)
+const gavl_dictionary_t * bgav_get_edl(bgav_t * bgav)
   {
-  if(bgav->demuxer && bgav->demuxer->edl)
-    return bgav->demuxer->edl;
-  else
-    return NULL;
+  return gavl_dictionary_get_dictionary(&bgav->tt->info, GAVL_META_EDL);
   }
 
 int bgav_can_pause(bgav_t * bgav)

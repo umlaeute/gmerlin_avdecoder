@@ -133,6 +133,11 @@ void bgav_track_table_remove_unsupported(bgav_track_table_t * t)
 void bgav_track_table_compute_info(bgav_track_table_t * t)
   {
   int i;
+  gavl_dictionary_t * edl;
+
   for(i = 0; i < t->num_tracks; i++)
     bgav_track_compute_info(&t->tracks[i]);
+
+  if((edl = gavl_dictionary_get_dictionary_nc(&t->info, GAVL_META_EDL)))
+    gavl_edl_finalize(edl);
   }

@@ -1437,11 +1437,6 @@ struct bgav_demuxer_context_s
      packets, inside which no frame starts */
   
   int64_t next_packet_pos;
-
-  /* EDL */
-
-  gavl_edl_t * edl;
-  
   };
 
 /* demuxer.c */

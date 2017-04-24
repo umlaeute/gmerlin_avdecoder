@@ -201,6 +201,9 @@ int main(int argc, char ** argv)
   gavl_time_t sub_duration;
   
   bgav_t * file;
+
+  const gavl_dictionary_t * edl;
+
   bgav_options_t * opt;
   gavl_overlay_t * ovl;
   
@@ -208,7 +211,6 @@ int main(int argc, char ** argv)
   gavl_video_frame_t * vf;
   const gavl_audio_format_t * audio_format;
   const gavl_video_format_t * video_format;
-  const gavl_edl_t * edl;
 
   gavl_compression_info_t ci;
 
@@ -407,12 +409,12 @@ int main(int argc, char ** argv)
     bgav_close(file);
     return 0;
     }
-
+  
   edl = bgav_get_edl(file);
   if(edl)
     {
     fprintf(stderr, "Found EDL\n");
-    gavl_edl_dump(edl);
+    gavl_dictionary_dump(edl, 2);
     }
   num_tracks = bgav_num_tracks(file);
 

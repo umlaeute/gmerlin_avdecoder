@@ -867,13 +867,13 @@ static int get_source_stream(bgav_track_table_t * tt,
   }
 
 static void handle_material_track(bgav_demuxer_context_t * ctx, mxf_package_t * p,
-                                  mxf_track_t * mt, gavl_edl_track_t * et)
+                                  mxf_track_t * mt, gavl_dictionary_t * et)
   {
   int i;
   mxf_sequence_t * ss;
   mxf_source_clip_t * sc;
   mxf_t * priv;
-  gavl_edl_stream_t * es = NULL;
+  gavl_dictionary_t * es = NULL;
   int track_index, stream_index = 0;
   gavl_edl_segment_t * seg;
   int64_t duration = 0;
@@ -907,10 +907,10 @@ static void handle_material_track(bgav_demuxer_context_t * ctx, mxf_package_t * 
     switch(ss->stream_type)
       {
       case GAVF_STREAM_AUDIO:
-        es = gavl_edl_add_audio_stream(et);
+        es = gavl_track_append_audio_stream(et);
         break;
       case GAVF_STREAM_VIDEO:
-        es = gavl_edl_add_video_stream(et);
+        es = gavl_track_append_video_stream(et);
         break;
       case GAVF_STREAM_TEXT:
       case GAVF_STREAM_OVERLAY:
@@ -921,7 +921,8 @@ static void handle_material_track(bgav_demuxer_context_t * ctx, mxf_package_t * 
     if(!es)
       return;
     
-    es->timescale = mt->edit_rate_num;
+    gavl_dictionary_set_int(gavl_stream_get_metadata_nc(es),
+                            GAVL_META_STREAM_SAMPLE_TIMESCALE, mt->edit_rate_num);
     
     for(i = 0; i < ss->num_structural_component_refs; i++)
       {
@@ -937,14 +938,14 @@ static void handle_material_track(bgav_demuxer_context_t * ctx, mxf_package_t * 
                             sc->source_track_id))
         {
         seg = gavl_edl_add_segment(es);
-        seg->track        = track_index;
-        seg->stream       = stream_index;
-        seg->timescale    = mt->edit_rate_num;
-        seg->src_time     = sc->start_position * mt->edit_rate_den;
-        seg->dst_time     = duration;
-        seg->dst_duration = sc->duration * mt->edit_rate_den;
-        seg->speed_num    = 1;
-        seg->speed_den    = 1;
+
+        gavl_edl_segment_set(seg,
+                             track_index,
+                             stream_index,
+                             mt->edit_rate_num,
+                             sc->start_position * mt->edit_rate_den,
+                             duration,
+                             sc->duration * mt->edit_rate_den);
         }
       
       duration += sc->duration * mt->edit_rate_den;
@@ -957,15 +958,16 @@ static void build_edl_mxf(bgav_demuxer_context_t * ctx)
   mxf_t * priv;
   int i, j;
   mxf_package_t * sp = NULL;
-  gavl_edl_track_t * t;
+  gavl_dictionary_t * t;
+  gavl_dictionary_t * edl;
+  
   priv = ctx->priv;
 
   if(!ctx->input->filename)
     return;
-    
-  ctx->edl = gavl_edl_create();
-  ctx->edl->url = gavl_strdup(ctx->input->filename);
   
+  edl = gavl_edl_create(&ctx->tt->info);
+  gavl_dictionary_set_string(edl, GAVL_META_URI, ctx->input->filename);
   
   /* We simply open the Material packages */
   
@@ -973,7 +975,7 @@ static void build_edl_mxf(bgav_demuxer_context_t * ctx)
     {
     if(priv->mxf.header.metadata[i]->type == MXF_TYPE_MATERIAL_PACKAGE)
       {
-      t = gavl_edl_add_track(ctx->edl);
+      t = gavl_append_track(edl);
       sp = (mxf_package_t*)(priv->mxf.header.metadata[i]);
       
       /* Loop over tracks */

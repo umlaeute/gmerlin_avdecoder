@@ -27,6 +27,10 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+#include <gavl/trackinfo.h>
+#include <gavl/metatags.h>
+
+
 #define SAMPLES_PER_FRAME 588
 
 #define MY_FREE(ptr) \
@@ -287,19 +291,25 @@ bgav_cue_read(bgav_input_context_t * audio_file)
   
   }
 
-gavl_edl_t * bgav_cue_get_edl(bgav_cue_t * cue,
-                              int64_t total_samples)
+gavl_dictionary_t * bgav_cue_get_edl(bgav_cue_t * cue,
+                                     int64_t total_samples,
+                                     gavl_dictionary_t * parent)
   {
   int i, j;
-  gavl_edl_stream_t * stream;
-  gavl_edl_track_t * track;
-  gavl_edl_segment_t * seg;
-  gavl_edl_segment_t * last_seg;
+  gavl_dictionary_t * stream;
+  gavl_dictionary_t * track;
+  gavl_dictionary_t * seg;
+  gavl_dictionary_t * last_seg = NULL;
+  gavl_dictionary_t * mp;
+
   const char * pos;
   gavl_dictionary_t m;
+  gavl_dictionary_t * ret = gavl_edl_create(parent);
   
-  gavl_edl_t * ret = gavl_edl_create();
-
+  int64_t last_time = GAVL_TIME_UNDEFINED;
+  int64_t seg_time  = GAVL_TIME_UNDEFINED;
+  
+  
   /* Create common metadata entries */
   memset(&m , 0, sizeof(m));
   if(cue->title)
@@ -338,24 +348,25 @@ gavl_edl_t * bgav_cue_get_edl(bgav_cue_t * cue,
     {
     if(!strcmp(cue->tracks[i].mode, "AUDIO"))
       {
-      track = gavl_edl_add_track(ret);
-            
-      gavl_dictionary_copy(&track->metadata, &m);
+      gavl_dictionary_t * tm;
+      track = gavl_append_track(ret);
+      tm = gavl_track_get_metadata_nc(track);
+      gavl_dictionary_copy(tm, &m);
       
       if(cue->tracks[i].performer)
-        gavl_dictionary_set_string(&track->metadata, GAVL_META_ARTIST,
-                          cue->tracks[i].performer);
+        gavl_dictionary_set_string(tm, GAVL_META_ARTIST,
+                                   cue->tracks[i].performer);
       if(cue->tracks[i].title)
-        gavl_dictionary_set_string(&track->metadata, GAVL_META_TITLE,
-                          cue->tracks[i].title);
+        gavl_dictionary_set_string(tm, GAVL_META_TITLE,
+                                   cue->tracks[i].title);
 
-      gavl_dictionary_set_int(&track->metadata, GAVL_META_TRACKNUMBER,
+      gavl_dictionary_set_int(tm, GAVL_META_TRACKNUMBER,
                               cue->tracks[i].number);
 
       if(cue->tracks[i].performer &&
          cue->tracks[i].title)
         {
-        gavl_dictionary_set_string_nocopy(&track->metadata, GAVL_META_LABEL,
+        gavl_dictionary_set_string_nocopy(tm, GAVL_META_LABEL,
                                           bgav_sprintf("%02d %s - %s",
                                                        cue->tracks[i].number,
                                                        cue->tracks[i].performer,
@@ -363,61 +374,71 @@ gavl_edl_t * bgav_cue_get_edl(bgav_cue_t * cue,
         }
       else if(cue->tracks[i].title)
         {
-        gavl_dictionary_set_string_nocopy(&track->metadata, GAVL_META_LABEL,
+        gavl_dictionary_set_string_nocopy(tm, GAVL_META_LABEL,
                                           bgav_sprintf("%02d %s",
                                                        cue->tracks[i].number,
                                                        cue->tracks[i].title));
         }
       else
         {
-        gavl_dictionary_set_string_nocopy(&track->metadata, GAVL_META_LABEL,
+        gavl_dictionary_set_string_nocopy(tm, GAVL_META_LABEL,
                                           bgav_sprintf("Track %02d",
                                                        cue->tracks[i].number));
         }
       
-      stream = gavl_edl_add_audio_stream(track);
-      stream->timescale = 44100;
-     
+      stream = gavl_track_append_audio_stream(track);
+
+      mp = gavl_stream_get_metadata_nc(stream);
+      gavl_dictionary_set_int(mp, GAVL_META_STREAM_SAMPLE_TIMESCALE, 44100);
+      
       seg = gavl_edl_add_segment(stream);
-      seg->timescale = 44100;
-      seg->speed_num = 1;
-      seg->speed_den = 1;
       
       for(j = 0; j < cue->tracks[i].num_indices; j++)
         {
         if(j == 0)
           {
           /* End time of previous track */
-          if(ret->num_tracks > 1)
+          if(last_seg)
             {
-            last_seg =
-              ret->tracks[ret->num_tracks-2].audio_streams[0].segments;
-
-            last_seg->dst_duration = 
-              cue->tracks[i].indices[j].frame * SAMPLES_PER_FRAME -
-              last_seg->src_time;
+            gavl_edl_segment_set(last_seg,
+                                 0, 0, 44100,
+                                 last_time,
+                                 0,
+                                 cue->tracks[i].indices[j].frame * SAMPLES_PER_FRAME - last_time);
+            
+            last_time = GAVL_TIME_UNDEFINED;
+            last_seg = NULL;
             }
           }
         if((cue->tracks[i].indices[j].number == 1) ||
            (cue->tracks[i].num_indices == 1))
           {
           /* Start time of this track */
-          seg->src_time =
-            cue->tracks[i].indices[j].frame * SAMPLES_PER_FRAME;
+          seg_time = cue->tracks[i].indices[j].frame * SAMPLES_PER_FRAME;
           }
         }
+
+      } // Audio
+
+    if(seg)
+      {
+      last_seg = seg;
+      last_time = seg_time;
+      seg = NULL;
       }
-    }
+    
+    } // End of tracks loop
 
   /* Get duration of the last track */
-  if(ret->num_tracks)
+  if(last_seg)
     {
-    last_seg =
-      ret->tracks[ret->num_tracks-1].audio_streams[0].segments;
-    last_seg->dst_duration = total_samples -
-      last_seg->src_time;
+    gavl_edl_segment_set(last_seg,
+                         0, 0, 44100,
+                         last_time,
+                         0,
+                         total_samples - last_time);
     }
-
+  
   gavl_dictionary_free(&m);
   
   return ret;
@@ -428,10 +449,11 @@ void bgav_demuxer_init_cue(bgav_demuxer_context_t * ctx)
   bgav_cue_t * cue = bgav_cue_read(ctx->input);
   if(cue)
     {
-    ctx->edl =
-      bgav_cue_get_edl(cue, bgav_stream_get_duration(&ctx->tt->cur->audio_streams[0]));
+    gavl_dictionary_t * edl =
+      bgav_cue_get_edl(cue, bgav_stream_get_duration(&ctx->tt->cur->audio_streams[0]), &ctx->tt->info);
+    
     bgav_cue_destroy(cue);
-    ctx->edl->url = gavl_strdup(ctx->input->filename);
+    gavl_dictionary_set_string(edl, GAVL_META_URI, ctx->input->filename);
     }
   }
 

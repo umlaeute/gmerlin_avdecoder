@@ -169,13 +169,6 @@ gavl_dictionary_t * bg_avdec_get_media_info(void * p)
   }
 
 
-
-const gavl_edl_t * bg_avdec_get_edl(void * priv)
-  {
-  avdec_priv * avdec = priv;
-  return bgav_get_edl(avdec->dec);
-  }
-
 int bg_avdec_read_video(void * priv,
                             gavl_video_frame_t * frame,
                             int stream)
@@ -299,7 +292,6 @@ bg_avdec_set_parameter(void * p, const char * name,
 
 int bg_avdec_set_track(void * priv, int track)
   {
-  int i;
   avdec_priv * avdec = priv;
   
   if(!bgav_select_track(avdec->dec, track))

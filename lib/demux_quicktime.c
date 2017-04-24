@@ -1755,14 +1755,14 @@ static int handle_rmra(bgav_demuxer_context_t * ctx)
   }
 
 static void set_stream_edl(qt_priv_t * priv, bgav_stream_t * s,
-                      gavl_edl_stream_t * es)
+                           gavl_dictionary_t * es)
   {
   int i;
   qt_elst_t * elst;
   stream_priv_t * sp;
   int64_t duration = 0;
   gavl_edl_segment_t * seg;
-
+  int64_t seg_duration;
   int mdhd_ts, mvhd_ts;
   
   sp = s->priv;
@@ -1771,23 +1771,29 @@ static void set_stream_edl(qt_priv_t * priv, bgav_stream_t * s,
   mvhd_ts = priv->moov.mvhd.time_scale;
   mdhd_ts = sp->trak->mdia.mdhd.time_scale;
 
-  es->timescale = mdhd_ts;
+  gavl_dictionary_set_int(gavl_stream_get_metadata_nc(es),
+                          GAVL_META_STREAM_SAMPLE_TIMESCALE, mdhd_ts);
   
   for(i = 0; i < elst->num_entries; i++)
     {
     if((int32_t)elst->table[i].media_time > -1)
       {
       seg = gavl_edl_add_segment(es);
-      seg->timescale    = mdhd_ts;
-      seg->src_time     = elst->table[i].media_time;
-      seg->dst_time     = duration;
-      seg->dst_duration = gavl_time_rescale(mvhd_ts, mdhd_ts,
-                                            elst->table[i].duration);
 
-      seg->speed_num = elst->table[i].media_rate;
-      seg->speed_den = 65536;
+      seg_duration = gavl_time_rescale(mvhd_ts, mdhd_ts,
+                                       elst->table[i].duration);
       
-      duration += seg->dst_duration;
+      gavl_edl_segment_set(seg,
+                           0,
+                           0,
+                           mdhd_ts,
+                           elst->table[i].media_time,
+                           duration,
+                           seg_duration);
+
+      gavl_edl_segment_set_speed(seg, elst->table[i].media_rate, 65536);
+      
+      duration += seg_duration;
       }
     else
       duration += gavl_time_rescale(mvhd_ts, mdhd_ts,
@@ -1798,8 +1804,9 @@ static void set_stream_edl(qt_priv_t * priv, bgav_stream_t * s,
 
 static void build_edl(bgav_demuxer_context_t * ctx)
   {
-  gavl_edl_stream_t * es;
-  gavl_edl_track_t * t;
+  gavl_dictionary_t * es;
+  gavl_dictionary_t * t;
+  gavl_dictionary_t * edl;
   
   qt_priv_t * priv = ctx->priv;
  
@@ -1808,30 +1815,30 @@ static void build_edl(bgav_demuxer_context_t * ctx)
   if(!ctx->input->filename)
     return;
   
-  ctx->edl = gavl_edl_create();
+  edl = gavl_edl_create(&ctx->tt->info);
 
-  ctx->edl->url = gavl_strdup(ctx->input->filename);
-
-  t = gavl_edl_add_track(ctx->edl);
+  gavl_dictionary_set_string(edl, GAVL_META_URI, ctx->input->filename);
+  
+  t = gavl_append_track(edl);
   
   for(i = 0; i < ctx->tt->cur->num_audio_streams; i++)
     {
-    es = gavl_edl_add_audio_stream(t);
+    es = gavl_track_append_audio_stream(t);
     set_stream_edl(priv, &ctx->tt->cur->audio_streams[i], es);
     }
   for(i = 0; i < ctx->tt->cur->num_video_streams; i++)
     {
-    es = gavl_edl_add_video_stream(t);
+    es = gavl_track_append_video_stream(t);
     set_stream_edl(priv, &ctx->tt->cur->video_streams[i], es);
     }
   for(i = 0; i < ctx->tt->cur->num_text_streams; i++)
     {
-    es = gavl_edl_add_text_stream(t);
+    es = gavl_track_append_text_stream(t);
     set_stream_edl(priv, &ctx->tt->cur->text_streams[i], es);
     }
   for(i = 0; i < ctx->tt->cur->num_overlay_streams; i++)
     {
-    es = gavl_edl_add_overlay_stream(t);
+    es = gavl_track_append_overlay_stream(t);
     set_stream_edl(priv, &ctx->tt->cur->overlay_streams[i], es);
     }
   
