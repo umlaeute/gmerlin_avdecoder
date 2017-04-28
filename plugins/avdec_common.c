@@ -317,7 +317,7 @@ static void metadata_change_callback(void * priv,
 
   if(avdec->current_track)
     {
-    gavl_dictionary_copy(bg_track_info_get_metadata_nc(avdec->current_track),
+    gavl_dictionary_copy(gavl_track_get_metadata_nc(avdec->current_track),
                          metadata);
 
     fprintf(stderr, "Metadata callback %p %p\n",
@@ -327,7 +327,7 @@ static void metadata_change_callback(void * priv,
     if(avdec->bg_callbacks && avdec->bg_callbacks->metadata_changed)
       {
       avdec->bg_callbacks->metadata_changed(avdec->bg_callbacks->data,
-                                            bg_track_info_get_metadata(avdec->current_track));
+                                            gavl_track_get_metadata(avdec->current_track));
       }
     }
   }
