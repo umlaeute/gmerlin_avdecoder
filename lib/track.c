@@ -975,9 +975,8 @@ void bgav_track_compute_info(bgav_track_t * t)
     gavl_dictionary_set_int(s->m, GAVL_META_STREAM_PACKET_TIMESCALE, s->timescale);
     gavl_dictionary_set_int(s->m, GAVL_META_STREAM_SAMPLE_TIMESCALE, s->data.video.format->timescale);
     }
-  
-  gavl_track_compute_duration(t->info);
-  
+
+  gavl_track_finalize(t->info);
   }
 
 

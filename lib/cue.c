@@ -426,6 +426,8 @@ gavl_dictionary_t * bgav_cue_get_edl(bgav_cue_t * cue,
       last_time = seg_time;
       seg = NULL;
       }
+
+    gavl_track_finalize(track);
     
     } // End of tracks loop
 
