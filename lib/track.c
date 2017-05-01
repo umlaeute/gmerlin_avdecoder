@@ -428,8 +428,6 @@ void bgav_track_dump(bgav_t * b, bgav_track_t * t)
   
   bgav_dprintf( "Format:   %s\n", (description ? description : 
                                    "Not specified"));
-  bgav_dprintf( "Seekable: %s\n",
-                ((b->demuxer->flags & BGAV_DEMUXER_CAN_SEEK) ? "Yes" : "No"));
   
   bgav_diprintf(2, "Metadata\n");
   gavl_dictionary_dump(t->metadata, 4);

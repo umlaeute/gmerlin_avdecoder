@@ -1499,6 +1499,8 @@ struct bgav_redirector_s
 
 const bgav_redirector_t * bgav_redirector_probe(bgav_input_context_t * input);
 
+int bgav_is_redirector(bgav_t * bgav);
+
 
 /* Actual decoder */
 

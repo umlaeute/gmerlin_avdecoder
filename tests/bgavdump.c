@@ -396,7 +396,7 @@ int main(int argc, char ** argv)
     bgav_close(file);
     return -1;
     }
-  
+#if 0
   if(bgav_is_redirector(file))
     {
     fprintf(stderr, "Found redirector:\n");
@@ -409,7 +409,7 @@ int main(int argc, char ** argv)
     bgav_close(file);
     return 0;
     }
-  
+#endif
   edl = bgav_get_edl(file);
   if(edl)
     {

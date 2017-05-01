@@ -88,7 +88,10 @@ int bgav_init(bgav_t * ret)
       if(!(ret->tt = redirector->parse(ret->input)))
         goto fail;
       else
+        {
+        bgav_track_table_merge_metadata(ret->tt, &ret->input->m);
         return 1;
+        }
       }
     /* Check for ID3V2 tags here, they can be prepended to
        many different file types */
@@ -103,9 +106,12 @@ int bgav_init(bgav_t * ret)
       ret->demuxer = create_demuxer(ret, demuxer);
       if(!bgav_demuxer_start(ret->demuxer))
         goto fail;
-
+      
       if(bgav_is_redirector(ret))
+        {
+        bgav_track_table_merge_metadata(ret->tt, &ret->input->m);
         return 1;
+        }
       }
     if(!ret->demuxer)
       goto fail;
@@ -342,6 +348,16 @@ int bgav_select_track(bgav_t * b, int track)
     return 0;
 
   b->eof = 0;
+
+  if(bgav_is_redirector(b))
+    {
+    if((track < 0) || (track >= b->tt->num_tracks))
+      return 0;
+    
+    b->tt->cur = &b->tt->tracks[track];
+    return 1;
+    }
+       
   
   if(b->is_running)
     {

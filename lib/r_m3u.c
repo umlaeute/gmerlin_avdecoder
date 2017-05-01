@@ -68,6 +68,7 @@ static int probe_m3u(bgav_input_context_t * input)
      different streams, so we check this here */
   if(strncmp(probe_buffer, "mms://", 6) &&
      strncmp(probe_buffer, "http://", 7) &&
+     strncmp(probe_buffer, "https://", 8) &&
      strncmp(probe_buffer, "rtsp://", 7) &&
      (probe_buffer[0] != '#'))
     goto end;

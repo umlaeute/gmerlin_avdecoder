@@ -46,11 +46,13 @@ int main(int argc, char ** argv)
   if(!bgav_open(file, argv[1]))
     return -1;
 
+#if 0  
   if(bgav_is_redirector(file))
     {
     fprintf(stderr, "Found redirector\n");
     return 0;
     }
+#endif
   
   num_tracks = bgav_num_tracks(file);
 

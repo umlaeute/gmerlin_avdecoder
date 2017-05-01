@@ -37,7 +37,6 @@ int main(int argc, char ** argv)
   int64_t count;
   int64_t first_pts = GAVL_TIME_UNDEFINED;
   
-  int i;
   
   const gavl_audio_format_t * format;
   gavl_audio_frame_t * frame;
@@ -90,20 +89,6 @@ int main(int argc, char ** argv)
             argv[argc-1]);
     bgav_close(file);
     return -1;
-    }
-  
-  if(bgav_is_redirector(file))
-    {
-    int num_urls;
-    fprintf(stderr, "Found redirector:\n");
-    num_urls = bgav_redirector_get_num_urls(file);
-    for(i = 0; i < num_urls; i++)
-      {
-      fprintf(stderr, "Name %d: %s\n", i+1, bgav_redirector_get_name(file, i));
-      fprintf(stderr, "URL %d: %s\n",  i+1, bgav_redirector_get_url(file, i));
-      }
-    bgav_close(file);
-    return 0;
     }
   
   if(track < 0 || track >= bgav_num_tracks(file))

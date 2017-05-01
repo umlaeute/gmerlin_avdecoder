@@ -92,6 +92,8 @@ int bgav_is_redirector(bgav_t * b)
   return 0;
   }
 
+#if 0
+
 int bgav_redirector_get_num_urls(bgav_t * b)
   {
   if(!bgav_is_redirector(b))
@@ -129,4 +131,4 @@ const gavl_dictionary_t * bgav_redirector_get_metadata(bgav_t * b, int index)
     return NULL;
   return b->tt->tracks[index].metadata;
   }
-
+#endif

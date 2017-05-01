@@ -1112,8 +1112,8 @@ const gavl_dictionary_t * bgav_get_edl(bgav_t * bgav);
  *  openend a redirector.
  */
 
-BGAV_PUBLIC
-int bgav_is_redirector(bgav_t * bgav);
+#if 0  
+ 
 
 /** \ingroup redirector
  *  \brief Get the number of URLs found in the redirector
@@ -1153,6 +1153,8 @@ const char * bgav_redirector_get_name(bgav_t * bgav, int index);
 
 BGAV_PUBLIC
 const gavl_dictionary_t * bgav_redirector_get_metadata(bgav_t * b, int index);
+
+#endif
   
 /***************************************************
  * Get information about the file
