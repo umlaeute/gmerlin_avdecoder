@@ -212,7 +212,7 @@ const bgav_demuxer_t * bgav_demuxer_probe(bgav_input_context_t * input)
   int i;
   int bytes_skipped;
   uint8_t skip;
-  const char * mimetype;
+  const char * mimetype = NULL;
 #ifdef HAVE_LIBAVFORMAT
   if(input->opt->prefer_ffmpeg_demuxers)
     {
@@ -220,9 +220,8 @@ const bgav_demuxer_t * bgav_demuxer_probe(bgav_input_context_t * input)
       return &bgav_demuxer_ffmpeg;
     }
 #endif
-  mimetype = gavl_dictionary_get_string(&input->metadata, GAVL_META_MIMETYPE);
-  //  uint8_t header[32];
-  if(mimetype)
+
+  if(gavl_dictionary_get_src(&input->m, GAVL_META_SRC, 0, &mimetype, NULL) && mimetype)
     {
     for(i = 0; i < num_mimetypes; i++)
       {

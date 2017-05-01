@@ -1043,21 +1043,6 @@ int bgav_open_dvd(bgav_t * bgav, const char * location);
 BGAV_PUBLIC
 int bgav_open_dvb(bgav_t * bgav, const char * location);
 
-
-/** \ingroup opening
- *  \brief Open a decoder from a filedescriptor
- *  \param bgav A decoder instance
- *  \param fd The filedescriptor
- *  \param total_size The total number of available bytes or 0 if this info is not known.
- *  \param mimetype The mimetype of the input or NULL if this info is not known.
- *  \returns 1 if the filedescriptor was successfully openend, 0 else.
- */
-
-BGAV_PUBLIC
-int bgav_open_fd(bgav_t * bgav, int fd,
-                 int64_t total_size,
-                 const char * mimetype);
-
 /** \ingroup opening
  *  \brief Open a decoder with callbacks
  *  \param bgav A decoder instance

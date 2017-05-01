@@ -1678,7 +1678,7 @@ static void metadata_changed(bgav_demuxer_context_t * ctx)
   if(ctx->opt->metadata_change_callback)
     {
     get_metadata(ctx->tt->cur);
-    gavl_dictionary_merge2(ctx->tt->cur->metadata, &ctx->input->metadata);
+    gavl_dictionary_merge2(ctx->tt->cur->metadata, &ctx->input->m);
 
     if(!gavl_dictionary_get_string(ctx->tt->cur->metadata, GAVL_META_LABEL))
       {

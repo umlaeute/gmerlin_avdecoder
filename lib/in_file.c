@@ -27,6 +27,12 @@
 #include <errno.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdio.h>
+
+/* stat */
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 
 #ifdef _WIN32
@@ -49,7 +55,9 @@
 
 static int open_file(bgav_input_context_t * ctx, const char * url, char ** r)
   {
+  gavl_dictionary_t * dict;
   FILE * f;
+  struct stat st;
   uint8_t md5sum[16];
   if(!strncmp(url, "file://", 7))
     url += 7;
@@ -63,15 +71,23 @@ static int open_file(bgav_input_context_t * ctx, const char * url, char ** r)
     }
   ctx->priv = f;
 
+  fstat(fileno(f), &st);
+  dict = gavl_dictionary_get_src_nc(&ctx->m, GAVL_META_SRC, 0);
+
+  gavl_dictionary_set_long(dict, GAVL_META_MTIME, st.st_mtime);
+  
+  
   BGAV_FSEEK((FILE*)(ctx->priv), 0, SEEK_END);
   ctx->total_bytes = BGAV_FTELL((FILE*)(ctx->priv));
-    
+
+  gavl_dictionary_set_long(dict, GAVL_META_TOTAL_BYTES, ctx->total_bytes);
+  
   BGAV_FSEEK((FILE*)(ctx->priv), 0, SEEK_SET);
   
   ctx->filename = gavl_strdup(url);
   
   bgav_md5_buffer(ctx->filename, strlen(ctx->filename),
-                md5sum);
+                  md5sum);
   
   ctx->index_file = bgav_sprintf("%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
                                  md5sum[0], md5sum[1], md5sum[2], md5sum[3], 

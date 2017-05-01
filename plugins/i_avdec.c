@@ -416,7 +416,7 @@ const bg_input_plugin_t the_plugin =
     /* Return track information */
 
     /* Set track */
-    .set_track =             bg_avdec_set_track,
+    .select_track =             bg_avdec_set_track,
 
     /* Get compression infos */
     .get_audio_compression_info = bg_avdec_get_audio_compression_info,

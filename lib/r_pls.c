@@ -31,12 +31,12 @@ static int probe_pls(bgav_input_context_t * input)
   {
   char probe_data[10];
   const char * mimetype;
- 
-  if((mimetype = gavl_dictionary_get_string(&input->metadata, GAVL_META_MIMETYPE)) &&
+
+  
+  if(gavl_dictionary_get_src(&input->m, GAVL_META_SRC, 0, &mimetype, NULL) && mimetype &&
      (!strcmp(mimetype, "audio/x-scpls") ||
       !strcmp(mimetype, "audio/scpls")))
     return 1;
-
   
   if(bgav_input_get_data(input, (uint8_t*)probe_data, 10) < 10)
     return 0;

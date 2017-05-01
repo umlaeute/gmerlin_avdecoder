@@ -79,7 +79,7 @@ static int open_http(bgav_input_context_t * ctx, const char * url, char ** r)
   ctx->total_bytes = bgav_http_total_bytes(p->h);
   
   header = bgav_http_get_header(p->h);
-  bgav_http_set_metadata(p->h, &ctx->metadata);
+  bgav_http_set_metadata(p->h, &ctx->m);
   
   //  bgav_http_header_dump(header);
   

@@ -897,7 +897,12 @@ int bgav_input_open(bgav_input_context_t * ctx,
                     const char *url)
   {
   int ret;
+
+  gavl_metadata_add_src(&ctx->m, GAVL_META_SRC, NULL, url);
+
   ret = do_open(ctx, url);
+  
+  
   if(!ret)
     {
     if(ctx->input == &bgav_input_mms)
@@ -949,7 +954,7 @@ void bgav_input_close(bgav_input_context_t * ctx)
   if(ctx->tt)
     bgav_track_table_unref(ctx->tt);
     
-  gavl_dictionary_free(&ctx->metadata);
+  gavl_dictionary_free(&ctx->m);
   //  free(ctx);
   
   opt = ctx->opt;

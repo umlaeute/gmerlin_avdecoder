@@ -934,7 +934,6 @@ void bgav_track_get_compression(bgav_track_t * t)
   t->flags |= TRACK_HAS_COMPRESSION;
   }
 
-
 void bgav_track_compute_info(bgav_track_t * t)
   {
   int i;  
@@ -955,7 +954,6 @@ void bgav_track_compute_info(bgav_track_t * t)
                                   &s->ci, s->m);
     gavl_dictionary_set_int(s->m, GAVL_META_STREAM_PACKET_TIMESCALE, s->timescale);
     gavl_dictionary_set_int(s->m, GAVL_META_STREAM_SAMPLE_TIMESCALE, s->data.video.format->timescale);
-
     }
   
   for(i = 0; i < t->num_text_streams; i++)
@@ -976,6 +974,10 @@ void bgav_track_compute_info(bgav_track_t * t)
     gavl_dictionary_set_int(s->m, GAVL_META_STREAM_SAMPLE_TIMESCALE, s->data.video.format->timescale);
     }
 
+  /* Set src array */
+
+  //  mimetype = gavl_dictionary_get_string(t->m, GAVL_META_MIMETYPE);
+  
   gavl_track_finalize(t->info);
   }
 

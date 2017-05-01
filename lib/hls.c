@@ -71,11 +71,11 @@ struct bgav_hls_s
 
 int bgav_hls_detect(bgav_input_context_t * ctx)
   {
-  const char * var;
+  const char * var = NULL;
   char * probe_buffer = NULL;
   int result = 0;
-  
-  if(!(var = gavl_dictionary_get_string(&ctx->metadata, GAVL_META_MIMETYPE)))
+
+  if(!gavl_dictionary_get_src(&ctx->m, GAVL_META_SRC, 0, &var, NULL) || !var)
     goto end;
   
   if(strncasecmp(var, "application/x-mpegurl", 21) && 
@@ -357,8 +357,7 @@ bgav_hls_t * bgav_hls_create(bgav_input_context_t * ctx)
   if(!load_stream_url(ret, 0))
     goto fail;
   
-  gavl_dictionary_free(&ret->ctx->metadata);
-  gavl_dictionary_init(&ret->ctx->metadata);
+  gavl_dictionary_reset(&ret->ctx->m);
   
   ret->ctx->total_bytes = 0;
   

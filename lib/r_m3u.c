@@ -32,11 +32,11 @@ static int probe_m3u(bgav_input_context_t * input)
   {
   char probe_buffer[PROBE_BYTES];
   char * pos;
-  const char * mimetype;
+  const char * mimetype = NULL;
   int result = 0;
   
   /* Most likely, we get this via http, so we can check the mimetype */
-  if((mimetype = gavl_dictionary_get_string(&input->metadata, GAVL_META_MIMETYPE)))
+  if(gavl_dictionary_get_src(&input->m, GAVL_META_SRC, 0, &mimetype, NULL) && mimetype)
     {
     if(strcmp(mimetype, "audio/x-pn-realaudio-plugin") &&
        strcmp(mimetype, "video/x-pn-realvideo-plugin") &&
@@ -170,7 +170,7 @@ static bgav_track_table_t * parse_m3u(bgav_input_context_t * input)
       if(!t)
         t = bgav_track_table_append_track(tt);
       gavl_dictionary_set_string_nocopy(t->metadata, GAVL_META_REFURL, 
-                              bgav_input_absolute_url(input, pos));
+                                        bgav_input_absolute_url(input, pos));
       t = NULL;
       }
     }

@@ -121,7 +121,7 @@ const bg_input_plugin_t the_plugin =
 
     .get_media_info = bg_avdec_get_media_info,
     /* Set track */
-    .set_track =             bg_avdec_set_track,
+    .select_track =             bg_avdec_set_track,
 
     /* Get compression infos */
     .get_audio_compression_info = bg_avdec_get_audio_compression_info,

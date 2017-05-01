@@ -1001,7 +1001,7 @@ struct bgav_input_context_s
 
   bgav_track_table_t * tt;
 
-  bgav_metadata_t metadata;
+  bgav_metadata_t m;
 
   /* This is set by the modules to signal that we
      need to prebuffer data */

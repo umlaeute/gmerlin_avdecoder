@@ -468,7 +468,6 @@ id3v2.c \
 in_cb.c \
 in_dvb_linux.c \
 in_dvd.c \
-in_fd.c \
 in_file.c \
 in_ftp.c \
 in_http.c \

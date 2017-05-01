@@ -33,11 +33,11 @@
 
 static int probe_rawaudio(bgav_input_context_t * input)
   {
-  const char * var;
-  
-  if(!(var = gavl_dictionary_get_string(&input->metadata, GAVL_META_MIMETYPE)))
-    return 0;
+  const char * var = NULL;
 
+  if(!gavl_dictionary_get_src(&input->m, GAVL_META_SRC, 0, &var, NULL) || !var)
+    return 0;
+  
   if((!strncasecmp(var, "audio/L16", 9) ||
       !strncasecmp(var, "audio/L8", 8)))
     return 1; 
@@ -50,8 +50,8 @@ static int open_rawaudio(bgav_demuxer_context_t * ctx)
   bgav_stream_t * s;
   const char * mimetype;
   const char * var;
-  
-  if(!(mimetype = gavl_dictionary_get_string(&ctx->input->metadata, GAVL_META_MIMETYPE)))
+
+  if(!gavl_dictionary_get_src(&ctx->input->m, GAVL_META_SRC, 0, &mimetype, NULL) || !mimetype)
     return 0;
   
   /* Add stream */

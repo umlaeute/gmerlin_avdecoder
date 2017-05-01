@@ -645,9 +645,9 @@ void bgav_http_set_metadata(bgav_http_t * h, gavl_dictionary_t * m)
 
   var = bgav_http_header_get_var(h->header, "Content-Type");
   if(var)
-    gavl_dictionary_set_string(m, GAVL_META_MIMETYPE, var);
+    gavl_dictionary_set_string(gavl_dictionary_get_src_nc(m, GAVL_META_SRC, 0), GAVL_META_MIMETYPE, var);
   else if(bgav_http_header_get_var(h->header, "icy-notice1"))
-    gavl_dictionary_set_string(m, GAVL_META_MIMETYPE, "audio/mpeg");
+    gavl_dictionary_set_string(gavl_dictionary_get_src_nc(m, GAVL_META_SRC, 0), GAVL_META_MIMETYPE, "audio/mpeg");
   
   /* Get Metadata */
   

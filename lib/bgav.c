@@ -121,8 +121,7 @@ int bgav_init(bgav_t * ret)
     {
     bgav_track_table_ref(ret->tt);
     bgav_track_table_remove_unsupported(ret->tt);
-    bgav_track_table_merge_metadata(ret->tt,
-                                    &ret->input->metadata);
+    bgav_track_table_merge_metadata(ret->tt, &ret->input->m);
 
     /* Check for subtitle file */
   
@@ -241,15 +240,6 @@ int bgav_open(bgav_t * ret, const char * location)
   return 0;
   }
 
-int bgav_open_fd(bgav_t * ret, int fd, int64_t total_size,
-                 const char * mimetype)
-  {
-  bgav_codecs_init(&ret->opt);
-  ret->input = bgav_input_open_fd(fd, total_size, mimetype);
-  if(!bgav_init(ret))
-    return 0;
-  return 1;
-  }
 
 void bgav_close(bgav_t * b)
   {
@@ -506,10 +496,13 @@ int bgav_start(bgav_t * b)
   b->is_running = 1;
   /* Create buffers */
   bgav_input_buffer(b->input);
-  if(!bgav_track_start(b->tt->cur, b->demuxer))
+
+  if(b->demuxer)
     {
-    return 0;
+    if(!bgav_track_start(b->tt->cur, b->demuxer))
+      return 0;
     }
+  
   bgav_track_compute_info(b->tt->cur);
   return 1;
   }

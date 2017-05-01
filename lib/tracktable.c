@@ -117,9 +117,28 @@ void bgav_track_table_merge_metadata(bgav_track_table_t*t,
                                      bgav_metadata_t * m)
   {
   int i;
+  const char * var;
+  gavl_dictionary_t * src;
+  
   for(i = 0; i < t->num_tracks; i++)
     {
     gavl_dictionary_merge2(t->tracks[i].metadata, m);
+
+    if((src = gavl_dictionary_get_src_nc(t->tracks[i].metadata, GAVL_META_SRC, 0)))
+      {
+      if((var = gavl_dictionary_get_string(t->tracks[i].metadata,
+                                           GAVL_META_FORMAT)))
+        {
+        gavl_dictionary_set_string(src, GAVL_META_FORMAT, var);
+        gavl_dictionary_set(t->tracks[i].metadata, GAVL_META_FORMAT, NULL);
+        }
+      if((var = gavl_dictionary_get_string(t->tracks[i].metadata,
+                                           GAVL_META_MIMETYPE)))
+        {
+        gavl_dictionary_set_string(src, GAVL_META_MIMETYPE, var);
+        gavl_dictionary_set(t->tracks[i].metadata, GAVL_META_MIMETYPE, NULL);
+        }
+      }
     }
   }
 
