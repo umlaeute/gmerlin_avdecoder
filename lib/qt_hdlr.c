@@ -82,22 +82,9 @@ int bgav_qt_hdlr_read(qt_atom_header_t * h,
       !bgav_input_read_32_be(input, &ret->component_flags) ||
       !bgav_input_read_32_be(input, &ret->component_flag_mask))
     return 0;
-  if(!ret->component_type) /* mp4 case:
-                               Read everything until the end of the atom */
-    {
-    name_len = h->start_position + h->size - input->position;
-    }
-  else /* Quicktime case */
-    {
-    if(h->start_position + h->size == input->position)
-      name_len = 0;
-    else
-      {
-      if(!bgav_input_read_8(input, &tmp_8))
-        return 0;
-      name_len = tmp_8;
-      }
-    }
+
+  name_len = h->start_position + h->size - input->position;
+
   if(name_len)
     {
     ret->component_name = malloc(name_len + 1);
@@ -105,6 +92,12 @@ int bgav_qt_hdlr_read(qt_atom_header_t * h,
        name_len)
       return 0;
     ret->component_name[name_len] = '\0';
+
+    /* Dirty fix for Quicktime files: If the first byte is the length
+       byte, remove it */
+    if(ret->component_name[0] == name_len - 1)
+      memmove(ret->component_name, ret->component_name + 1,
+              strlen(ret->component_name + 1) + 1);
     }
   
   bgav_qt_atom_skip(input, h);
