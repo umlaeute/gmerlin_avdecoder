@@ -446,6 +446,7 @@ static void build_index(bgav_demuxer_context_t * ctx)
   qt_trak_t * trak;
   int pts_offset;
   priv = ctx->priv;
+  int done = 0;
 
   if(priv->fragmented)
     {
@@ -616,6 +617,15 @@ static void build_index(bgav_demuxer_context_t * ctx)
       s = bgav_s->priv;
       for(j = 0; j < s->stbl->stsc.entries[s->stsc_pos].samples_per_chunk; j++)
         {
+        if(s->stsz_pos >= s->stbl->stsz.num_entries)
+          {
+          done = 1;
+          break;
+          }
+
+        if(s->stsz_pos == 130584)
+          fprintf(stderr, "stsz_pos: %ld\n", s->stsz_pos);
+
         packet_size = (s->stsz_pos >= 0) ? s->stbl->stsz.entries[s->stsz_pos]:
           s->stbl->stsz.sample_size;
 
@@ -760,12 +770,16 @@ static void build_index(bgav_demuxer_context_t * ctx)
       i++;
       priv->streams[stream_id].stco_pos++;
       }
+    if(done)
+      break;
     }
   /* Set the final packet size to the end of the mdat */
-  ctx->si->entries[ctx->si->num_entries-1].size =
-    priv->mdats[priv->current_mdat].start +
-  priv->mdats[priv->current_mdat].size -
-    ctx->si->entries[ctx->si->num_entries-1].offset;
+
+  if(ctx->si->entries[ctx->si->num_entries-1].size <= 0)
+    ctx->si->entries[ctx->si->num_entries-1].size =
+      priv->mdats[priv->current_mdat].start +
+      priv->mdats[priv->current_mdat].size -
+      ctx->si->entries[ctx->si->num_entries-1].offset;
   
   free(chunk_indices);
   }
