@@ -420,11 +420,11 @@ static char ** read_string_list(const bgav_options_t * opt,
   num_strings = 1;
   for(i = 0; i < data_size; i+= bytes_per_char)
     {
-    if(is_null(pos, bytes_per_char))
+    if(is_null(pos + (i*bytes_per_char), bytes_per_char))
       num_strings++;
     }
 
-  ret = calloc(num_strings+1, sizeof(char*));
+  ret = calloc(num_strings+1, sizeof(*ret));
 
   for(i = 0; i < num_strings; i++)
     {
@@ -895,6 +895,7 @@ static char * get_comment(const bgav_options_t * opt,
 
 void bgav_id3v2_2_metadata(bgav_id3v2_tag_t * t, gavl_dictionary_t*m)
   {
+  int i;
   int i_tmp;
   bgav_id3v2_frame_t * frame;
   
@@ -920,19 +921,39 @@ void bgav_id3v2_2_metadata(bgav_id3v2_tag_t * t, gavl_dictionary_t*m)
 
   frame = bgav_id3v2_find_frame(t, artist_tags);
   if(frame && frame->strings)
-    gavl_dictionary_set_string(m, GAVL_META_ARTIST, frame->strings[0]);
-
+    {
+    i = 0;
+    while(frame->strings[i])
+      {
+      gavl_dictionary_append_string_array(m,GAVL_META_ARTIST, frame->strings[i]);
+      i++;
+      }
+    }
   /* Albumartist */
 
   frame = bgav_id3v2_find_frame(t, albumartist_tags);
   if(frame && frame->strings)
-    gavl_dictionary_set_string(m, GAVL_META_ALBUMARTIST, frame->strings[0]);
+    {
+    i = 0;
+    while(frame->strings[i])
+      {
+      gavl_dictionary_append_string_array(m,GAVL_META_ALBUMARTIST, frame->strings[i]);
+      i++;
+      }
+    }
   
   /* Author */
 
   frame = bgav_id3v2_find_frame(t, author_tags);
   if(frame && frame->strings)
-    gavl_dictionary_set_string(m, GAVL_META_AUTHOR, frame->strings[0]);
+    {
+    i = 0;
+    while(frame->strings[i])
+      {
+      gavl_dictionary_append_string_array(m,GAVL_META_AUTHOR, frame->strings[i]);
+      i++;
+      }
+    }
   
   /* Year */
   
@@ -958,7 +979,12 @@ void bgav_id3v2_2_metadata(bgav_id3v2_tag_t * t, gavl_dictionary_t*m)
       }
     else
       {
-      gavl_dictionary_set_string(m, GAVL_META_GENRE, frame->strings[0]);
+      i = 0;
+      while(frame->strings[i])
+        {
+        gavl_dictionary_append_string_array(m,GAVL_META_GENRE, frame->strings[i]);
+        i++;
+        }
       }
     }
 

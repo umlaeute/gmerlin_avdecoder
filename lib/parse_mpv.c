@@ -170,7 +170,7 @@ static int parse_frame_mpeg12(bgav_video_parser_t * parser, bgav_packet_t * p,
   if(p->data_size >= 4)
     {
     end = p->data + (p->data_size - 4);
-    if(BGAV_PTR_2_32BE(end) == 0x000001B7)
+    if(GAVL_PTR_2_32BE(end) == 0x000001B7)
       p->sequence_end_pos = p->data_size - 4;
     }
 

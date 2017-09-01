@@ -47,8 +47,8 @@ static void parse_screen_descriptor(uint8_t * data,
                                     screen_descriptor_t * ret)
   {
   data += SIG_LEN;
-  ret->width               = BGAV_PTR_2_16LE(data); data += 2;
-  ret->height              = BGAV_PTR_2_16LE(data); data += 2;
+  ret->width               = GAVL_PTR_2_16LE(data); data += 2;
+  ret->height              = GAVL_PTR_2_16LE(data); data += 2;
   ret->flags               = *data; data++;
   ret->bg_color            = *data; data++;
   ret->pixel_aspect_ratio  = *data; data++;
@@ -230,7 +230,7 @@ static int next_packet_gif(bgav_demuxer_context_t * ctx)
   /* Parse GCE */
   if(!bgav_input_read_data(ctx->input, gce, GCE_LEN))
     return 0;
-  frame_duration = BGAV_PTR_2_16LE(&gce[4]);
+  frame_duration = GAVL_PTR_2_16LE(&gce[4]);
 
   /* Get the next image header */
   done = 0;

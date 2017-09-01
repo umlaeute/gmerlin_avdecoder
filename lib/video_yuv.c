@@ -420,7 +420,7 @@ static void decode_v410(bgav_stream_t * s, bgav_packet_t * p, gavl_video_frame_t
     
     for(j = 0; j < s->data.video.format->image_width; j++)
       {
-      src_i = BGAV_PTR_2_32LE(src);
+      src_i = GAVL_PTR_2_32LE(src);
 
       *(dst_v++) = (src_i & 0xffc00000) >> 16; /* V */
       *(dst_y++) = (src_i & 0x3ff000) >> 6;    /* Y */
@@ -474,10 +474,10 @@ static void decode_v210(bgav_stream_t * s, bgav_packet_t * p, gavl_video_frame_t
     
     for(j = 0; j < s->data.video.format->image_width/6; j++)
       {
-      i1 = BGAV_PTR_2_32LE(src);src+=4;
-      i2 = BGAV_PTR_2_32LE(src);src+=4;
-      i3 = BGAV_PTR_2_32LE(src);src+=4;
-      i4 = BGAV_PTR_2_32LE(src);src+=4;
+      i1 = GAVL_PTR_2_32LE(src);src+=4;
+      i2 = GAVL_PTR_2_32LE(src);src+=4;
+      i3 = GAVL_PTR_2_32LE(src);src+=4;
+      i4 = GAVL_PTR_2_32LE(src);src+=4;
 
       /* These are grouped to show the "pixel pairs" of  4:2:2 */
       
@@ -501,10 +501,10 @@ static void decode_v210(bgav_stream_t * s, bgav_packet_t * p, gavl_video_frame_t
     j = (s->data.video.format->image_width - ((s->data.video.format->image_width / 6) * 6));
     if (j != 0)
       {
-      i1 = BGAV_PTR_2_32LE(src);src+=4;
-      i2 = BGAV_PTR_2_32LE(src);src+=4;
-      i3 = BGAV_PTR_2_32LE(src);src+=4;
-      i4 = BGAV_PTR_2_32LE(src);src+=4;
+      i1 = GAVL_PTR_2_32LE(src);src+=4;
+      i2 = GAVL_PTR_2_32LE(src);src+=4;
+      i3 = GAVL_PTR_2_32LE(src);src+=4;
+      i4 = GAVL_PTR_2_32LE(src);src+=4;
 
       *(dst_u++) = (i1 & 0x3ff) << 6;       /* Cb0 */
       *(dst_y++) = (i1 & 0xffc00) >> 4;     /* Y0 */

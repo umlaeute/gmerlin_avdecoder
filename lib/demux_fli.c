@@ -52,7 +52,7 @@ static int probe_fli(bgav_input_context_t * input)
   if(bgav_input_get_data(input, probe_data, 6) < 6)
     return 0;
   
-  magic = BGAV_PTR_2_16LE(&probe_data[4]);
+  magic = GAVL_PTR_2_16LE(&probe_data[4]);
 
   if((magic == FLIC_FILE_MAGIC_1) || (magic == FLIC_FILE_MAGIC_2))
     return 1;
@@ -74,9 +74,9 @@ static int open_fli(bgav_demuxer_context_t * ctx)
   if(bgav_input_get_data(ctx->input, priv->header, FLIC_HEADER_SIZE) < FLIC_HEADER_SIZE)
     return 0;
 
-  magic_number = BGAV_PTR_2_16LE(&priv->header[4]);
+  magic_number = GAVL_PTR_2_16LE(&priv->header[4]);
 
-  speed = BGAV_PTR_2_32LE(&priv->header[0x10]);
+  speed = GAVL_PTR_2_32LE(&priv->header[0x10]);
   
   /* Create track */
   ctx->tt = bgav_track_table_create(1);
@@ -85,8 +85,8 @@ static int open_fli(bgav_demuxer_context_t * ctx)
   s = bgav_track_add_video_stream(ctx->tt->cur, ctx->opt);
   s->fourcc = BGAV_MK_FOURCC('F','L','I','C');
 
-  s->data.video.format->image_width  = BGAV_PTR_2_16LE(&priv->header[0x08]);
-  s->data.video.format->image_height = BGAV_PTR_2_16LE(&priv->header[0x0A]);
+  s->data.video.format->image_width  = GAVL_PTR_2_16LE(&priv->header[0x08]);
+  s->data.video.format->image_height = GAVL_PTR_2_16LE(&priv->header[0x0A]);
 
   if(!s->data.video.format->image_width || !s->data.video.format->image_height)
     return 0;
@@ -102,7 +102,7 @@ static int open_fli(bgav_demuxer_context_t * ctx)
    * number at offset 0x10, assume this is from the Bullfrog game,
    * Magic Carpet. */
   
-  if(BGAV_PTR_2_16LE(&priv->header[0x10]) == FLIC_CHUNK_MAGIC_1)
+  if(GAVL_PTR_2_16LE(&priv->header[0x10]) == FLIC_CHUNK_MAGIC_1)
     {
     priv->header_size = 12;
 
@@ -177,8 +177,8 @@ static int next_packet_fli(bgav_demuxer_context_t * ctx)
       return 0;
       }
       
-    size  = BGAV_PTR_2_32LE(&preamble[0]);
-    magic = BGAV_PTR_2_16LE(&preamble[4]);
+    size  = GAVL_PTR_2_32LE(&preamble[0]);
+    magic = GAVL_PTR_2_16LE(&preamble[4]);
 
     if(((magic == FLIC_CHUNK_MAGIC_1) || (magic == FLIC_CHUNK_MAGIC_2)) &&
        (size > FLIC_PREAMBLE_SIZE))

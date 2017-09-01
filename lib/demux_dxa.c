@@ -314,7 +314,7 @@ static int next_packet_dxa(bgav_demuxer_context_t * ctx)
           if(bgav_input_read_data(ctx->input, buf, DXA_EXTRA_SIZE) < DXA_EXTRA_SIZE)
             return 0;
           ptr = &buf[5];
-          size = BGAV_PTR_2_32BE(ptr);
+          size = GAVL_PTR_2_32BE(ptr);
 
           p = bgav_stream_get_packet_write(s);
 

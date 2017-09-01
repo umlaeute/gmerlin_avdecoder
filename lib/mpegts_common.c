@@ -118,19 +118,19 @@ int bgav_pmt_section_read(uint8_t * data, int size,
   ptr = data;
 
   ret->table_id = *ptr; ptr++;
-  ret->section_length = BGAV_PTR_2_16BE(ptr) & 0x0fff; ptr+=2;
+  ret->section_length = GAVL_PTR_2_16BE(ptr) & 0x0fff; ptr+=2;
 
   ptr_start = ptr;
   
   if(ret->section_length > size - (ptr - data))
     return 0; /* Not enough data */
 
-  ret->program_number = BGAV_PTR_2_16BE(ptr); ptr+=2;
+  ret->program_number = GAVL_PTR_2_16BE(ptr); ptr+=2;
   ret->current_next_indicator = (*ptr) & 0x01; ptr++;
   ret->section_number = *ptr; ptr++;
   ret->last_section_number = *ptr; ptr++;
-  ret->pcr_pid = (BGAV_PTR_2_16BE(ptr)) & 0x1fff; ptr+=2;
-  len = BGAV_PTR_2_16BE(ptr) & 0x0fff; ptr += 2;
+  ret->pcr_pid = (GAVL_PTR_2_16BE(ptr)) & 0x1fff; ptr+=2;
+  len = GAVL_PTR_2_16BE(ptr) & 0x0fff; ptr += 2;
   
   if(len)
     {
@@ -146,8 +146,8 @@ int bgav_pmt_section_read(uint8_t * data, int size,
     {
     ret->streams[ret->num_streams].type = *ptr; ptr++;
     ret->streams[ret->num_streams].pid  =
-        BGAV_PTR_2_16BE(ptr) & 0x1fff; ptr+=2;
-    len = BGAV_PTR_2_16BE(ptr) & 0x0fff; ptr += 2;
+        GAVL_PTR_2_16BE(ptr) & 0x1fff; ptr+=2;
+    len = GAVL_PTR_2_16BE(ptr) & 0x0fff; ptr += 2;
 
     if(len)
       {
@@ -221,11 +221,11 @@ int bgav_pat_section_read(uint8_t * data, int size,
   
   ret->table_id = *ptr; ptr++;
   
-  ret->section_length = BGAV_PTR_2_16BE(ptr) & 0x0fff; ptr+=2;
+  ret->section_length = GAVL_PTR_2_16BE(ptr) & 0x0fff; ptr+=2;
   if(ret->section_length > size - (ptr - data))
     return 0; /* Not enough data */
 
-  ret->transport_stream_id = BGAV_PTR_2_16BE(ptr);ptr+=2;
+  ret->transport_stream_id = GAVL_PTR_2_16BE(ptr);ptr+=2;
   ret->current_next_indicator = *ptr & 0x01; ptr++;
   ret->section_number = *ptr; ptr++;
   ret->last_section_number = *ptr; ptr++;
@@ -234,8 +234,8 @@ int bgav_pat_section_read(uint8_t * data, int size,
 
   for(i = 0; i < ret->num_programs; i++)
     {
-    ret->programs[i].program_number = BGAV_PTR_2_16BE(ptr); ptr+=2;
-    ret->programs[i].program_map_pid = BGAV_PTR_2_16BE(ptr) & 0x1fff; ptr+=2;
+    ret->programs[i].program_number = GAVL_PTR_2_16BE(ptr); ptr+=2;
+    ret->programs[i].program_map_pid = GAVL_PTR_2_16BE(ptr) & 0x1fff; ptr+=2;
     }
   return 1;
   }

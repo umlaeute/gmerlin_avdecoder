@@ -324,14 +324,14 @@ int bgav_file_index_read_header(const char * filename,
 static void write_64(FILE * out, uint64_t i)
   {
   uint8_t buf[8];
-  BGAV_64BE_2_PTR(i, buf);
+  GAVL_64BE_2_PTR(i, buf);
   fwrite(buf, 8, 1, out);
   }
 
 static void write_32(FILE * out, uint32_t i)
   {
   uint8_t buf[4];
-  BGAV_32BE_2_PTR(i, buf);
+  GAVL_32BE_2_PTR(i, buf);
   fwrite(buf, 4, 1, out);
   }
 #if 0

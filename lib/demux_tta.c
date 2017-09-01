@@ -50,12 +50,12 @@ typedef struct
 static void parse_header(tta_header_t * ret, uint8_t * data)
   {
   ret->fourcc          = BGAV_PTR_2_FOURCC(data); data+=4;
-  ret->audio_format    = BGAV_PTR_2_16LE(data); data+=2;
-  ret->num_channels    = BGAV_PTR_2_16LE(data); data+=2;
-  ret->bits_per_sample = BGAV_PTR_2_16LE(data); data+=2;
-  ret->samplerate      = BGAV_PTR_2_32LE(data); data+=4;
-  ret->data_length     = BGAV_PTR_2_32LE(data); data+=4;
-  ret->crc             = BGAV_PTR_2_32LE(data);
+  ret->audio_format    = GAVL_PTR_2_16LE(data); data+=2;
+  ret->num_channels    = GAVL_PTR_2_16LE(data); data+=2;
+  ret->bits_per_sample = GAVL_PTR_2_16LE(data); data+=2;
+  ret->samplerate      = GAVL_PTR_2_32LE(data); data+=4;
+  ret->data_length     = GAVL_PTR_2_32LE(data); data+=4;
+  ret->crc             = GAVL_PTR_2_32LE(data);
   }
 
 #define HEADER_SIZE 22
@@ -137,7 +137,7 @@ static int open_tta(bgav_demuxer_context_t * ctx)
   ptr = s->ext_data + HEADER_SIZE;
   for(i = 0; i < priv->total_frames; i++)
     {
-    priv->seek_table[i] = BGAV_PTR_2_32LE(ptr); ptr+=4;
+    priv->seek_table[i] = GAVL_PTR_2_32LE(ptr); ptr+=4;
     }
 
   s->stats.pts_end = h.data_length;

@@ -177,7 +177,7 @@ static gavl_source_status_t decode_dvdsub(bgav_stream_t * s, gavl_overlay_t * ov
                         fill_color);
   
   /* Data size */
-  ctrl_offset = BGAV_PTR_2_16BE(p->data+2);
+  ctrl_offset = GAVL_PTR_2_16BE(p->data+2);
   ctrl_start = ctrl_offset;
   
   /* Decode command section */
@@ -185,10 +185,10 @@ static gavl_source_status_t decode_dvdsub(bgav_stream_t * s, gavl_overlay_t * ov
 
   while(1) /* Control packet loop */
     {
-    //date             = BGAV_PTR_2_16BE(ptr);
+    //date             = GAVL_PTR_2_16BE(ptr);
     ptr += 2;
     
-    next_ctrl_offset = BGAV_PTR_2_16BE(ptr); ptr += 2;
+    next_ctrl_offset = GAVL_PTR_2_16BE(ptr); ptr += 2;
     
     ctrl_seq_end = 0;
     
@@ -230,8 +230,8 @@ static gavl_source_status_t decode_dvdsub(bgav_stream_t * s, gavl_overlay_t * ov
           ptr += 6;
           break;
         case 0x06:
-          offset1 = BGAV_PTR_2_16BE(ptr); ptr += 2;
-          offset2 = BGAV_PTR_2_16BE(ptr); ptr += 2;
+          offset1 = GAVL_PTR_2_16BE(ptr); ptr += 2;
+          offset2 = GAVL_PTR_2_16BE(ptr); ptr += 2;
           break;
         case 0xff:
           ctrl_seq_end = 1;

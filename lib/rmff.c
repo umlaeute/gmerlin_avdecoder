@@ -676,7 +676,7 @@ static int select_mlti_data(const uint8_t *mlti_chunk, int mlti_size, int select
   mlti_chunk+=4;
 
   /* next 16 bits are the number of rules */
-  numrules=BGAV_PTR_2_16BE(mlti_chunk);
+  numrules=GAVL_PTR_2_16BE(mlti_chunk);
   if (selection >= numrules) return 0;
 
   /* now <numrules> indices of codecs follows */
@@ -684,13 +684,13 @@ static int select_mlti_data(const uint8_t *mlti_chunk, int mlti_size, int select
   mlti_chunk+=(selection+1)*2;
 
   /* get our index */
-  codec=BGAV_PTR_2_16BE(mlti_chunk);
+  codec=GAVL_PTR_2_16BE(mlti_chunk);
 
   /* skip to number of codecs */
   mlti_chunk+=(numrules-selection)*2;
 
   /* get number of codecs */
-  numrules=BGAV_PTR_2_16BE(mlti_chunk);
+  numrules=GAVL_PTR_2_16BE(mlti_chunk);
 
   if (codec >= numrules) {
     printf("codec index >= number of codecs. %i %i\n", codec, numrules);
@@ -701,11 +701,11 @@ static int select_mlti_data(const uint8_t *mlti_chunk, int mlti_size, int select
  
   /* now seek to selected codec */
   for (i=0; i<codec; i++) {
-    size=BGAV_PTR_2_32BE(mlti_chunk);
+    size=GAVL_PTR_2_32BE(mlti_chunk);
     mlti_chunk+=size+4;
   }
   
-  size=BGAV_PTR_2_32BE(mlti_chunk);
+  size=GAVL_PTR_2_32BE(mlti_chunk);
 
   *out = malloc(size);
   memcpy(*out, mlti_chunk+4, size);
@@ -953,10 +953,10 @@ void bgav_rmff_packet_header_dump(bgav_rmff_packet_header_t * h)
 void bgav_rmff_packet_header_to_pointer(bgav_rmff_packet_header_t * h,
                                         uint8_t * ptr)
   {
-  BGAV_16BE_2_PTR(h->object_version, ptr);ptr+=2;
-  BGAV_16BE_2_PTR(h->length, ptr);ptr+=2;
-  BGAV_16BE_2_PTR(h->stream_number, ptr);ptr+=2;
-  BGAV_32BE_2_PTR(h->timestamp, ptr);ptr+=4;
+  GAVL_16BE_2_PTR(h->object_version, ptr);ptr+=2;
+  GAVL_16BE_2_PTR(h->length, ptr);ptr+=2;
+  GAVL_16BE_2_PTR(h->stream_number, ptr);ptr+=2;
+  GAVL_32BE_2_PTR(h->timestamp, ptr);ptr+=4;
   *ptr = h->packet_group;ptr++;
   *ptr = h->flags;ptr++;
   }

@@ -422,7 +422,7 @@ static int next_packet_4xm(bgav_demuxer_context_t * ctx)
       case ID_ifrm:
       case ID_pfrm:
       case ID_cfrm:
-        size = BGAV_PTR_2_32LE(&header[4]);
+        size = GAVL_PTR_2_32LE(&header[4]);
         s = bgav_track_find_stream(ctx, 0);
 
         
@@ -449,7 +449,7 @@ static int next_packet_4xm(bgav_demuxer_context_t * ctx)
         done = 1;
         break;
       case ID_snd_:
-        size = BGAV_PTR_2_32LE(&header[4]);
+        size = GAVL_PTR_2_32LE(&header[4]);
        
         if(!bgav_input_read_32_le(ctx->input, &stream_id))
           return 0;

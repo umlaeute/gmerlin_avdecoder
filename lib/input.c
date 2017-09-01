@@ -283,7 +283,7 @@ int bgav_input_read_16_le(bgav_input_context_t * ctx,uint16_t * ret)
   uint8_t data[2];
   if(bgav_input_read_data(ctx, data, 2) < 2)
     return 0;
-  *ret = BGAV_PTR_2_16LE(data);
+  *ret = GAVL_PTR_2_16LE(data);
   
   return 1;
   }
@@ -293,7 +293,7 @@ int bgav_input_read_32_le(bgav_input_context_t * ctx,uint32_t * ret)
   uint8_t data[4];
   if(bgav_input_read_data(ctx, data, 4) < 4)
     return 0;
-  *ret = BGAV_PTR_2_32LE(data);
+  *ret = GAVL_PTR_2_32LE(data);
   return 1;
   }
 
@@ -302,7 +302,7 @@ int bgav_input_read_24_le(bgav_input_context_t * ctx,uint32_t * ret)
   uint8_t data[3];
   if(bgav_input_read_data(ctx, data, 3) < 3)
     return 0;
-  *ret = BGAV_PTR_2_24LE(data);
+  *ret = GAVL_PTR_2_24LE(data);
   return 1;
   }
 
@@ -311,7 +311,7 @@ int bgav_input_read_64_le(bgav_input_context_t * ctx,uint64_t * ret)
   uint8_t data[8];
   if(bgav_input_read_data(ctx, data, 8) < 8)
     return 0;
-  *ret = BGAV_PTR_2_64LE(data);
+  *ret = GAVL_PTR_2_64LE(data);
   return 1;
   }
 
@@ -321,7 +321,7 @@ int bgav_input_read_16_be(bgav_input_context_t * ctx,uint16_t * ret)
   if(bgav_input_read_data(ctx, data, 2) < 2)
     return 0;
 
-  *ret = BGAV_PTR_2_16BE(data);
+  *ret = GAVL_PTR_2_16BE(data);
   return 1;
   }
 
@@ -330,7 +330,7 @@ int bgav_input_read_24_be(bgav_input_context_t * ctx,uint32_t * ret)
   uint8_t data[3];
   if(bgav_input_read_data(ctx, data, 3) < 3)
     return 0;
-  *ret = BGAV_PTR_2_24BE(data);
+  *ret = GAVL_PTR_2_24BE(data);
   return 1;
   }
 
@@ -341,7 +341,7 @@ int bgav_input_read_32_be(bgav_input_context_t * ctx,uint32_t * ret)
   if(bgav_input_read_data(ctx, data, 4) < 4)
     return 0;
 
-  *ret = BGAV_PTR_2_32BE(data);
+  *ret = GAVL_PTR_2_32BE(data);
   return 1;
   }
     
@@ -351,7 +351,7 @@ int bgav_input_read_64_be(bgav_input_context_t * ctx, uint64_t * ret)
   if(bgav_input_read_data(ctx, data, 8) < 8)
     return 0;
   
-  *ret = BGAV_PTR_2_64BE(data);
+  *ret = GAVL_PTR_2_64BE(data);
   return 1;
   }
 
@@ -367,7 +367,7 @@ int bgav_input_get_16_le(bgav_input_context_t * ctx,uint16_t * ret)
   uint8_t data[2];
   if(bgav_input_get_data(ctx, data, 2) < 2)
     return 0;
-  *ret = BGAV_PTR_2_16LE(data);
+  *ret = GAVL_PTR_2_16LE(data);
   return 1;
   }
 
@@ -376,7 +376,7 @@ int bgav_input_get_32_le(bgav_input_context_t * ctx,uint32_t * ret)
   uint8_t data[4];
   if(bgav_input_get_data(ctx, data, 4) < 4)
     return 0;
-  *ret = BGAV_PTR_2_32LE(data);
+  *ret = GAVL_PTR_2_32LE(data);
   return 1;
   }
 
@@ -385,7 +385,7 @@ int bgav_input_get_24_le(bgav_input_context_t * ctx,uint32_t * ret)
   uint8_t data[3];
   if(bgav_input_get_data(ctx, data, 3) < 3)
     return 0;
-  *ret = BGAV_PTR_2_24LE(data);
+  *ret = GAVL_PTR_2_24LE(data);
   return 1;
   }
 
@@ -394,7 +394,7 @@ int bgav_input_get_64_le(bgav_input_context_t * ctx,uint64_t * ret)
   uint8_t data[8];
   if(bgav_input_get_data(ctx, data, 8) < 8)
     return 0;
-  *ret = BGAV_PTR_2_64LE(data);
+  *ret = GAVL_PTR_2_64LE(data);
   return 1;
   }
 
@@ -403,7 +403,7 @@ int bgav_input_get_16_be(bgav_input_context_t * ctx,uint16_t * ret)
   uint8_t data[2];
   if(bgav_input_get_data(ctx, data, 2) < 2)
     return 0;
-  *ret = BGAV_PTR_2_16BE(data);
+  *ret = GAVL_PTR_2_16BE(data);
   return 1;
   }
 
@@ -412,7 +412,7 @@ int bgav_input_get_32_be(bgav_input_context_t * ctx,uint32_t * ret)
   uint8_t data[4];
   if(bgav_input_get_data(ctx, data, 4) < 4)
     return 0;
-  *ret = BGAV_PTR_2_32BE(data);
+  *ret = GAVL_PTR_2_32BE(data);
   return 1;
   }
     
@@ -421,7 +421,7 @@ int bgav_input_get_64_be(bgav_input_context_t * ctx, uint64_t * ret)
   uint8_t data[8];
   if(bgav_input_get_data(ctx, data, 8) < 8)
     return 0;
-  *ret = BGAV_PTR_2_64BE(data);
+  *ret = GAVL_PTR_2_64BE(data);
   return 1;
   }
 

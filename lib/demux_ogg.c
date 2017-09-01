@@ -625,7 +625,7 @@ static int setup_track(bgav_demuxer_context_t * ctx, bgav_track_t * track,
 
         /* Get samplerate */
         s->data.audio.format->samplerate =
-          BGAV_PTR_2_32LE(priv->op.packet + 12);
+          GAVL_PTR_2_32LE(priv->op.packet + 12);
         s->timescale = s->data.audio.format->samplerate;
         bgav_vorbis_set_channel_setup(s->data.audio.format);
         
@@ -671,27 +671,27 @@ static int setup_track(bgav_demuxer_context_t * ctx, bgav_track_t * track,
         /* Get picture dimensions, fps and keyframe shift */
 
         s->data.video.format->frame_width =
-          BGAV_PTR_2_16BE(priv->op.packet+10);
+          GAVL_PTR_2_16BE(priv->op.packet+10);
         s->data.video.format->frame_width *= 16;
 
         s->data.video.format->frame_height =
-          BGAV_PTR_2_16BE(priv->op.packet+12);
+          GAVL_PTR_2_16BE(priv->op.packet+12);
         s->data.video.format->frame_height *= 16;
         
         s->data.video.format->image_width =
-          BGAV_PTR_2_24BE(priv->op.packet+14);
+          GAVL_PTR_2_24BE(priv->op.packet+14);
         s->data.video.format->image_height =
-          BGAV_PTR_2_24BE(priv->op.packet+17);
+          GAVL_PTR_2_24BE(priv->op.packet+17);
         
         s->data.video.format->timescale =
-          BGAV_PTR_2_32BE(priv->op.packet+22);
+          GAVL_PTR_2_32BE(priv->op.packet+22);
         s->data.video.format->frame_duration =
-          BGAV_PTR_2_32BE(priv->op.packet+26);
+          GAVL_PTR_2_32BE(priv->op.packet+26);
 
         s->data.video.format->pixel_width =
-          BGAV_PTR_2_24BE(priv->op.packet+30);
+          GAVL_PTR_2_24BE(priv->op.packet+30);
         s->data.video.format->pixel_height =
-          BGAV_PTR_2_24BE(priv->op.packet+33);
+          GAVL_PTR_2_24BE(priv->op.packet+33);
 
         // fprintf(stderr, "Got video format:\n");
         // gavl_video_format_dump(&s->data.video.format);
@@ -756,7 +756,7 @@ static int setup_track(bgav_demuxer_context_t * ctx, bgav_track_t * track,
         
         setup_flac(s);
         
-        ogg_stream->header_packets_needed = BGAV_PTR_2_16BE(priv->op.packet+7)+1;
+        ogg_stream->header_packets_needed = GAVL_PTR_2_16BE(priv->op.packet+7)+1;
         ogg_stream->header_packets_read = 1;
 
         break;
@@ -790,10 +790,10 @@ static int setup_track(bgav_demuxer_context_t * ctx, bgav_track_t * track,
         bgav_stream_set_extradata(s, priv->op.packet, priv->op.bytes);
         
         /* Samplerate */
-        s->data.audio.format->samplerate = BGAV_PTR_2_32LE(priv->op.packet + 36);
+        s->data.audio.format->samplerate = GAVL_PTR_2_32LE(priv->op.packet + 36);
 
         /* Extra packets */
-        ogg_stream->header_packets_needed += BGAV_PTR_2_32LE(priv->op.packet + 68);
+        ogg_stream->header_packets_needed += GAVL_PTR_2_32LE(priv->op.packet + 68);
       
       
         while(ogg_stream_packetout(&ogg_stream->os, &priv->op) == 1)

@@ -111,7 +111,7 @@ static int probe_dsicin(bgav_input_context_t * input)
   if(bgav_input_get_data(input, data, PROBE_SIZE) < PROBE_SIZE)
     return 0;
 
-  signature = BGAV_PTR_2_32LE(&data[0]);
+  signature = GAVL_PTR_2_32LE(&data[0]);
   if(signature != 0x55AA0000)
     return 0;
   if(data[16] > 16) // > 16 bits per sample

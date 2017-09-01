@@ -136,7 +136,7 @@ static const uint32_t video_codecs_msmpeg4v1[] =
 static int is_keyframe_msmpeg4v1(uint8_t * data)
   {
   uint32_t c;
-  c = BGAV_PTR_2_32BE(data+4);
+  c = GAVL_PTR_2_32BE(data+4);
   c <<= 5;
   if(c&0x40000000)
     return 0;
@@ -165,7 +165,7 @@ static const uint32_t video_codecs_msmpeg4v3[] =
 static int is_keyframe_msmpeg4v3(uint8_t * data)
   {
   uint32_t c;
-  c = BGAV_PTR_2_32BE(data);
+  c = GAVL_PTR_2_32BE(data);
   if(c&0x40000000)
     return 0;
   return 1;
@@ -195,7 +195,7 @@ static const uint32_t video_codecs_h264[] =
 static int is_keyframe_mpeg4(uint8_t * data)
   {
   uint32_t c;
-  c = BGAV_PTR_2_32BE(data);
+  c = GAVL_PTR_2_32BE(data);
   if(c==0x1B6)
     return 0;
   return 1;

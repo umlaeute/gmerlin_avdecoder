@@ -34,8 +34,8 @@ int bgav_qt_user_atoms_append(qt_atom_header_t * h,
   ret->atoms = realloc(ret->atoms,
                        (ret->num + 1) * sizeof(*ret->atoms));
   ret->atoms[ret->num] = malloc(h->size);
-  BGAV_32BE_2_PTR(h->size, ret->atoms[ret->num]);
-  BGAV_32BE_2_PTR(h->fourcc, ret->atoms[ret->num]+4);
+  GAVL_32BE_2_PTR(h->size, ret->atoms[ret->num]);
+  GAVL_32BE_2_PTR(h->fourcc, ret->atoms[ret->num]+4);
 
   if(bgav_input_read_data(ctx, ret->atoms[ret->num]+8,
                           h->size - 8) < h->size - 8)
@@ -68,7 +68,7 @@ void bgav_qt_user_atoms_dump(int indent, qt_user_atoms_t * a)
   
   for(i = 0; i < a->num; i++)
     {
-    size = BGAV_PTR_2_32BE(a->atoms[i]);
+    size = GAVL_PTR_2_32BE(a->atoms[i]);
     fourcc = BGAV_PTR_2_FOURCC(a->atoms[i]+4);
     bgav_diprintf(indent, "User atom: ");
     bgav_dump_fourcc(fourcc);
@@ -88,7 +88,7 @@ uint8_t * bgav_user_atoms_find(qt_user_atoms_t * a, uint32_t fourcc,
     fc = BGAV_PTR_2_FOURCC(a->atoms[i]+4);
     if(fc == fourcc)
       {
-      *len = BGAV_PTR_2_32BE(a->atoms[i]);
+      *len = GAVL_PTR_2_32BE(a->atoms[i]);
       return a->atoms[i];
       }
     }

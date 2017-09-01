@@ -34,7 +34,7 @@ int bgav_dirac_get_code(uint8_t * data, int len, int * size)
   uint32_t fourcc;
   uint8_t parse_code;
   
-  fourcc = BGAV_PTR_2_32BE(data); data+=4;
+  fourcc = GAVL_PTR_2_32BE(data); data+=4;
   if(fourcc != BGAV_MK_FOURCC('B','B','C','D'))
     return DIRAC_CODE_ERROR; // Lost sync
   parse_code = *data; data++;
@@ -44,7 +44,7 @@ int bgav_dirac_get_code(uint8_t * data, int len, int * size)
     if(parse_code == 0x10)
       *size = 13;
     else
-      *size = BGAV_PTR_2_32BE(data);
+      *size = GAVL_PTR_2_32BE(data);
     }
   data+=4;
 
@@ -558,7 +558,7 @@ int bgav_dirac_picture_header_parse(bgav_dirac_picture_header_t * ret,
   parse_code = buffer[4];
   
   ret->num_refs = parse_code & 0x03;
-  ret->pic_num = BGAV_PTR_2_32BE(buffer + 13);
+  ret->pic_num = GAVL_PTR_2_32BE(buffer + 13);
   return 1;
   }
 

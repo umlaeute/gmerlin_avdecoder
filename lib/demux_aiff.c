@@ -66,7 +66,7 @@ static int read_float_80(bgav_input_context_t * input, int32_t * ret)
 
   pos = buffer + 2;
 
-  mantissa = BGAV_PTR_2_32BE(pos);
+  mantissa = GAVL_PTR_2_32BE(pos);
 
   exp = 30 - buffer[1];
   while (exp--)

@@ -31,12 +31,12 @@ int bgav_flac_streaminfo_read(const uint8_t * ptr, bgav_flac_streaminfo_t * ret)
   {
   uint64_t tmp_1;
 
-  ret->min_blocksize = BGAV_PTR_2_16BE(ptr); ptr += 2;
-  ret->max_blocksize = BGAV_PTR_2_16BE(ptr); ptr += 2;
-  ret->min_framesize = BGAV_PTR_2_24BE(ptr); ptr += 3;
-  ret->max_framesize = BGAV_PTR_2_24BE(ptr); ptr += 3;
+  ret->min_blocksize = GAVL_PTR_2_16BE(ptr); ptr += 2;
+  ret->max_blocksize = GAVL_PTR_2_16BE(ptr); ptr += 2;
+  ret->min_framesize = GAVL_PTR_2_24BE(ptr); ptr += 3;
+  ret->max_framesize = GAVL_PTR_2_24BE(ptr); ptr += 3;
 
-  tmp_1 = BGAV_PTR_2_64BE(ptr); ptr += 8;
+  tmp_1 = GAVL_PTR_2_64BE(ptr); ptr += 8;
   
   ret->samplerate      =   tmp_1 >> 44;
   ret->num_channels    = ((tmp_1 >> 41) & 0x7) + 1;
@@ -272,7 +272,7 @@ int bgav_flac_check_crc(const uint8_t * ptr, int size)
 
   crc1 = crc16(ptr, size-2);
   ptr += size-2;
-  crc2 = BGAV_PTR_2_16BE(ptr);
+  crc2 = GAVL_PTR_2_16BE(ptr);
   return crc1 == crc2;
   }
 
@@ -287,7 +287,7 @@ int bgav_flac_frame_header_read(const uint8_t * ptr, int size,
   const uint8_t * ptr_start = ptr;
 
   CHECK_LEN(2);
-  tmp = BGAV_PTR_2_16BE(ptr);
+  tmp = GAVL_PTR_2_16BE(ptr);
   ADVANCE(2);
 
   /* Check sync code */
@@ -359,7 +359,7 @@ int bgav_flac_frame_header_read(const uint8_t * ptr, int size,
   else if(ret->block_size_code == 7)
     {
     CHECK_LEN(2);
-    ret->blocksize = BGAV_PTR_2_16BE(ptr);
+    ret->blocksize = GAVL_PTR_2_16BE(ptr);
     ADVANCE(2);
     ret->blocksize++;
     }
@@ -413,12 +413,12 @@ int bgav_flac_frame_header_read(const uint8_t * ptr, int size,
       break;
     case 0xd:
       CHECK_LEN(2);
-      ret->samplerate = BGAV_PTR_2_16BE(ptr);
+      ret->samplerate = GAVL_PTR_2_16BE(ptr);
       ADVANCE(2);
       break;
     case 0xe:
       CHECK_LEN(2);
-      ret->samplerate = BGAV_PTR_2_16BE(ptr);
+      ret->samplerate = GAVL_PTR_2_16BE(ptr);
       ADVANCE(2);
       ret->samplerate *= 10;
       break;

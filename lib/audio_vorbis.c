@@ -251,9 +251,9 @@ static int init_vorbis(bgav_stream_t * s)
     //    gavl_hexdump(s->ext_data, s->ext_size, 16);
 
     ptr = s->ext_data;
-    header_sizes[0] = BGAV_PTR_2_32LE(ptr);ptr+=4;
-    header_sizes[1] = BGAV_PTR_2_32LE(ptr);ptr+=4;
-    header_sizes[2] = BGAV_PTR_2_32LE(ptr);ptr+=4;
+    header_sizes[0] = GAVL_PTR_2_32LE(ptr);ptr+=4;
+    header_sizes[1] = GAVL_PTR_2_32LE(ptr);ptr+=4;
+    header_sizes[2] = GAVL_PTR_2_32LE(ptr);ptr+=4;
 
     priv->dec_op.packet = ptr;
     priv->dec_op.b_o_s  = 1;
@@ -369,7 +369,7 @@ static int init_vorbis(bgav_stream_t * s)
   else if(s->fourcc == BGAV_MK_FOURCC('O','g','g','V'))
     {
     ptr = s->ext_data;
-    len = BGAV_PTR_2_32BE(ptr);ptr+=4;
+    len = GAVL_PTR_2_32BE(ptr);ptr+=4;
     fourcc = BGAV_PTR_2_FOURCC(ptr);ptr+=4;
     if(fourcc != BGAV_MK_FOURCC('O','V','H','S'))
       {

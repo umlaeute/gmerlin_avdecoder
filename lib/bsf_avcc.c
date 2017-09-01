@@ -77,11 +77,11 @@ filter_avcc(bgav_bsf_t* bsf, bgav_packet_t * in, bgav_packet_t * out)
         ptr++;
         break;
       case 2:
-        len = BGAV_PTR_2_16BE(ptr);
+        len = GAVL_PTR_2_16BE(ptr);
         ptr += 2;
         break;
       case 4:
-        len = BGAV_PTR_2_32BE(ptr);
+        len = GAVL_PTR_2_32BE(ptr);
         ptr += 4;
         break;
       default:
@@ -137,7 +137,7 @@ bgav_bsf_init_avcC(bgav_bsf_t * bsf)
   num_units = *ptr & 0x1f; ptr++;
   for(i = 0; i < num_units; i++)
     {
-    len = BGAV_PTR_2_16BE(ptr); ptr += 2;
+    len = GAVL_PTR_2_16BE(ptr); ptr += 2;
     append_extradata(bsf, ptr, len);
     ptr += len;
     }
@@ -146,7 +146,7 @@ bgav_bsf_init_avcC(bgav_bsf_t * bsf)
   num_units = *ptr; ptr++;
   for(i = 0; i < num_units; i++)
     {
-    len = BGAV_PTR_2_16BE(ptr); ptr += 2;
+    len = GAVL_PTR_2_16BE(ptr); ptr += 2;
     append_extradata(bsf, ptr, len);
     ptr += len;
     }

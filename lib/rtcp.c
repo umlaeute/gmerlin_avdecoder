@@ -80,18 +80,18 @@ int bgav_rtcp_rr_write(rtcp_sr_t * r, uint8_t * data)
   pos++;
   pos[0] = r->type;
   pos++;
-  BGAV_16BE_2_PTR(r->length, pos);pos+=2;
-  BGAV_32BE_2_PTR(r->ssrc, pos);pos+=4;
+  GAVL_16BE_2_PTR(r->length, pos);pos+=2;
+  GAVL_32BE_2_PTR(r->ssrc, pos);pos+=4;
 
   for(i = 0; i < r->rc; i++)
     {
-    BGAV_32BE_2_PTR(r->reports[i].ssrc, pos);pos+=4;
+    GAVL_32BE_2_PTR(r->reports[i].ssrc, pos);pos+=4;
     *pos = r->reports[i].fraction_lost;pos++;
-    BGAV_24BE_2_PTR(r->reports[i].cumulative_lost, pos);pos+=3;
-    BGAV_32BE_2_PTR(r->reports[i].highest_ext_seq, pos);pos+=4;
-    BGAV_32BE_2_PTR(r->reports[i].jitter, pos);pos+=4;
-    BGAV_32BE_2_PTR(r->reports[i].lsr, pos);pos+=4;
-    BGAV_32BE_2_PTR(r->reports[i].dlsr, pos);pos+=4;
+    GAVL_24BE_2_PTR(r->reports[i].cumulative_lost, pos);pos+=3;
+    GAVL_32BE_2_PTR(r->reports[i].highest_ext_seq, pos);pos+=4;
+    GAVL_32BE_2_PTR(r->reports[i].jitter, pos);pos+=4;
+    GAVL_32BE_2_PTR(r->reports[i].lsr, pos);pos+=4;
+    GAVL_32BE_2_PTR(r->reports[i].dlsr, pos);pos+=4;
     }
   return pos - data;
   }

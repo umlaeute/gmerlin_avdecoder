@@ -256,10 +256,10 @@ static int next_packet_nuv(bgav_demuxer_context_t * ctx)
   if(bgav_input_read_data(ctx->input, hdr, HDRSIZE) < HDRSIZE)
     return 0;
 
-  size = BGAV_PTR_2_32LE(&hdr[8]);
+  size = GAVL_PTR_2_32LE(&hdr[8]);
   size &= 0xffffff;
   
-  pts  = BGAV_PTR_2_32LE(&hdr[4]);
+  pts  = GAVL_PTR_2_32LE(&hdr[4]);
   
   switch(hdr[0])
     {

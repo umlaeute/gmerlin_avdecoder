@@ -130,8 +130,8 @@ static int open_vmd(bgav_demuxer_context_t * ctx)
 
   vs->stream_id = VIDEO_ID;
   vs->fourcc = BGAV_MK_FOURCC('V','M','D','V');
-  vs->data.video.format->image_width  = BGAV_PTR_2_16LE(&priv->header[12]);
-  vs->data.video.format->image_height = BGAV_PTR_2_16LE(&priv->header[14]);
+  vs->data.video.format->image_width  = GAVL_PTR_2_16LE(&priv->header[12]);
+  vs->data.video.format->image_height = GAVL_PTR_2_16LE(&priv->header[14]);
 
   vs->data.video.format->frame_width  = vs->data.video.format->image_width;
   vs->data.video.format->frame_height = vs->data.video.format->image_height;
@@ -140,7 +140,7 @@ static int open_vmd(bgav_demuxer_context_t * ctx)
 
   bgav_stream_set_extradata(vs, priv->header, VMD_HEADER_SIZE);
   /* Initialize audio stream */
-  samplerate = BGAV_PTR_2_16LE(&priv->header[804]);
+  samplerate = GAVL_PTR_2_16LE(&priv->header[804]);
 
   if(samplerate)
     {
@@ -150,7 +150,7 @@ static int open_vmd(bgav_demuxer_context_t * ctx)
     as->data.audio.format->samplerate = samplerate;
     as->data.audio.format->num_channels =
       (priv->header[811] & 0x80) ? 2 : 1;
-    as->data.audio.block_align = BGAV_PTR_2_16LE(&priv->header[806]);
+    as->data.audio.block_align = GAVL_PTR_2_16LE(&priv->header[806]);
     if(as->data.audio.block_align & 0x8000)
       {
       as->data.audio.bits_per_sample = 16;
@@ -173,9 +173,9 @@ static int open_vmd(bgav_demuxer_context_t * ctx)
 
   /* Get table of contents */
 
-  toc_offset = BGAV_PTR_2_32LE(&priv->header[812]);
-  priv->frame_count = BGAV_PTR_2_16LE(&priv->header[6]);
-  priv->frames_per_block = BGAV_PTR_2_16LE(&priv->header[18]);
+  toc_offset = GAVL_PTR_2_32LE(&priv->header[812]);
+  priv->frame_count = GAVL_PTR_2_16LE(&priv->header[6]);
+  priv->frames_per_block = GAVL_PTR_2_16LE(&priv->header[18]);
   
   bgav_input_seek(ctx->input, toc_offset, SEEK_SET);
 
@@ -191,7 +191,7 @@ static int open_vmd(bgav_demuxer_context_t * ctx)
 
   for(i = 0; i < priv->frame_count; i++)
     {
-    current_offset = BGAV_PTR_2_32LE(&raw_frame_table[6*i+2]);
+    current_offset = GAVL_PTR_2_32LE(&raw_frame_table[6*i+2]);
     for (j = 0; j < priv->frames_per_block; j++)
       {
       if(bgav_input_read_data(ctx->input, chunk, BYTES_PER_FRAME_RECORD) <
@@ -202,7 +202,7 @@ static int open_vmd(bgav_demuxer_context_t * ctx)
         goto fail;
         }
       type = chunk[0];
-      size = BGAV_PTR_2_32LE(&chunk[2]);
+      size = GAVL_PTR_2_32LE(&chunk[2]);
 
       if(!size && type != 1)
         continue;

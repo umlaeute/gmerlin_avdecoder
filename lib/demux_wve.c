@@ -189,7 +189,7 @@ static int next_packet_wve(bgav_demuxer_context_t * ctx)
     return 0;
 
   chunk_type = BGAV_PTR_2_FOURCC(&preamble[0]);
-  chunk_size = BGAV_PTR_2_32LE(&preamble[4]);
+  chunk_size = GAVL_PTR_2_32LE(&preamble[4]);
   chunk_size -= EA_PREAMBLE_SIZE;
 
   switch(chunk_type)

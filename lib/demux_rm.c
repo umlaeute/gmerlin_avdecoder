@@ -162,7 +162,7 @@ static void dump_frame_info(frame_info_t * info)
 
 static void parse_frame_info_rv10(uint8_t * data, int len, frame_info_t * info, uint32_t sub_id)
   {
-  uint32_t buffer = BGAV_PTR_2_32BE(data);
+  uint32_t buffer = GAVL_PTR_2_32BE(data);
   info->pts = -1;
 
   SKIP_BITS(1);
@@ -177,7 +177,7 @@ static void parse_frame_info_rv10(uint8_t * data, int len, frame_info_t * info, 
 
 static void parse_frame_info_rv20(uint8_t * data, int len, frame_info_t * info, uint32_t sub_id)
   {
-  uint32_t buffer = BGAV_PTR_2_32BE(data);
+  uint32_t buffer = GAVL_PTR_2_32BE(data);
   if(sub_id == 0x30202002 || sub_id == 0x30203002)
     {
     SKIP_BITS(3);
@@ -204,7 +204,7 @@ static void parse_frame_info_rv20(uint8_t * data, int len, frame_info_t * info, 
 
 static void parse_frame_info_rv30(uint8_t * data, int len, frame_info_t * info, uint32_t sub_id)
   {
-  uint32_t buffer = BGAV_PTR_2_32BE(data);
+  uint32_t buffer = GAVL_PTR_2_32BE(data);
 
   SKIP_BITS(3);
   info->pict_type= SHOW_BITS(2);
@@ -229,7 +229,7 @@ static void parse_frame_info_rv30(uint8_t * data, int len, frame_info_t * info, 
 
 static void parse_frame_info_rv40(uint8_t * data, int len, frame_info_t * info, uint32_t sub_id)
   {
-  uint32_t buffer = BGAV_PTR_2_32BE(data);
+  uint32_t buffer = GAVL_PTR_2_32BE(data);
 
   SKIP_BITS(1);
   info->pict_type= SHOW_BITS(2);
@@ -320,7 +320,7 @@ static void init_audio_stream(bgav_demuxer_context_t * ctx,
   /* Skip initial header */
   data += 4;
   
-  version = BGAV_PTR_2_16BE(data);data+=2;
+  version = GAVL_PTR_2_16BE(data);data+=2;
 
   if(version == 3)
     {
@@ -344,27 +344,27 @@ static void init_audio_stream(bgav_demuxer_context_t * ctx,
     data += 4; // ???
     data += 2; /* version (4 or 5) */
     data += 4; // header size == 0x4E
-    bg_as->subformat = BGAV_PTR_2_16BE(data);data+=2;/* codec flavor id */
-    coded_framesize = BGAV_PTR_2_32BE(data);data+=4;/* needed by codec */
+    bg_as->subformat = GAVL_PTR_2_16BE(data);data+=2;/* codec flavor id */
+    coded_framesize = GAVL_PTR_2_32BE(data);data+=4;/* needed by codec */
     data += 4; // big number
     data += 4; // bigger number
     data += 4; // 2 || -''-
     // data += 2; // 0x10
-    sub_packet_h = BGAV_PTR_2_16BE(data);data+=2;
+    sub_packet_h = GAVL_PTR_2_16BE(data);data+=2;
     //		    data += 2; /* coded frame size */
-    frame_size = BGAV_PTR_2_16BE(data);data+=2;
-    sub_packet_size = BGAV_PTR_2_16BE(data);data+=2;
+    frame_size = GAVL_PTR_2_16BE(data);data+=2;
+    sub_packet_size = GAVL_PTR_2_16BE(data);data+=2;
     data += 2; // 0
       
     if (version == 5)
       data += 6; //0,srate,0
   
-    bg_as->data.audio.format->samplerate = BGAV_PTR_2_16BE(data);data+=2;
+    bg_as->data.audio.format->samplerate = GAVL_PTR_2_16BE(data);data+=2;
     data += 2;  // 0
-    samplesize = BGAV_PTR_2_16BE(data);data += 2;
+    samplesize = GAVL_PTR_2_16BE(data);data += 2;
     samplesize /= 8;
     bg_as->data.audio.bits_per_sample = samplesize * 8;
-    bg_as->data.audio.format->num_channels = BGAV_PTR_2_16BE(data);data+=2;
+    bg_as->data.audio.format->num_channels = GAVL_PTR_2_16BE(data);data+=2;
     if (version == 5)
       {
       data += 4;  // "genr"
@@ -406,7 +406,7 @@ static void init_audio_stream(bgav_demuxer_context_t * ctx,
         if(version == 5)
           data++;
 
-        codecdata_length = BGAV_PTR_2_32BE(data);data+=4;
+        codecdata_length = GAVL_PTR_2_32BE(data);data+=4;
 
         bgav_stream_set_extradata(bg_as, data, codecdata_length);
         
@@ -427,7 +427,7 @@ static void init_audio_stream(bgav_demuxer_context_t * ctx,
         if(version == 5)
           data++;
 
-        codecdata_length = BGAV_PTR_2_32BE(data);data+=4;
+        codecdata_length = GAVL_PTR_2_32BE(data);data+=4;
 
         if(codecdata_length>=1)
           bgav_stream_set_extradata(bg_as, data+1, codecdata_length-1);
@@ -523,8 +523,8 @@ static void init_video_stream(bgav_demuxer_context_t * ctx,
 
   /* emulate BITMAPINFOHEADER */
 
-  bg_vs->data.video.format->frame_width = BGAV_PTR_2_16BE(data);data+=2;
-  bg_vs->data.video.format->frame_height = BGAV_PTR_2_16BE(data);data+=2;
+  bg_vs->data.video.format->frame_width = GAVL_PTR_2_16BE(data);data+=2;
+  bg_vs->data.video.format->frame_height = GAVL_PTR_2_16BE(data);data+=2;
 
   bg_vs->data.video.format->image_width = bg_vs->data.video.format->frame_width;
   bg_vs->data.video.format->image_height = bg_vs->data.video.format->frame_height;
@@ -532,7 +532,7 @@ static void init_video_stream(bgav_demuxer_context_t * ctx,
   bg_vs->data.video.format->pixel_width = 1;
   bg_vs->data.video.format->pixel_height = 1;
     
-  // bg_vs->data.video.format->framerate_num = BGAV_PTR_2_16BE(data);data+=2;
+  // bg_vs->data.video.format->framerate_num = GAVL_PTR_2_16BE(data);data+=2;
   //  bg_vs->data.video.format->framerate_den = 1;
   // we probably won't even care about fps
   //  if (bg_vs->data.video.format->framerate_num<=0) bg_vs->data.video.format->framerate_num=24; 
@@ -540,10 +540,10 @@ static void init_video_stream(bgav_demuxer_context_t * ctx,
   bg_vs->data.video.format->timescale = 1000;
   bg_vs->data.video.format->framerate_mode = GAVL_FRAMERATE_VARIABLE;
   
-  data += 2; // fps =  BGAV_PTR_2_16BE(data); data+=2; /* fps */
+  data += 2; // fps =  GAVL_PTR_2_16BE(data); data+=2; /* fps */
   
   data += 4; /* Unknown */
-  data += 2; // fps2 =  BGAV_PTR_2_16BE(data); data+=2; /* fps2 */
+  data += 2; // fps2 =  GAVL_PTR_2_16BE(data); data+=2; /* fps2 */
   data += 2; /* Unknown */
 
   //  fprintf(stderr, "FPS: %d, FPS2: %d\n", fps, fps2);
@@ -556,12 +556,12 @@ static void init_video_stream(bgav_demuxer_context_t * ctx,
     {
     case BGAV_MK_FOURCC('R','V','1','0'):
       rm_vs->parse_frame_info = parse_frame_info_rv10;
-      rm_vs->sub_id = BGAV_PTR_2_32BE(bg_vs->ext_data+4);
+      rm_vs->sub_id = GAVL_PTR_2_32BE(bg_vs->ext_data+4);
       
       break;
     case BGAV_MK_FOURCC('R','V','2','0'):
       rm_vs->parse_frame_info = parse_frame_info_rv20;
-      rm_vs->sub_id = BGAV_PTR_2_32BE(bg_vs->ext_data+4);
+      rm_vs->sub_id = GAVL_PTR_2_32BE(bg_vs->ext_data+4);
 
       if(rm_vs->sub_id == 0x30202002
          || rm_vs->sub_id == 0x30203002
@@ -583,23 +583,23 @@ static void init_video_stream(bgav_demuxer_context_t * ctx,
   //		    if(sh->format==0x30335652 || sh->format==0x30325652 )
   if(1)
     {
-    tmp=BGAV_PTR_2_16BE(data);data+=2;
+    tmp=GAVL_PTR_2_16BE(data);data+=2;
     //    if(tmp>0){
     //    bg_vs->data.video.format->framerate_num = tmp;
     //    }
     } else {
-    int fps=BGAV_PTR_2_16BE(data);data+=2;
+    int fps=GAVL_PTR_2_16BE(data);data+=2;
     printf("realvid: ignoring FPS = %d\n",fps);
     }
 
   data += 2; // Unknown
   
   // read codec sub-format (to make difference between low and high rate codec)
-  //  ((unsigned int*)(sh->bih+1))[0]=BGAV_PTR_2_32BE(data);data+=4;
-  ((uint32_t*)(bg_vs->ext_data))[0] = BGAV_PTR_2_32BE(data);data+=4;
+  //  ((unsigned int*)(sh->bih+1))[0]=GAVL_PTR_2_32BE(data);data+=4;
+  ((uint32_t*)(bg_vs->ext_data))[0] = GAVL_PTR_2_32BE(data);data+=4;
   
   /* h263 hack */
-  tmp = BGAV_PTR_2_32BE(data);data+=4;
+  tmp = GAVL_PTR_2_32BE(data);data+=4;
   ((uint32_t*)(bg_vs->ext_data))[1] = tmp;
   
   rm_vs->sub_id = tmp;
@@ -1168,8 +1168,8 @@ static int process_video_chunk(bgav_demuxer_context_t * ctx,
         return 0;
       
       s->packet->data[0] = 0;
-      BGAV_32LE_2_PTR(1, s->packet->data+1);
-      BGAV_32LE_2_PTR(0, s->packet->data+5);
+      GAVL_32LE_2_PTR(1, s->packet->data+1);
+      GAVL_32LE_2_PTR(0, s->packet->data+5);
       s->packet->data_size = packet_size;
       
       len -= frame_size;
@@ -1195,8 +1195,8 @@ static int process_video_chunk(bgav_demuxer_context_t * ctx,
         bgav_packet_alloc(s->packet, bytes_to_read + 9);
 
         s->packet->data[0] = 0;
-        BGAV_32LE_2_PTR(1, s->packet->data+1);
-        BGAV_32LE_2_PTR(0, s->packet->data+5);
+        GAVL_32LE_2_PTR(1, s->packet->data+1);
+        GAVL_32LE_2_PTR(0, s->packet->data+5);
         
         if(bgav_input_read_data(ctx->input, s->packet->data + 9, bytes_to_read) < bytes_to_read)
           return 0;
@@ -1218,8 +1218,8 @@ static int process_video_chunk(bgav_demuxer_context_t * ctx,
                 s->packet->data + 1 + sp->num_slices * 8,
                 s->packet->data_size - (1 + sp->num_slices * 8));
 
-        BGAV_32LE_2_PTR(1, s->packet->data + 1 + 8 * sp->num_slices);
-        BGAV_32LE_2_PTR(s->packet->data_size - (1 + sp->num_slices * 8),
+        GAVL_32LE_2_PTR(1, s->packet->data + 1 + 8 * sp->num_slices);
+        GAVL_32LE_2_PTR(s->packet->data_size - (1 + sp->num_slices * 8),
                         s->packet->data + 1 + 8 * sp->num_slices + 4);
         s->packet->data_size += 8;
 

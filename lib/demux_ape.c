@@ -331,9 +331,9 @@ static int open_ape(bgav_demuxer_context_t * ctx)
 
   s->ext_size = APE_EXTRADATA_SIZE;
   s->ext_data = malloc(s->ext_size);
-  BGAV_16LE_2_PTR(priv->h.fileversion, s->ext_data);
-  BGAV_16LE_2_PTR(priv->h.compressiontype, s->ext_data+2);
-  BGAV_16LE_2_PTR(priv->h.formatflags, s->ext_data+4);
+  GAVL_16LE_2_PTR(priv->h.fileversion, s->ext_data);
+  GAVL_16LE_2_PTR(priv->h.compressiontype, s->ext_data+2);
+  GAVL_16LE_2_PTR(priv->h.formatflags, s->ext_data+4);
   
   gavl_dictionary_set_string(ctx->tt->cur->metadata, 
                     GAVL_META_FORMAT, "APE");
@@ -391,8 +391,8 @@ static int next_packet_ape(bgav_demuxer_context_t * ctx)
   else
     p->duration = priv->h.finalframeblocks;
   
-  BGAV_32LE_2_PTR(p->duration, p->data);
-  BGAV_32LE_2_PTR(priv->index[priv->current_frame].skip, p->data+4);
+  GAVL_32LE_2_PTR(p->duration, p->data);
+  GAVL_32LE_2_PTR(priv->index[priv->current_frame].skip, p->data+4);
 
     
   

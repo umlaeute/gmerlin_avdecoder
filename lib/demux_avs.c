@@ -125,8 +125,8 @@ static int next_packet_avs(bgav_demuxer_context_t * ctx)
     {
     if(bgav_input_read_data(ctx->input, block_header, 4) < 4)
       return 0;
-    block_type = BGAV_PTR_2_16LE(&block_header[0]);
-    block_size = BGAV_PTR_2_16LE(&block_header[2]);
+    block_type = GAVL_PTR_2_16LE(&block_header[0]);
+    block_size = GAVL_PTR_2_16LE(&block_header[2]);
     switch(block_type >> 8)
       {
       case 0x01: /* Video data */
@@ -296,11 +296,11 @@ static int open_avs(bgav_demuxer_context_t * ctx)
   s->data.video.format->pixel_width  = 1;
   s->data.video.format->pixel_height = 1;
 
-  s->data.video.format->timescale = BGAV_PTR_2_16LE(&header[10]);
+  s->data.video.format->timescale = GAVL_PTR_2_16LE(&header[10]);
   s->data.video.format->frame_duration = 1;
   s->data.video.depth = 8;
   
-  s->stats.pts_end = BGAV_PTR_2_32LE(&header[12]);
+  s->stats.pts_end = GAVL_PTR_2_32LE(&header[12]);
   
   ctx->data_start = ctx->input->position;
   ctx->flags |= BGAV_DEMUXER_HAS_DATA_START;

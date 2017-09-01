@@ -611,13 +611,13 @@ static int open_asf(bgav_demuxer_context_t * ctx)
           
           asf_as->descramble_h = *pos;
           pos++;
-          asf_as->descramble_w = BGAV_PTR_2_16LE(pos);
+          asf_as->descramble_w = GAVL_PTR_2_16LE(pos);
           pos+=2;
-          asf_as->descramble_b = BGAV_PTR_2_16LE(pos);
+          asf_as->descramble_b = GAVL_PTR_2_16LE(pos);
           pos+=2;
           asf_as->descramble_w /= asf_as->descramble_b;
           
-          asf_as->block_align_2 = BGAV_PTR_2_16LE(pos);
+          asf_as->block_align_2 = GAVL_PTR_2_16LE(pos);
           pos+=2;
           }
         else
@@ -801,8 +801,8 @@ static int read_packet_header(bgav_demuxer_context_t * ctx, asf_t * asf,
   // Read packet size (plen):
   switch((ret->flags>>5)&3)
     {
-    case 3: ret->plen=BGAV_PTR_2_32LE(data_ptr);data_ptr+=4;break; // dword
-    case 2: ret->plen=BGAV_PTR_2_16LE(data_ptr);data_ptr+=2;break; // word
+    case 3: ret->plen=GAVL_PTR_2_32LE(data_ptr);data_ptr+=4;break; // dword
+    case 2: ret->plen=GAVL_PTR_2_16LE(data_ptr);data_ptr+=2;break; // word
     case 1: ret->plen=data_ptr[0];data_ptr++;break;                // byte
     default: ret->plen=0;
       //plen==0 is handled later
@@ -812,8 +812,8 @@ static int read_packet_header(bgav_demuxer_context_t * ctx, asf_t * asf,
   // Read sequence:
   switch((ret->flags>>1)&3)
     {
-    case 3: ret->sequence=BGAV_PTR_2_32LE(data_ptr);data_ptr+=4;break;// dword
-    case 2: ret->sequence=BGAV_PTR_2_16LE(data_ptr);data_ptr+=2;break;// word
+    case 3: ret->sequence=GAVL_PTR_2_32LE(data_ptr);data_ptr+=4;break;// dword
+    case 2: ret->sequence=GAVL_PTR_2_16LE(data_ptr);data_ptr+=2;break;// word
     case 1: ret->sequence=data_ptr[0];data_ptr++;break;            // byte
     default: ret->sequence=0;
     }
@@ -821,8 +821,8 @@ static int read_packet_header(bgav_demuxer_context_t * ctx, asf_t * asf,
   // Read padding size (padding):
   switch((ret->flags>>3)&3)
     {
-    case 3: ret->padding=BGAV_PTR_2_32LE(data_ptr);data_ptr+=4;break;// dword
-    case 2: ret->padding=BGAV_PTR_2_16LE(data_ptr);data_ptr+=2;break;// word
+    case 3: ret->padding=GAVL_PTR_2_32LE(data_ptr);data_ptr+=4;break;// dword
+    case 2: ret->padding=GAVL_PTR_2_16LE(data_ptr);data_ptr+=2;break;// word
     case 1: ret->padding=data_ptr[0];data_ptr++;break;             // byte
     default: ret->padding=0;
     }
@@ -839,8 +839,8 @@ static int read_packet_header(bgav_demuxer_context_t * ctx, asf_t * asf,
     }
   
   // Read time & duration:
-  ret->time = BGAV_PTR_2_32LE(data_ptr);     data_ptr+=4;
-  ret->duration = BGAV_PTR_2_16LE(data_ptr); data_ptr+=2;
+  ret->time = GAVL_PTR_2_32LE(data_ptr);     data_ptr+=4;
+  ret->duration = GAVL_PTR_2_16LE(data_ptr); data_ptr+=2;
   
   // Read payload .flags =
   if(ret->flags&1)
@@ -899,8 +899,8 @@ static int read_segment_header(const bgav_options_t * opt,
   // Read media object number (seq):
   switch((pkt_hdr->segtype>>4)&3)
     {
-    case 3: ret->seq=BGAV_PTR_2_32LE(data_ptr);data_ptr+=4;break; // dword
-    case 2: ret->seq=BGAV_PTR_2_16LE(data_ptr);data_ptr+=2;break; // word
+    case 3: ret->seq=GAVL_PTR_2_32LE(data_ptr);data_ptr+=4;break; // dword
+    case 2: ret->seq=GAVL_PTR_2_16LE(data_ptr);data_ptr+=2;break; // word
     case 1: ret->seq=data_ptr[0];data_ptr++;break;         // byte
     default: ret->seq=0;
     }
@@ -908,8 +908,8 @@ static int read_segment_header(const bgav_options_t * opt,
   // Read offset or timestamp:
   switch((pkt_hdr->segtype>>2)&3)
     {
-    case 3: ret->x=BGAV_PTR_2_32LE(data_ptr);data_ptr+=4;break; // dword
-    case 2: ret->x=BGAV_PTR_2_16LE(data_ptr);data_ptr+=2;break; // word
+    case 3: ret->x=GAVL_PTR_2_32LE(data_ptr);data_ptr+=4;break; // dword
+    case 2: ret->x=GAVL_PTR_2_16LE(data_ptr);data_ptr+=2;break; // word
     case 1: ret->x=data_ptr[0];data_ptr++;break;         // byte
     default: ret->x=0;
     }
@@ -917,8 +917,8 @@ static int read_segment_header(const bgav_options_t * opt,
   // Read replic.data len:
   switch((pkt_hdr->segtype)&3)
     {
-    case 3: ret->rlen=BGAV_PTR_2_32LE(data_ptr);data_ptr+=4;break; // dword
-    case 2: ret->rlen=BGAV_PTR_2_16LE(data_ptr);data_ptr+=2;break; // word
+    case 3: ret->rlen=GAVL_PTR_2_32LE(data_ptr);data_ptr+=4;break; // dword
+    case 2: ret->rlen=GAVL_PTR_2_16LE(data_ptr);data_ptr+=2;break; // word
     case 1: ret->rlen=data_ptr[0];data_ptr++;break;              // byte
     default: ret->rlen=0;
     }
@@ -933,7 +933,7 @@ static int read_segment_header(const bgav_options_t * opt,
       if(ret->rlen>=8)
         {
         data_ptr+=4;       // skip object size
-        ret->time2=BGAV_PTR_2_32LE(data_ptr); // read PTS
+        ret->time2=GAVL_PTR_2_32LE(data_ptr); // read PTS
         data_ptr+=ret->rlen-4;
         }
       else
@@ -951,8 +951,8 @@ static int read_segment_header(const bgav_options_t * opt,
     // multiple segments
     switch(pkt_hdr->segsizetype)
       {
-      case 3: ret->len=BGAV_PTR_2_32LE(data_ptr);data_ptr+=4;break;  // dword
-      case 2: ret->len=BGAV_PTR_2_16LE(data_ptr);data_ptr+=2;break;  // word
+      case 3: ret->len=GAVL_PTR_2_32LE(data_ptr);data_ptr+=4;break;  // dword
+      case 2: ret->len=GAVL_PTR_2_16LE(data_ptr);data_ptr+=2;break;  // word
       case 1: ret->len=data_ptr[0];data_ptr++;break;           // byte
       default: ret->len=pkt_hdr->plen-(data_ptr-asf->packet_buffer); // ???
       }

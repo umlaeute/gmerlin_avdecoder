@@ -76,7 +76,7 @@ static int probe_psxstr(bgav_input_context_t * input)
   if(memcmp(ptr, sync_header, 12))
     return 0;
 
-  if(BGAV_PTR_2_32LE(&ptr[0x18]) != STR_MAGIC)
+  if(GAVL_PTR_2_32LE(&ptr[0x18]) != STR_MAGIC)
     return 0;
   return 1;
   }
@@ -121,7 +121,7 @@ static int open_psxstr(bgav_demuxer_context_t * ctx)
       case CDXA_TYPE_DATA:
       case CDXA_TYPE_VIDEO:
         /* qualify the magic number */
-        if(BGAV_PTR_2_32LE(&sector[0x18]) != STR_MAGIC)
+        if(GAVL_PTR_2_32LE(&sector[0x18]) != STR_MAGIC)
           break;
 
         if(bgav_track_find_stream_all(ctx->tt->cur, channel + VIDEO_OFFSET))
@@ -130,8 +130,8 @@ static int open_psxstr(bgav_demuxer_context_t * ctx)
         s = bgav_track_add_video_stream(ctx->tt->cur, ctx->opt);
         s->fourcc = BGAV_MK_FOURCC('M','D','E','C');
 
-        s->data.video.format->image_width  = BGAV_PTR_2_16LE(&sector[0x28]);
-        s->data.video.format->image_height = BGAV_PTR_2_16LE(&sector[0x2A]);
+        s->data.video.format->image_width  = GAVL_PTR_2_16LE(&sector[0x28]);
+        s->data.video.format->image_height = GAVL_PTR_2_16LE(&sector[0x2A]);
         
         s->data.video.format->frame_width  = s->data.video.format->image_width;
         s->data.video.format->frame_height = s->data.video.format->image_height;
@@ -202,9 +202,9 @@ static int next_packet_psxstr(bgav_demuxer_context_t * ctx)
       if(!s)
         break;
       
-      current_sector = BGAV_PTR_2_16LE(&sector[0x1C]);
-      sector_count   = BGAV_PTR_2_16LE(&sector[0x1E]);
-      frame_size     = BGAV_PTR_2_32LE(&sector[0x24]);
+      current_sector = GAVL_PTR_2_16LE(&sector[0x1C]);
+      sector_count   = GAVL_PTR_2_16LE(&sector[0x1E]);
+      frame_size     = GAVL_PTR_2_32LE(&sector[0x24]);
       if(!s->packet)
         {
         s->packet = bgav_stream_get_packet_write(s);

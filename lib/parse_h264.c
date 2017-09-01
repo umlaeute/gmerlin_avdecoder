@@ -376,11 +376,11 @@ static int parse_frame_avc(bgav_video_parser_t * parser,
         ptr++;
         break;
       case 2:
-        nal_len = BGAV_PTR_2_16BE(ptr);
+        nal_len = GAVL_PTR_2_16BE(ptr);
         ptr += 2;
         break;
       case 4:
-        nal_len = BGAV_PTR_2_32BE(ptr);
+        nal_len = GAVL_PTR_2_32BE(ptr);
         ptr += 4;
         break;
       default:
@@ -754,7 +754,7 @@ static int parse_avc_extradata(bgav_video_parser_t * parser)
   /* SPS (we parse just the first one) */
   ptr++; // num_units = *ptr & 0x1f; ptr++;
 
-  nal_len = BGAV_PTR_2_16BE(ptr); ptr += 2;
+  nal_len = GAVL_PTR_2_16BE(ptr); ptr += 2;
 
 #if 1
   nh.ref_idc   = ptr[0] >> 5;

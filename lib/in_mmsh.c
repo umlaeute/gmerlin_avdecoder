@@ -71,14 +71,14 @@ static int stream_chunk_read(bgav_input_context_t* ctx,
   if(read_data(ctx, buffer, 12, block) < 12)
     return 0;
 #ifdef WORDS_BIGENDIAN  
-  ch->type            = BGAV_PTR_2_16BE(pos); pos+=2;
+  ch->type            = GAVL_PTR_2_16BE(pos); pos+=2;
 #else
-  ch->type            = BGAV_PTR_2_16LE(pos); pos+=2;
+  ch->type            = GAVL_PTR_2_16LE(pos); pos+=2;
 #endif
-  ch->size            = BGAV_PTR_2_16LE(pos); pos+=2;
-  ch->sequence_number = BGAV_PTR_2_32LE(pos); pos+=4;
-  ch->unknown         = BGAV_PTR_2_16LE(pos); pos+=2;
-  ch->size_confirm    = BGAV_PTR_2_16LE(pos); pos+=2;
+  ch->size            = GAVL_PTR_2_16LE(pos); pos+=2;
+  ch->sequence_number = GAVL_PTR_2_32LE(pos); pos+=4;
+  ch->unknown         = GAVL_PTR_2_16LE(pos); pos+=2;
+  ch->size_confirm    = GAVL_PTR_2_16LE(pos); pos+=2;
   return 1;
   }
 #if 0

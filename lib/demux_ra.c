@@ -88,12 +88,12 @@ static int open_ra(bgav_demuxer_context_t * ctx)
     return 0;
     }
   
-  version = BGAV_PTR_2_16BE(file_header + 0x04);
+  version = GAVL_PTR_2_16BE(file_header + 0x04);
   /* read header size according to version */
   if (version == 3)
-    hdr_size = BGAV_PTR_2_16BE(file_header + 0x06) + 8;
+    hdr_size = GAVL_PTR_2_16BE(file_header + 0x06) + 8;
   else if (version == 4)
-    hdr_size = BGAV_PTR_2_32BE(file_header + 0x12) + 16;
+    hdr_size = GAVL_PTR_2_32BE(file_header + 0x12) + 16;
   else
     {
     return 0;
@@ -118,7 +118,7 @@ static int open_ra(bgav_demuxer_context_t * ctx)
   /* read header data according to version */
   if((version == 3) && (hdr_size >= 32))
     {
-    priv->data_size = BGAV_PTR_2_32BE(audio_header + 0x12);
+    priv->data_size = GAVL_PTR_2_32BE(audio_header + 0x12);
 
     s->data.audio.format->num_channels = 1;
     s->data.audio.format->samplerate = 8000;
@@ -128,18 +128,18 @@ static int open_ra(bgav_demuxer_context_t * ctx)
     }
   else if(hdr_size >= 72)
     {
-    priv->data_size = BGAV_PTR_2_32BE(audio_header + 0x1C);    
-    s->data.audio.block_align = BGAV_PTR_2_16BE(audio_header + 0x2A);
-    s->data.audio.format->samplerate = BGAV_PTR_2_16BE(audio_header + 0x30);
+    priv->data_size = GAVL_PTR_2_32BE(audio_header + 0x1C);    
+    s->data.audio.block_align = GAVL_PTR_2_16BE(audio_header + 0x2A);
+    s->data.audio.format->samplerate = GAVL_PTR_2_16BE(audio_header + 0x30);
     
     s->data.audio.bits_per_sample     = audio_header[0x35];
     s->data.audio.format->num_channels = audio_header[0x37];
 
-    // sub_packet_size    = BGAV_PTR_2_16BE(audio_header + 0x2C);
-    priv->sub_packet_h       = BGAV_PTR_2_16BE(audio_header + 0x28);    
-    // framesize = BGAV_PTR_2_16BE(audio_header + 0x2A);
-    codec_flavor       = BGAV_PTR_2_16BE(audio_header + 0x16);
-    coded_framesize    = BGAV_PTR_2_32BE(audio_header + 0x18); 
+    // sub_packet_size    = GAVL_PTR_2_16BE(audio_header + 0x2C);
+    priv->sub_packet_h       = GAVL_PTR_2_16BE(audio_header + 0x28);    
+    // framesize = GAVL_PTR_2_16BE(audio_header + 0x2A);
+    codec_flavor       = GAVL_PTR_2_16BE(audio_header + 0x16);
+    coded_framesize    = GAVL_PTR_2_32BE(audio_header + 0x18); 
 
     if(audio_header[0x3D] == 4)
       s->fourcc = BGAV_PTR_2_FOURCC(audio_header+0x3E);

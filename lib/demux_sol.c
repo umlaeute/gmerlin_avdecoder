@@ -36,7 +36,7 @@ static int probe_sol(bgav_input_context_t * input)
   if(bgav_input_get_data(input, probe_data, 6) < 6)
     return 0;
 
-  magic = BGAV_PTR_2_16LE(&probe_data[0]);
+  magic = GAVL_PTR_2_16LE(&probe_data[0]);
 
   if((magic != 0x0B8D) && (magic != 0x0C0D) && (magic != 0x0C8D))
     return 0;

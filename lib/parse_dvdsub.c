@@ -63,15 +63,15 @@ static int parse_frame_dvdsub(bgav_video_parser_t * parser, bgav_packet_t * p,
   
   PACKET_SET_CODING_TYPE(p, BGAV_CODING_TYPE_I);
 
-  ctrl_offset = BGAV_PTR_2_16BE(p->data+2);
+  ctrl_offset = GAVL_PTR_2_16BE(p->data+2);
   //  ctrl_start = ctrl_offset;
   
   ptr = p->data + ctrl_offset;
   
   while(1) /* Control packet loop */
     {
-    date             = BGAV_PTR_2_16BE(ptr); ptr += 2;
-    next_ctrl_offset = BGAV_PTR_2_16BE(ptr); ptr += 2;
+    date             = GAVL_PTR_2_16BE(ptr); ptr += 2;
+    next_ctrl_offset = GAVL_PTR_2_16BE(ptr); ptr += 2;
     
     ctrl_seq_end = 0;
     
@@ -107,8 +107,8 @@ static int parse_frame_dvdsub(bgav_video_parser_t * parser, bgav_packet_t * p,
           break;
         case 0x06:
 #if 0
-          offset1 = BGAV_PTR_2_16BE(ptr); ptr += 2;
-          offset2 = BGAV_PTR_2_16BE(ptr); ptr += 2;
+          offset1 = GAVL_PTR_2_16BE(ptr); ptr += 2;
+          offset2 = GAVL_PTR_2_16BE(ptr); ptr += 2;
 #endif
           ptr += 4;
           break;
@@ -178,7 +178,7 @@ static int find_frame_boundary_dvdsub(bgav_video_parser_t * parser, int * skip)
     if(parser->buf.size - parser->pos < 2)
       return 0;
     
-    priv->packet_size = BGAV_PTR_2_16BE(parser->buf.buffer + parser->pos);
+    priv->packet_size = GAVL_PTR_2_16BE(parser->buf.buffer + parser->pos);
     
     //    fprintf(stderr, "Packet size: %d\n", priv->packet_size);
 

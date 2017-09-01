@@ -181,7 +181,7 @@ static int next_packet_rdt(bgav_input_context_t * ctx, int block)
       }
     else if(header[0] == '$')
       {
-      size = BGAV_PTR_2_24BE(&header[1]);
+      size = GAVL_PTR_2_24BE(&header[1]);
     
       flags1 = header[4];
 
@@ -210,7 +210,7 @@ static int next_packet_rdt(bgav_input_context_t * ctx, int block)
       if(bgav_read_data_fd(ctx->opt, fd, header, 6, ctx->opt->read_timeout) < 6)
         return 0;
 
-      timestamp = BGAV_PTR_2_32BE(header);
+      timestamp = GAVL_PTR_2_32BE(header);
       size+=2;
 
       

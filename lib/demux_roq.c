@@ -56,9 +56,9 @@ static int read_chunk_header(bgav_input_context_t * input, chunk_header_t * h)
 
 static void parse_chunk_header(uint8_t * data, chunk_header_t * h)
   {
-  h->id    = BGAV_PTR_2_16LE(data); data+=2;
-  h->size  = BGAV_PTR_2_32LE(data); data+=4;
-  h->arg   = BGAV_PTR_2_16LE(data);
+  h->id    = GAVL_PTR_2_16LE(data); data+=2;
+  h->size  = GAVL_PTR_2_32LE(data); data+=4;
+  h->arg   = GAVL_PTR_2_16LE(data);
   }
 
 #if 0

@@ -146,7 +146,7 @@ static int is_start_code(uint8_t * data, int * type, uint32_t * length)
     return 0;
 
   *type = data[5];
-  *length = BGAV_PTR_2_32BE(&data[6]);
+  *length = GAVL_PTR_2_32BE(&data[6]);
   return 1;
   }
 

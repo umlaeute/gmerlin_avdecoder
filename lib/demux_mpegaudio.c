@@ -37,6 +37,7 @@
 #define PROBE_BYTES     ((PROBE_FRAMES-1)*MAX_FRAME_BYTES+4)
 
 
+
 /* ALBW decoder */
 
 typedef struct
@@ -373,6 +374,9 @@ static void get_metadata_albw(bgav_input_context_t* input,
       *start_position += bgav_id3v2_total_bytes(id3v2);
       bgav_id3v2_2_metadata(id3v2, &metadata_v2);
       }
+
+    if(input->opt->dump_headers)
+      bgav_id3v2_dump(id3v2);
     }
   
   bgav_input_seek(input, *end_position - 128, SEEK_SET);
@@ -464,6 +468,9 @@ static int open_mpegaudio(bgav_demuxer_context_t * ctx)
   priv->data_start = ctx->input->position;
   if(ctx->input->id3v2)
     {
+    if(ctx->input->opt->dump_headers)
+      bgav_id3v2_dump(ctx->input->id3v2);
+    
     bgav_id3v2_2_metadata(ctx->input->id3v2, &metadata_v2);
     
     /* Check for ALBW, but only on a seekable source! */

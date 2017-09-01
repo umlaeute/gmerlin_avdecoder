@@ -1010,7 +1010,7 @@ static void check_eit(bgav_input_context_t* ctx)
   start = eit;
   pos = start + 3;
 
-  tmp = BGAV_PTR_2_16BE(pos); pos+=2;
+  tmp = GAVL_PTR_2_16BE(pos); pos+=2;
 
   
   if(tmp != priv->service_id)
@@ -1038,14 +1038,14 @@ static void check_eit(bgav_input_context_t* ctx)
 
   while(pos - start + 4 < len)
     {
-    tmp = BGAV_PTR_2_16BE(pos); pos+=2;
+    tmp = GAVL_PTR_2_16BE(pos); pos+=2;
     
     dvb_mjdtime(pos, &start_time);
     pos += 5;
     
-    tmp = BGAV_PTR_2_24BE(pos); pos+=3;
+    tmp = GAVL_PTR_2_24BE(pos); pos+=3;
 
-    tmp = BGAV_PTR_2_16BE(pos); pos+=2;
+    tmp = GAVL_PTR_2_16BE(pos); pos+=2;
     
     descriptors_end = pos + (tmp & 0x0fff);
     

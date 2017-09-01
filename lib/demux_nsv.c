@@ -167,7 +167,7 @@ static int nsv_file_header_read(bgav_input_context_t * ctx,
 
     for(i = 0; i < ret->toc_size; i++)
       {
-      ret->toc.offsets[i] = BGAV_PTR_2_32LE(pos); pos+=4;
+      ret->toc.offsets[i] = GAVL_PTR_2_32LE(pos); pos+=4;
       }
     /* Read TOC version 2 */
     if((ret->toc_alloc > ret->toc_size * 2) &&
@@ -179,7 +179,7 @@ static int nsv_file_header_read(bgav_input_context_t * ctx,
       pos+=4;
       ret->toc.frames = malloc(ret->toc_size * sizeof(*ret->toc.frames));
       for(i = 0; i < ret->toc_size; i++)
-        ret->toc.frames[i] = BGAV_PTR_2_32LE(pos); pos+=4;
+        ret->toc.frames[i] = GAVL_PTR_2_32LE(pos); pos+=4;
       }
     }
   

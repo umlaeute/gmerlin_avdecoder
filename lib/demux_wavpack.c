@@ -72,15 +72,15 @@ static const int wv_rates[16] = {
 static void parse_header(wvpk_header_t * ret, uint8_t * data)
   {
   ret->fourcc          = BGAV_PTR_2_FOURCC(data); data+=4;
-  ret->block_size      = BGAV_PTR_2_32LE(data); data+=4;
-  ret->version         = BGAV_PTR_2_16LE(data); data+=2;
+  ret->block_size      = GAVL_PTR_2_32LE(data); data+=4;
+  ret->version         = GAVL_PTR_2_16LE(data); data+=2;
   ret->track_number    = *data; data++;
   ret->track_sub_index = *data; data++;
-  ret->total_samples   = BGAV_PTR_2_32LE(data); data+=4;
-  ret->sample_offset   = BGAV_PTR_2_32LE(data); data+=4;
-  ret->num_samples     = BGAV_PTR_2_32LE(data); data+=4;
-  ret->flags           = BGAV_PTR_2_32LE(data); data+=4;
-  ret->crc             = BGAV_PTR_2_32LE(data);
+  ret->total_samples   = GAVL_PTR_2_32LE(data); data+=4;
+  ret->sample_offset   = GAVL_PTR_2_32LE(data); data+=4;
+  ret->num_samples     = GAVL_PTR_2_32LE(data); data+=4;
+  ret->flags           = GAVL_PTR_2_32LE(data); data+=4;
+  ret->crc             = GAVL_PTR_2_32LE(data);
   }
 
 static void dump_header(wvpk_header_t * h)

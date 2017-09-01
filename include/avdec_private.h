@@ -1535,6 +1535,8 @@ int bgav_init(bgav_t * b);
 
 /* ptr -> integer */
 
+#if 0
+
 #define BGAV_PTR_2_16LE(p) GAVL_PTR_2_16LE(p) 
 #define BGAV_PTR_2_24LE(p) GAVL_PTR_2_24LE(p)
 #define BGAV_PTR_2_32LE(p) GAVL_PTR_2_32LE(p)
@@ -1555,7 +1557,9 @@ int bgav_init(bgav_t * b);
 #define BGAV_24BE_2_PTR(i, p) GAVL_24BE_2_PTR(i, p) 
 #define BGAV_64BE_2_PTR(i, p) GAVL_64BE_2_PTR(i, p) 
 
-#define BGAV_PTR_2_FOURCC(p) BGAV_PTR_2_32BE(p)
+#endif
+
+#define BGAV_PTR_2_FOURCC(p) GAVL_PTR_2_32BE(p)
 
 #define BGAV_WAVID_2_FOURCC(id) BGAV_MK_FOURCC(0x00, 0x00, (id>>8), (id&0xff))
 

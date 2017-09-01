@@ -56,8 +56,8 @@ static void parse_frame_header(uint8_t * data,
                                frame_header_t * h)
   {
   int i;
-  h->sound_data_offset = BGAV_PTR_2_16LE(data); data+=2;
-  h->palette_offset    = BGAV_PTR_2_16LE(data); data+=2;
+  h->sound_data_offset = GAVL_PTR_2_16LE(data); data+=2;
+  h->palette_offset    = GAVL_PTR_2_16LE(data); data+=2;
 
   for(i = 0; i < 4; i++)
     {
@@ -66,7 +66,7 @@ static void parse_frame_header(uint8_t * data,
   
   for(i = 0; i < 4; i++)
     {
-    h->offset_table[i] = BGAV_PTR_2_16LE(data); data+=2;
+    h->offset_table[i] = GAVL_PTR_2_16LE(data); data+=2;
     }
   }
 
@@ -175,7 +175,7 @@ static int open_tiertex(bgav_demuxer_context_t * ctx)
   ptr = &buf[256];
   for(i = 0; i < SEQ_NUM_FRAME_BUFFERS; i++)
     {
-    priv->frame_buffers[i].data_size = BGAV_PTR_2_16LE(ptr);ptr+=2;
+    priv->frame_buffers[i].data_size = GAVL_PTR_2_16LE(ptr);ptr+=2;
     if(!priv->frame_buffers[i].data_size)
       break;
     priv->frame_buffers[i].data = malloc(priv->frame_buffers[i].data_size);

@@ -1248,11 +1248,11 @@ static int parse_hdv_aux_header(uint8_t ** data, int * len)
   int size;
   uint8_t * ptr = *data;
 
-  h = BGAV_PTR_2_32BE(ptr); ptr += 4;
+  h = GAVL_PTR_2_32BE(ptr); ptr += 4;
   if(h != hdv_aux_header)
     return 0;
   
-  size = BGAV_PTR_2_16BE(ptr); ptr += 2;
+  size = GAVL_PTR_2_16BE(ptr); ptr += 2;
   if(size != *len - (ptr - *data))
     return 0;
 

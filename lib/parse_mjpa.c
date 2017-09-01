@@ -38,7 +38,7 @@ static int parse_frame_mjpa(bgav_video_parser_t * parser,
   ptr = p->data;
   for(i = 0; i < p->data_size - 2; i++)
     {
-    num = BGAV_PTR_2_16BE(ptr);
+    num = GAVL_PTR_2_16BE(ptr);
     if(num == 0xffe1) // APP1
       break;
     ptr++;
@@ -54,7 +54,7 @@ static int parse_frame_mjpa(bgav_video_parser_t * parser,
     + 4    // MJPA
     + 4    // Field size
     + 4;   // Padded field size
-  p->field2_offset = BGAV_PTR_2_32BE(ptr);
+  p->field2_offset = GAVL_PTR_2_32BE(ptr);
   return 1;
   }
 

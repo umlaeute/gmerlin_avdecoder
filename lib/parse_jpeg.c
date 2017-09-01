@@ -43,7 +43,7 @@ static gavl_pixelformat_t get_pixelformat(bgav_packet_t * p)
 
   while(1)
     {
-    marker = BGAV_PTR_2_16BE(ptr); ptr+=2;
+    marker = GAVL_PTR_2_16BE(ptr); ptr+=2;
     
     switch(marker)
       {
@@ -69,17 +69,17 @@ static gavl_pixelformat_t get_pixelformat(bgav_packet_t * p)
         int num_components;
         //        gavl_hexdump(ptr, 16, 16);
       
-        len = BGAV_PTR_2_16BE(ptr); ptr+=2;
+        len = GAVL_PTR_2_16BE(ptr); ptr+=2;
         //        fprintf(stderr, "Got SOF %d\n", len-2);
         
         ptr++; // tmp = *ptr; ptr++;
 
         //        fprintf(stderr, "Bits: %d\n", tmp);
       
-        ptr+=2; // tmp = BGAV_PTR_2_16BE(ptr); ptr+=2;
+        ptr+=2; // tmp = GAVL_PTR_2_16BE(ptr); ptr+=2;
         //        fprintf(stderr, "Height: %d\n", tmp);
 
-        ptr+=2; // tmp = BGAV_PTR_2_16BE(ptr); ptr+=2;
+        ptr+=2; // tmp = GAVL_PTR_2_16BE(ptr); ptr+=2;
         //        fprintf(stderr, "Width: %d\n", tmp);
         
         num_components = *ptr; ptr++;
@@ -127,7 +127,7 @@ static gavl_pixelformat_t get_pixelformat(bgav_packet_t * p)
         return 0;
         break;
       default:
-        len = BGAV_PTR_2_16BE(ptr); ptr+=2;
+        len = GAVL_PTR_2_16BE(ptr); ptr+=2;
         //        fprintf(stderr, "Got %04x %d\n", marker, len-2);
         ptr+=len-2;
         break;

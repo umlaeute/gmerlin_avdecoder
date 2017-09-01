@@ -1052,7 +1052,7 @@ static int mpeg4_aus_read(bgav_stream_t * s,
   rtp_stream_priv_t * sp;
   int total_bits;
 
-  total_bits = BGAV_PTR_2_16BE(data);data+=2;
+  total_bits = GAVL_PTR_2_16BE(data);data+=2;
 
   sp = s->priv;
   sp->priv.mpeg4_generic.num_aus = 0;
@@ -1308,7 +1308,7 @@ static int process_h264(bgav_stream_t * s, rtp_header_t * h, uint8_t * data, int
       while(len > 2)
         {
         uint16_t nal_size;
-        nal_size = BGAV_PTR_2_16BE(data);data+=2;
+        nal_size = GAVL_PTR_2_16BE(data);data+=2;
         send_nal(s, data, nal_size, h->timestamp);
         len -= (2 + nal_size);
         }
@@ -1435,7 +1435,7 @@ process_mpv(bgav_stream_t * s, rtp_header_t * h, uint8_t * data, int len)
   
   p = bgav_stream_get_packet_write(s);
 
-  i = BGAV_PTR_2_32BE(data);
+  i = GAVL_PTR_2_32BE(data);
   if(i & (1 << 26)) /* MPEG-2 */
     {
     data += 8;
@@ -1650,7 +1650,7 @@ static int process_ogg(bgav_stream_t * s,
   int fragment_type, data_type, num_packets, ident;
   rtp_stream_priv_t * sp = s->priv;
   
-  header = BGAV_PTR_2_32BE(data);
+  header = GAVL_PTR_2_32BE(data);
   data += 4;
   len -= 4;
 
@@ -1670,7 +1670,7 @@ static int process_ogg(bgav_stream_t * s,
     case 0: // Not fragmented
       for(i = 0; i < num_packets; i++)
         {
-        size = BGAV_PTR_2_16BE(data); data += 2;
+        size = GAVL_PTR_2_16BE(data); data += 2;
         start_packet_ogg(s, !i ? h->timestamp : GAVL_TIME_UNDEFINED);
         append_packet_ogg(s, data, size);
         end_packet_ogg(s);
@@ -1678,16 +1678,16 @@ static int process_ogg(bgav_stream_t * s,
         }
       break;
     case 1: // Start fragment
-      size = BGAV_PTR_2_16BE(data); data += 2;
+      size = GAVL_PTR_2_16BE(data); data += 2;
       start_packet_ogg(s, h->timestamp);
       append_packet_ogg(s, data, size);
       break;
     case 2: // Continuation fragment
-      size = BGAV_PTR_2_16BE(data); data += 2;
+      size = GAVL_PTR_2_16BE(data); data += 2;
       append_packet_ogg(s, data, size);
       break;
     case 3: // End fragment
-      size = BGAV_PTR_2_16BE(data); data += 2;
+      size = GAVL_PTR_2_16BE(data); data += 2;
       append_packet_ogg(s, data, size);
       end_packet_ogg(s);
       break;
@@ -1733,7 +1733,7 @@ static int extract_extradata_ogg(bgav_stream_t * s, uint8_t * data, int siz)
 
   sp = s->priv;
   
-  count_total = BGAV_PTR_2_32BE(data); data += 4;
+  count_total = GAVL_PTR_2_32BE(data); data += 4;
 
   //  fprintf(stderr, "Extract extradata: %d\n", siz);
     
@@ -1744,8 +1744,8 @@ static int extract_extradata_ogg(bgav_stream_t * s, uint8_t * data, int siz)
     return 0;
     }
 
-  sp->priv.xiph.ident  = BGAV_PTR_2_24BE(data); data += 3;
-  data += 2; // len = BGAV_PTR_2_16BE(data); data += 2;
+  sp->priv.xiph.ident  = GAVL_PTR_2_24BE(data); data += 3;
+  data += 2; // len = GAVL_PTR_2_16BE(data); data += 2;
 
   //  fprintf(stderr, "ID: %d, len: %d\n",
   //          sp->priv.xiph.ident, len);

@@ -1019,7 +1019,7 @@ static void process_packet_subtitle_qt(bgav_stream_t * s, bgav_packet_t * p)
   {
   int i;
   uint16_t len;
-  len = BGAV_PTR_2_16BE(p->data);
+  len = GAVL_PTR_2_16BE(p->data);
 
   if(!len)
     {
@@ -1046,7 +1046,7 @@ static void process_packet_subtitle_tx3g(bgav_stream_t * s, bgav_packet_t * p)
   //  int i;
   uint16_t len;
 
-  len = BGAV_PTR_2_16BE(p->data);
+  len = GAVL_PTR_2_16BE(p->data);
   
   if(len)
     {
@@ -1189,7 +1189,7 @@ static void setup_chapter_track(bgav_demuxer_context_t * ctx, qt_trak_t * trak)
       }
     /* Set chapter name */
 
-    len = BGAV_PTR_2_16BE(buffer);
+    len = GAVL_PTR_2_16BE(buffer);
     if(len)
       label = bgav_convert_string(cnv, (char*)(buffer+2), len, NULL);
     else
@@ -1706,7 +1706,7 @@ static void quicktime_init(bgav_demuxer_context_t * ctx)
       pos = stsd->entries[0].desc.esds.decoderConfig;
       for(j = 0; j < 16; j++)
         {
-        pal[j] = BGAV_PTR_2_32BE(pos);
+        pal[j] = GAVL_PTR_2_32BE(pos);
         pos += 4;
         }
 

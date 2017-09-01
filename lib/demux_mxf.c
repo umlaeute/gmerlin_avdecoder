@@ -210,14 +210,14 @@ static int process_packet_frame_wrapped(bgav_demuxer_context_t * ctx)
         if(s->data.audio.bits_per_sample == 24)
           {
           sample = (sample >> 4) & 0xffffff;
-          BGAV_24LE_2_PTR(sample, ptr);
+          GAVL_24LE_2_PTR(sample, ptr);
           ptr += 3;
           p->data_size += 3;
           }
         else if(s->data.audio.bits_per_sample == 16)
           {
           sample = (sample >> 12) & 0xffff;
-          BGAV_16LE_2_PTR(sample, ptr);
+          GAVL_16LE_2_PTR(sample, ptr);
           ptr += 2;
           p->data_size += 2;
           }

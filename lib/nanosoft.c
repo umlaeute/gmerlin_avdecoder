@@ -122,29 +122,29 @@ void bgav_WAVEFORMAT_read(bgav_WAVEFORMAT_t * ret, uint8_t * data, int len)
 
   ptr = data;
   ret->type = BGAV_WAVEFORMAT_WAVEFORMAT;
-  ret->f.WAVEFORMAT.wFormatTag      = BGAV_PTR_2_16LE(ptr);ptr+=2;
-  ret->f.WAVEFORMAT.nChannels       = BGAV_PTR_2_16LE(ptr);ptr+=2;
-  ret->f.WAVEFORMAT.nSamplesPerSec  = BGAV_PTR_2_32LE(ptr);ptr+=4;
-  ret->f.WAVEFORMAT.nAvgBytesPerSec = BGAV_PTR_2_32LE(ptr);ptr+=4;
+  ret->f.WAVEFORMAT.wFormatTag      = GAVL_PTR_2_16LE(ptr);ptr+=2;
+  ret->f.WAVEFORMAT.nChannels       = GAVL_PTR_2_16LE(ptr);ptr+=2;
+  ret->f.WAVEFORMAT.nSamplesPerSec  = GAVL_PTR_2_32LE(ptr);ptr+=4;
+  ret->f.WAVEFORMAT.nAvgBytesPerSec = GAVL_PTR_2_32LE(ptr);ptr+=4;
   /* size of a data sample */
-  ret->f.WAVEFORMAT.nBlockAlign     = BGAV_PTR_2_16LE(ptr);ptr+=2;
+  ret->f.WAVEFORMAT.nBlockAlign     = GAVL_PTR_2_16LE(ptr);ptr+=2;
 
   if(len >= 16)
     {
     ret->type = BGAV_WAVEFORMAT_PCMWAVEFORMAT;
-    ret->f.PCMWAVEFORMAT.wBitsPerSample     = BGAV_PTR_2_16LE(ptr);ptr+=2;
+    ret->f.PCMWAVEFORMAT.wBitsPerSample     = GAVL_PTR_2_16LE(ptr);ptr+=2;
     }
   if(len >= 18)
     {
     ret->type = BGAV_WAVEFORMAT_WAVEFORMATEX;
-    ret->f.WAVEFORMATEX.cbSize = BGAV_PTR_2_16LE(ptr);ptr+=2;
+    ret->f.WAVEFORMATEX.cbSize = GAVL_PTR_2_16LE(ptr);ptr+=2;
     if(ret->f.WAVEFORMATEX.cbSize)
       {
       if(ret->f.WAVEFORMAT.wFormatTag == 0xfffe && (ret->f.WAVEFORMATEX.cbSize >= 22))
         {
         ret->type = BGAV_WAVEFORMAT_WAVEFORMATEXTENSIBLE;
-        ret->f.WAVEFORMATEXTENSIBLE.Samples.wValidBitsPerSample = BGAV_PTR_2_16LE(ptr);ptr+=2;
-        ret->f.WAVEFORMATEXTENSIBLE.dwChannelMask = BGAV_PTR_2_32LE(ptr);ptr+=4;
+        ret->f.WAVEFORMATEXTENSIBLE.Samples.wValidBitsPerSample = GAVL_PTR_2_16LE(ptr);ptr+=2;
+        ret->f.WAVEFORMATEXTENSIBLE.dwChannelMask = GAVL_PTR_2_32LE(ptr);ptr+=4;
         bgav_GUID_from_ptr(&ret->f.WAVEFORMATEXTENSIBLE.SubFormat, ptr);ptr+=16;
 
         if((ret->f.WAVEFORMATEX.cbSize > 22) && (len >= (int)(ptr - data) + ret->f.WAVEFORMATEX.cbSize - 22))
@@ -351,17 +351,17 @@ void bgav_WAVEFORMAT_free(bgav_WAVEFORMAT_t * wf)
 
 void bgav_BITMAPINFOHEADER_read(bgav_BITMAPINFOHEADER_t * ret, uint8_t ** data)
   {
-  ret->biSize          = BGAV_PTR_2_32LE((*data));
-  ret->biWidth         = BGAV_PTR_2_32LE((*data)+4);
-  ret->biHeight        = BGAV_PTR_2_32LE((*data)+8);
-  ret->biPlanes        = BGAV_PTR_2_16LE((*data)+12);
-  ret->biBitCount      = BGAV_PTR_2_16LE((*data)+14);
-  ret->biCompression   = BGAV_PTR_2_32LE((*data)+16);
-  ret->biSizeImage     = BGAV_PTR_2_32LE((*data)+20);
-  ret->biXPelsPerMeter = BGAV_PTR_2_32LE((*data)+24);
-  ret->biYPelsPerMeter = BGAV_PTR_2_32LE((*data)+28);
-  ret->biClrUsed       = BGAV_PTR_2_32LE((*data)+32);
-  ret->biClrImportant  = BGAV_PTR_2_32LE((*data)+36);
+  ret->biSize          = GAVL_PTR_2_32LE((*data));
+  ret->biWidth         = GAVL_PTR_2_32LE((*data)+4);
+  ret->biHeight        = GAVL_PTR_2_32LE((*data)+8);
+  ret->biPlanes        = GAVL_PTR_2_16LE((*data)+12);
+  ret->biBitCount      = GAVL_PTR_2_16LE((*data)+14);
+  ret->biCompression   = GAVL_PTR_2_32LE((*data)+16);
+  ret->biSizeImage     = GAVL_PTR_2_32LE((*data)+20);
+  ret->biXPelsPerMeter = GAVL_PTR_2_32LE((*data)+24);
+  ret->biYPelsPerMeter = GAVL_PTR_2_32LE((*data)+28);
+  ret->biClrUsed       = GAVL_PTR_2_32LE((*data)+32);
+  ret->biClrImportant  = GAVL_PTR_2_32LE((*data)+36);
   *data += 40;
   }
 
@@ -485,7 +485,7 @@ bgav_RIFFINFO_t * bgav_RIFFINFO_read_without_header(bgav_input_context_t * input
 
   while(ptr < end_ptr)
     {
-    string_len = BGAV_PTR_2_32LE(ptr + 4);
+    string_len = GAVL_PTR_2_32LE(ptr + 4);
 
     //    gavl_hexdump(ptr, 8, 8);
     
@@ -663,9 +663,9 @@ int bgav_GUID_read(bgav_GUID_t * ret, bgav_input_context_t * input)
 
 void bgav_GUID_from_ptr(bgav_GUID_t * ret, uint8_t * ptr)
   {
-  ret->v1 = BGAV_PTR_2_32LE(ptr);
-  ret->v2 = BGAV_PTR_2_16LE(ptr+4);
-  ret->v3 = BGAV_PTR_2_16LE(ptr+6);
+  ret->v1 = GAVL_PTR_2_32LE(ptr);
+  ret->v2 = GAVL_PTR_2_16LE(ptr+4);
+  ret->v3 = GAVL_PTR_2_16LE(ptr+6);
   memcpy(ret->v4, ptr + 8, 8);
   }
 

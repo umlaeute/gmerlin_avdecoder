@@ -57,11 +57,11 @@ int bgav_ape_tag_probe(bgav_input_context_t * input, int * tag_size)
 
   ptr = &probe_data[12];
   
-  size = BGAV_PTR_2_32LE(ptr);
+  size = GAVL_PTR_2_32LE(ptr);
 
   ptr = &probe_data[20];
   
-  flags = BGAV_PTR_2_32LE(ptr);
+  flags = GAVL_PTR_2_32LE(ptr);
 
   *tag_size = size;
 
@@ -88,10 +88,10 @@ bgav_ape_tag_t * bgav_ape_tag_read(bgav_input_context_t * input, int tag_size)
   /* Go to start of footer */
   ptr = buffer + (tag_size - 16);
   
-  ret->num_items = BGAV_PTR_2_32LE(ptr);ptr += 4;
+  ret->num_items = GAVL_PTR_2_32LE(ptr);ptr += 4;
   ret->items = calloc(ret->num_items, sizeof(*ret->items));
 
-  flags = BGAV_PTR_2_32LE(ptr);
+  flags = GAVL_PTR_2_32LE(ptr);
 
   ptr = buffer;
   if(flags & 0x80000000)
@@ -101,8 +101,8 @@ bgav_ape_tag_t * bgav_ape_tag_read(bgav_input_context_t * input, int tag_size)
   
   for(i = 0; i < ret->num_items; i++)
     {
-    item_value_size = BGAV_PTR_2_32LE(ptr); ptr+=4;
-    flags  = BGAV_PTR_2_32LE(ptr);          ptr+=4;
+    item_value_size = GAVL_PTR_2_32LE(ptr); ptr+=4;
+    flags  = GAVL_PTR_2_32LE(ptr);          ptr+=4;
 
     ret->items[i].key = gavl_strdup((char*)ptr);
     ptr += strlen(ret->items[i].key) + 1;

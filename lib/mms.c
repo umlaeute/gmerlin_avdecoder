@@ -177,19 +177,19 @@ static void set_command_header(bgav_mms_t * mms, int command,
   mms->write_buffer_len = len8*8 + 48;
 
   
-  BGAV_32LE_2_PTR(0x00000001, ptr);ptr+=4; /* Start sequence */
-  BGAV_32LE_2_PTR(0xB00BFACE, ptr);ptr+=4; /* :-) */
-  BGAV_32LE_2_PTR(len8*8+32, ptr);ptr+=4;
-  BGAV_32LE_2_PTR(0x20534d4d, ptr);ptr+=4; /* MMS */
-  BGAV_32LE_2_PTR(len8 + 4, ptr);ptr+=4;
-  BGAV_32LE_2_PTR(mms->seqnum, ptr);ptr+=4;
-  BGAV_32LE_2_PTR(0x00000000, ptr);ptr+=4; /* Timestamp */
-  BGAV_32LE_2_PTR(0x00000000, ptr);ptr+=4; /* Timestamp */
+  GAVL_32LE_2_PTR(0x00000001, ptr);ptr+=4; /* Start sequence */
+  GAVL_32LE_2_PTR(0xB00BFACE, ptr);ptr+=4; /* :-) */
+  GAVL_32LE_2_PTR(len8*8+32, ptr);ptr+=4;
+  GAVL_32LE_2_PTR(0x20534d4d, ptr);ptr+=4; /* MMS */
+  GAVL_32LE_2_PTR(len8 + 4, ptr);ptr+=4;
+  GAVL_32LE_2_PTR(mms->seqnum, ptr);ptr+=4;
+  GAVL_32LE_2_PTR(0x00000000, ptr);ptr+=4; /* Timestamp */
+  GAVL_32LE_2_PTR(0x00000000, ptr);ptr+=4; /* Timestamp */
   
-  BGAV_32LE_2_PTR(len8 + 2, ptr);ptr+=4;
-  BGAV_32LE_2_PTR(0x00030000 | command, ptr);ptr+=4; /* Direction | command */
-  BGAV_32LE_2_PTR(switches, ptr);ptr+=4;
-  BGAV_32LE_2_PTR(extra, ptr);ptr+=4;
+  GAVL_32LE_2_PTR(len8 + 2, ptr);ptr+=4;
+  GAVL_32LE_2_PTR(0x00030000 | command, ptr);ptr+=4; /* Direction | command */
+  GAVL_32LE_2_PTR(switches, ptr);ptr+=4;
+  GAVL_32LE_2_PTR(extra, ptr);ptr+=4;
 
   mms->cmd_data_write = ptr;
   }
@@ -211,7 +211,7 @@ static int read_command_header(bgav_mms_t * mms)
   
   ptr = mms->command + 8;
   
-  i_tmp = BGAV_PTR_2_32LE(ptr);ptr+=4;
+  i_tmp = GAVL_PTR_2_32LE(ptr);ptr+=4;
 
   mms->command_header.data_len = i_tmp + 16 - 48;
 
@@ -223,27 +223,27 @@ static int read_command_header(bgav_mms_t * mms)
   
   i_tmp = BGAV_PTR_2_FOURCC(ptr);ptr+=4;
   
-  i_tmp = BGAV_PTR_2_32LE(ptr);ptr+=4;
+  i_tmp = GAVL_PTR_2_32LE(ptr);ptr+=4;
 
   
-  i_tmp = BGAV_PTR_2_32LE(ptr);ptr+=4;
+  i_tmp = GAVL_PTR_2_32LE(ptr);ptr+=4;
 
   mms->command_header.seqnum = i_tmp;
   
   ptr+=8; /* Timestamp */
 
-  i_tmp = BGAV_PTR_2_32LE(ptr);ptr+=4;
+  i_tmp = GAVL_PTR_2_32LE(ptr);ptr+=4;
 
-  i_tmp = BGAV_PTR_2_16LE(ptr);ptr+=2;
+  i_tmp = GAVL_PTR_2_16LE(ptr);ptr+=2;
   
   mms->command_header.command = i_tmp;
   
-  i_tmp = BGAV_PTR_2_16LE(ptr);ptr+=2;
+  i_tmp = GAVL_PTR_2_16LE(ptr);ptr+=2;
 
-  i_tmp = BGAV_PTR_2_32LE(ptr);ptr+=4;
+  i_tmp = GAVL_PTR_2_32LE(ptr);ptr+=4;
   mms->command_header.prefix1 = i_tmp;
 
-  i_tmp = BGAV_PTR_2_32LE(ptr);ptr+=4;
+  i_tmp = GAVL_PTR_2_32LE(ptr);ptr+=4;
   mms->command_header.prefix2 = i_tmp;
 
   mms->cmd_data_read = mms->read_buffer + 48;
@@ -307,8 +307,8 @@ static int next_packet(bgav_mms_t * mms, int block)
       }
     /* Data read, now see, what we got */
     
-    i_tmp1 = BGAV_PTR_2_32LE(mms->read_buffer);
-    i_tmp2 = BGAV_PTR_2_32LE(mms->read_buffer+4);
+    i_tmp1 = GAVL_PTR_2_32LE(mms->read_buffer);
+    i_tmp2 = GAVL_PTR_2_32LE(mms->read_buffer+4);
     
     if(((i_tmp1 & (0x00FFFFFF)) == 0x00000001) &&
        (i_tmp2 == 0xB00BFACE))
@@ -338,10 +338,10 @@ static int next_packet(bgav_mms_t * mms, int block)
       if(mms->read_buffer[4] == mms->header_id)
         {
         ptr = mms->read_buffer;
-        i_tmp1 = BGAV_PTR_2_32LE(ptr);ptr+=4;
+        i_tmp1 = GAVL_PTR_2_32LE(ptr);ptr+=4;
         ptr++;
         ptr++;
-        i_tmp1 = BGAV_PTR_2_16LE(ptr);ptr+=2;
+        i_tmp1 = GAVL_PTR_2_16LE(ptr);ptr+=2;
       
         if(mms->header_size < mms->header_alloc)
           {
@@ -355,10 +355,10 @@ static int next_packet(bgav_mms_t * mms, int block)
         //      gavl_hexdump(mms->read_buffer, 8, 8);
         ptr = mms->read_buffer;
       
-        i_tmp1 = BGAV_PTR_2_32LE(ptr);ptr+=4;
+        i_tmp1 = GAVL_PTR_2_32LE(ptr);ptr+=4;
         ptr++;
         ptr++;
-        i_tmp1 = BGAV_PTR_2_16LE(ptr);ptr+=2;
+        i_tmp1 = GAVL_PTR_2_16LE(ptr);ptr+=2;
 
         if(read_data(mms->opt, mms->fd, mms->packet_buffer,
                      i_tmp1-8) < i_tmp1-8)
@@ -508,10 +508,10 @@ bgav_mms_t * bgav_mms_open(const bgav_options_t * opt,
     }
   pos = ret->cmd_data_read + 32;
 
-  server_version_len           = BGAV_PTR_2_32LE(pos);pos+=4;
-  tool_version_len             = BGAV_PTR_2_32LE(pos);pos+=4;
-  update_url_len               = BGAV_PTR_2_32LE(pos);pos+=4;
-  password_encryption_type_len = BGAV_PTR_2_32LE(pos);pos+=4;
+  server_version_len           = GAVL_PTR_2_32LE(pos);pos+=4;
+  tool_version_len             = GAVL_PTR_2_32LE(pos);pos+=4;
+  update_url_len               = GAVL_PTR_2_32LE(pos);pos+=4;
+  password_encryption_type_len = GAVL_PTR_2_32LE(pos);pos+=4;
 
   if(server_version_len)
     {
@@ -624,7 +624,7 @@ bgav_mms_t * bgav_mms_open(const bgav_options_t * opt,
     }
   
   pos = ret->cmd_data_read;
-  i_tmp = BGAV_PTR_2_32LE(pos);pos+=4;
+  i_tmp = GAVL_PTR_2_32LE(pos);pos+=4;
 
   if(i_tmp & 0x80000000)
     {
@@ -633,26 +633,26 @@ bgav_mms_t * bgav_mms_open(const bgav_options_t * opt,
     }
   pos+=4; /* 00000000 */
   pos+=4; /* 00000000 */
-  i_tmp = BGAV_PTR_2_32LE(pos);pos+=4;
+  i_tmp = GAVL_PTR_2_32LE(pos);pos+=4;
 
   pos+=8; /* Time point */
 
-  i_tmp = BGAV_PTR_2_32LE(pos);pos+=4;
+  i_tmp = GAVL_PTR_2_32LE(pos);pos+=4;
 
   pos += 16; /* Zeros */
 
-  i_tmp = BGAV_PTR_2_32LE(pos);pos+=4;
+  i_tmp = GAVL_PTR_2_32LE(pos);pos+=4;
 
   ret->packet_buffer = malloc(i_tmp);
   ret->packet_len = i_tmp;
   
-  i_tmp = BGAV_PTR_2_32LE(pos);pos+=4;
+  i_tmp = GAVL_PTR_2_32LE(pos);pos+=4;
   
   pos+=4; /* Zeros */
   
-  i_tmp = BGAV_PTR_2_32LE(pos);pos+=4;
+  i_tmp = GAVL_PTR_2_32LE(pos);pos+=4;
   
-  i_tmp = BGAV_PTR_2_32LE(pos);pos+=4;
+  i_tmp = GAVL_PTR_2_32LE(pos);pos+=4;
   ret->header_alloc = i_tmp;
   ret->header = malloc(ret->header_alloc);
   
@@ -757,9 +757,9 @@ int bgav_mms_select_streams(bgav_mms_t * mms,
 
   for(i = 0; i < num_streams; i++)
     {
-    BGAV_16LE_2_PTR(0xffff, ptr);ptr+=2;        /* Flags        */
-    BGAV_16LE_2_PTR(stream_ids[i], ptr);ptr+=2; /* Stream_id    */
-    BGAV_16LE_2_PTR(0x0000, ptr);ptr+=2;        /* Switch it on */
+    GAVL_16LE_2_PTR(0xffff, ptr);ptr+=2;        /* Flags        */
+    GAVL_16LE_2_PTR(stream_ids[i], ptr);ptr+=2; /* Stream_id    */
+    GAVL_16LE_2_PTR(0x0000, ptr);ptr+=2;        /* Switch it on */
     }
   if(!flush_command(mms))
     return 0;
