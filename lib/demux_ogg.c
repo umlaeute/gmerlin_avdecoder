@@ -341,7 +341,7 @@ static void parse_vorbis_comment(bgav_stream_t * s, uint8_t * data,
   
   bgav_vorbis_comment_2_metadata(&vc, &stream_priv->metadata);
 
-  field = bgav_vorbis_comment_get_field(&vc, "LANGUAGE");
+  field = bgav_vorbis_comment_get_field(&vc, "LANGUAGE", 0);
   if(field)
     {
     language = bgav_lang_from_name(field);

@@ -100,16 +100,23 @@ static char const * const albumartist1_key = "ALBUM ARTIST";
 static char const * const albumartist2_key = "ALBUMARTIST";
 
 const char *
-bgav_vorbis_comment_get_field(bgav_vorbis_comment_t * vc, const char * key)
+bgav_vorbis_comment_get_field(bgav_vorbis_comment_t * vc, const char * key, int idx)
   {
-  int i;
+  int i, j;
   int key_len = strlen(key);
   
+  j = 0;
+
   for(i = 0; i < vc->num_user_comments; i++)
     {
     if(!strncasecmp(vc->user_comments[i], key, key_len) &&
         vc->user_comments[i][key_len] == '=')
-      return vc->user_comments[i] + key_len + 1;
+      {
+      if(idx == j)
+        return vc->user_comments[i] + key_len + 1;
+      else
+        j++;
+      }
     }
   return NULL;
   }
@@ -120,22 +127,34 @@ void bgav_vorbis_comment_2_metadata(bgav_vorbis_comment_t * comment,
   const char * field;
   int j;
 
-  if((field = bgav_vorbis_comment_get_field(comment, artist_key)))
-    gavl_dictionary_set_string(m, GAVL_META_ARTIST, field);
+  j = 0;
+  while((field = bgav_vorbis_comment_get_field(comment, artist_key, j)))
+    {
+    gavl_dictionary_append_string_array(m, GAVL_META_ARTIST, field);
+    j++;
+    }
 
-  if((field = bgav_vorbis_comment_get_field(comment, author_key)))
-    gavl_dictionary_set_string(m, GAVL_META_AUTHOR, field);
+  j = 0;
+  while((field = bgav_vorbis_comment_get_field(comment, author_key, j)))
+    {
+    gavl_dictionary_append_string_array(m, GAVL_META_AUTHOR, field);
+    j++;
+    }
 
-  if((field = bgav_vorbis_comment_get_field(comment, album_key)))
+  if((field = bgav_vorbis_comment_get_field(comment, album_key, 0)))
     gavl_dictionary_set_string(m, GAVL_META_ALBUM, field);
 
-  if((field = bgav_vorbis_comment_get_field(comment, title_key)))
+  if((field = bgav_vorbis_comment_get_field(comment, title_key, 0)))
     gavl_dictionary_set_string(m, GAVL_META_TITLE, field);
 
-  if((field = bgav_vorbis_comment_get_field(comment, genre_key)))
-    gavl_dictionary_set_string(m, GAVL_META_GENRE, field);
+  j = 0;
+  while((field = bgav_vorbis_comment_get_field(comment, genre_key, j)))
+    {
+    gavl_dictionary_append_string_array(m, GAVL_META_GENRE, field);
+    j++;
+    }
 
-  if((field = bgav_vorbis_comment_get_field(comment, date_key)))
+  if((field = bgav_vorbis_comment_get_field(comment, date_key, 0)))
     {
     if(strlen(field) == 4)
       gavl_dictionary_set_string(m, GAVL_META_YEAR, field);
@@ -144,14 +163,33 @@ void bgav_vorbis_comment_2_metadata(bgav_vorbis_comment_t * comment,
     
     }
 
-  if((field = bgav_vorbis_comment_get_field(comment, copyright_key)))
+  if((field = bgav_vorbis_comment_get_field(comment, copyright_key, 0)))
     gavl_dictionary_set_string(m, GAVL_META_COPYRIGHT, field);
-  if((field = bgav_vorbis_comment_get_field(comment, albumartist1_key)))
-    gavl_dictionary_set_string(m, GAVL_META_ALBUMARTIST, field);
-  else if((field = bgav_vorbis_comment_get_field(comment, albumartist2_key)))
-    gavl_dictionary_set_string(m, GAVL_META_ALBUMARTIST, field);
+
+  if((field = bgav_vorbis_comment_get_field(comment, albumartist1_key, 0)))
+    {
+    gavl_dictionary_append_string_array(m, GAVL_META_ALBUMARTIST, field);    
+
+    j = 1;
+    while((field = bgav_vorbis_comment_get_field(comment, albumartist1_key, j)))
+      {
+      gavl_dictionary_append_string_array(m, GAVL_META_ALBUMARTIST, field);
+      j++;
+      }
+    }
+  else if((field = bgav_vorbis_comment_get_field(comment, albumartist2_key, 0)))
+    {
+    gavl_dictionary_append_string_array(m, GAVL_META_ALBUMARTIST, field);
+
+    j = 1;
+    while((field = bgav_vorbis_comment_get_field(comment, albumartist2_key, j)))
+      {
+      gavl_dictionary_append_string_array(m, GAVL_META_ALBUMARTIST, field);
+      j++;
+      }
+    }
   
-  if((field = bgav_vorbis_comment_get_field(comment, track_number_key)))
+  if((field = bgav_vorbis_comment_get_field(comment, track_number_key, 0)))
     gavl_dictionary_set_int(m, GAVL_META_TRACKNUMBER, atoi(field));
   
   for(j = 0; j < comment->num_user_comments; j++)

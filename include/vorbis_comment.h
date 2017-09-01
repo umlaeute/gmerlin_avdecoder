@@ -38,7 +38,7 @@ void bgav_vorbis_comment_free(bgav_vorbis_comment_t * ret);
 void bgav_vorbis_comment_dump(bgav_vorbis_comment_t * ret);
 
 const char *
-bgav_vorbis_comment_get_field(bgav_vorbis_comment_t * vc, const char * key);
+bgav_vorbis_comment_get_field(bgav_vorbis_comment_t * vc, const char * key, int idx);
 
 /* doesn't belong here actually */
 void bgav_vorbis_set_channel_setup(gavl_audio_format_t * format);
