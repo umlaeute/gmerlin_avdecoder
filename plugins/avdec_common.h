@@ -23,7 +23,7 @@
 
 typedef struct
   {
-  bg_track_info_t * current_track;
+  gavl_dictionary_t * current_track;
   int num_tracks;
   bgav_t * dec;
   bgav_options_t * opt;

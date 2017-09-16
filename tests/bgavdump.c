@@ -191,7 +191,7 @@ int main(int argc, char ** argv)
   int num_video_streams;
   int num_text_streams;
   int num_overlay_streams;
-  int num_urls;
+  // int num_urls;
   int num_tracks;
   int track;
   int arg_index;

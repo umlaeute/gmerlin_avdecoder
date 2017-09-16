@@ -445,9 +445,9 @@ static void build_index(bgav_demuxer_context_t * ctx)
   int duration;
   qt_trak_t * trak;
   int pts_offset;
-  priv = ctx->priv;
   int done = 0;
-
+  priv = ctx->priv;
+  
   if(priv->fragmented)
     {
     build_index_fragmented(ctx);

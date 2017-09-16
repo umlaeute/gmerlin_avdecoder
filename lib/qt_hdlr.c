@@ -73,7 +73,7 @@ int bgav_qt_hdlr_read(qt_atom_header_t * h,
                       qt_hdlr_t * ret)
   {
   int name_len;
-  uint8_t tmp_8;
+  //  uint8_t tmp_8;
   READ_VERSION_AND_FLAGS;
   memcpy(&ret->h, h, sizeof(*h));
   if (!bgav_input_read_fourcc(input, &ret->component_type) ||
