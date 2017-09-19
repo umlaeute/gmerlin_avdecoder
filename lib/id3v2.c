@@ -436,14 +436,19 @@ static char ** read_string_list(const bgav_options_t * opt,
       if(end_pos - (char * )data >= data_size)
         break;
       }
-    if(cnv)
+
+    if(end_pos > pos)
       {
-      ret[i] = bgav_convert_string(cnv,
-                                   pos, end_pos - pos,
-                                   NULL);
+      if(cnv)
+        {
+        ret[i] = bgav_convert_string(cnv,
+                                     pos, end_pos - pos,
+                                     NULL);
+        }
+      else
+        ret[i] = gavl_strndup(pos, end_pos);
       }
-    else
-      ret[i] = gavl_strndup(pos, end_pos);
+    
     pos = end_pos;
     pos += bytes_per_char;
     }
