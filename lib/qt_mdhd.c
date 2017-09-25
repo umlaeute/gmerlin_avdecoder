@@ -139,18 +139,6 @@ int bgav_qt_mdhd_read(qt_atom_header_t * h, bgav_input_context_t * input,
     return 0;
 
   return 1;
-  
-#if 0  
-  result = bgav_input_read_32_be(input, &ret->creation_time) &&
-    bgav_input_read_32_be(input, &ret->modification_time) &&
-    bgav_input_read_32_be(input, &ret->time_scale) &&
-    bgav_input_read_32_be(input, &ret->duration) &&
-    bgav_input_read_16_be(input, &ret->language) &&
-    bgav_input_read_16_be(input, &ret->quality);
-
-  //  bgav_qt_mdhd_dump(ret);
-  return result;
-#endif
   }
 
 void bgav_qt_mdhd_free(qt_mdhd_t * c)
