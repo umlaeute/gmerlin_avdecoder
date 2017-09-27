@@ -1154,6 +1154,8 @@ int bgav_input_reopen(bgav_input_context_t * ctx)
     ctx->url = NULL;
     
     bgav_input_close(ctx);
+
+    gavl_metadata_add_src(&ctx->m, GAVL_META_SRC, NULL, url);
     
     /* Give the server time to recreate */
     gavl_time_delay(&delay_time);
