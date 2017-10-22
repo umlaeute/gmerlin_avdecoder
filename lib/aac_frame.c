@@ -31,6 +31,8 @@
 #ifdef HAVE_NEAACDEC_H
 #include <neaacdec.h>
 
+// #define DUMP_DECODE
+
 /*
  *  Backwards compatibility names (currently in neaacdec.h,
  *  but might be removed in future versions)
@@ -106,6 +108,11 @@ int bgav_aac_frame_parse(bgav_aac_frame_t * f,
                 data_len,
                 &f->samplerate, &f->channels);
     }
+
+#ifdef DUMP_DECODE
+    bgav_dprintf("faacDecDecode %d bytes\n", data_len);
+    gavl_hexdump(data, (data_len > 16) ? 16 : data_len, 16);
+#endif
   
   memset(&f->frame_info, 0, sizeof(f->frame_info));
   frame = faacDecDecode(f->dec, &f->frame_info, data, data_len);

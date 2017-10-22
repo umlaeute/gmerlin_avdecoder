@@ -518,7 +518,6 @@ static void build_index(bgav_demuxer_context_t * ctx)
         chunk_offset = priv->moov.tracks[j].mdia.minf.stbl.stco.entries[priv->streams[j].stco_pos];
         }
       }
-
     
     //    if(j == priv->moov.num_tracks)
     //      return;
@@ -536,6 +535,16 @@ static void build_index(bgav_demuxer_context_t * ctx)
 
         for(j = 0; j < s->stbl->stsc.entries[s->stsc_pos].samples_per_chunk; j++)
           {
+          if(s->stsz_pos >= s->stbl->stsz.num_entries)
+            {
+            i++;
+            continue;
+            }
+#if 0
+          fprintf(stderr, "stsz_pos: %ld / %d, sample_in_chunk: %d, chunk_samples: %d\n",
+                  s->stsz_pos, s->stbl->stsz.num_entries,
+                  j, s->stbl->stsc.entries[s->stsc_pos].samples_per_chunk);
+#endif
           packet_size   = s->stbl->stsz.entries[s->stsz_pos];
           s->stsz_pos++;
           
