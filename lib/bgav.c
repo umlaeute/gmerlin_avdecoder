@@ -72,6 +72,7 @@ int bgav_init(bgav_t * ret)
     if(ret->tt->num_tracks > 1)
       {
       bgav_track_table_remove_unsupported(ret->tt);
+      bgav_track_table_merge_metadata(ret->tt, &ret->input->m);
       return 1;
       }
     }
@@ -119,6 +120,7 @@ int bgav_init(bgav_t * ret)
   else
     {
     ret->demuxer = ret->input->demuxer;
+    bgav_track_table_merge_metadata(ret->tt, &ret->input->m);
     }
   
   ret->tt = ret->demuxer->tt;
