@@ -345,9 +345,13 @@ int bgav_id3v2_probe(bgav_input_context_t * input)
   return !!bgav_id3v2_detect(data);
   }
 
-static int is_null(const char * ptr, int num_bytes)
+static int is_null(const char * ptr, int num_bytes, int len)
   {
   int i;
+
+  if(len < num_bytes)
+    num_bytes = len;
+  
   for(i = 0; i < num_bytes; i++)
     {
     if(ptr[i] != '\0')
@@ -403,6 +407,7 @@ static char ** read_string_list(const bgav_options_t * opt,
   int num_strings;
   char ** ret;
   bgav_charset_converter_t * cnv = NULL;
+  char * data_end = (char*)data + data_size;
 
   encoding = *data;
 
@@ -418,9 +423,16 @@ static char ** read_string_list(const bgav_options_t * opt,
   /* Count the strings */
 
   num_strings = 1;
-  for(i = 0; i < data_size; i+= bytes_per_char)
+
+  fprintf(stderr, "bytes_per_char: %d pos: %d\n", bytes_per_char, (int)((uint8_t*)pos - data));
+  gavl_hexdump(data, data_size, 16);
+               
+  for(i = (int)((uint8_t*)pos - data) / bytes_per_char;
+      i < data_size; i+= bytes_per_char)
     {
-    if(is_null(pos + (i*bytes_per_char), bytes_per_char))
+    char * ptr = pos + (i*bytes_per_char);
+    
+    if(is_null(ptr, bytes_per_char, (int)(data_end - ptr)))
       num_strings++;
     }
 
@@ -430,7 +442,7 @@ static char ** read_string_list(const bgav_options_t * opt,
     {
     end_pos = pos;
     
-    while(!is_null(end_pos, bytes_per_char))
+    while(!is_null(end_pos, bytes_per_char, data_size - (int)((uint8_t*)end_pos - data)))
       {
       end_pos += bytes_per_char;
       if(end_pos - (char * )data >= data_size)
@@ -466,6 +478,8 @@ read_picture(const bgav_options_t * opt,
   char * pos;
   char * end_pos;
   uint8_t * data_start = data;
+  uint8_t * data_end = data + data_size;
+  
   bgav_id3v2_picture_t * ret;
   bgav_charset_converter_t * cnv = NULL;
 
@@ -489,7 +503,7 @@ read_picture(const bgav_options_t * opt,
  
   end_pos = pos;
 
-  while(!is_null(end_pos, bytes_per_char))
+  while(!is_null(end_pos, bytes_per_char, (int)((char*)data_end - end_pos)))
     {
     end_pos += bytes_per_char;
     if(end_pos - (char * )data_start >= data_size)
@@ -877,7 +891,8 @@ static char * get_comment(const bgav_options_t * opt,
 
   /* Skip short description */
   
-  while(!is_null((char*)pos, bytes_per_char))
+  while(!is_null((char*)pos, bytes_per_char,
+                 frame->header.data_size - (int)(pos - frame->data)))
     pos += bytes_per_char;
 
   pos += bytes_per_char;

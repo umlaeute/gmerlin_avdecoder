@@ -72,9 +72,7 @@ static gavl_source_status_t get_frame(void * sp, gavl_audio_frame_t ** frame)
 int bgav_audio_start(bgav_stream_t * s)
   {
   bgav_audio_decoder_t * dec;
-
-  fprintf(stderr, "bgav_audio_start %p\n", s);
-
+  
   if((s->flags & (STREAM_PARSE_FULL|STREAM_PARSE_FRAME)) &&
      !s->data.audio.parser)
     {
@@ -204,8 +202,6 @@ int bgav_audio_start(bgav_stream_t * s)
 
 void bgav_audio_stop(bgav_stream_t * s)
   {
-  fprintf(stderr, "bgav_audio_stop %p\n", s);
-
   if(s->data.audio.decoder)
     {
     s->data.audio.decoder->close(s);
