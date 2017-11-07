@@ -399,7 +399,7 @@ static char * get_charset(uint8_t * data,
 static char ** read_string_list(const bgav_options_t * opt,
                                 uint8_t * data, int data_size)
   {
-  int bytes_per_char;
+  int bytes_per_char = 0;
   int i;
   uint8_t encoding;
   char * pos;
@@ -424,8 +424,8 @@ static char ** read_string_list(const bgav_options_t * opt,
 
   num_strings = 1;
 
-  fprintf(stderr, "bytes_per_char: %d pos: %d\n", bytes_per_char, (int)((uint8_t*)pos - data));
-  gavl_hexdump(data, data_size, 16);
+  // fprintf(stderr, "bytes_per_char: %d pos: %d\n", bytes_per_char, (int)((uint8_t*)pos - data));
+  // gavl_hexdump(data, data_size, 16);
                
   for(i = (int)((uint8_t*)pos - data) / bytes_per_char;
       i < data_size; i+= bytes_per_char)
@@ -563,13 +563,17 @@ static int read_frame(bgav_input_context_t * input,
         /* 4 bytes for ID and size */
         if(bgav_input_read_data(input, buf, 1) < 1)
           return 0;
+
+        /* 3 char tags in v3 frames are skipped */
+        if(!buf[0])
+          return 1;
+        
         ret->header.fourcc = (((uint32_t)probe_data[0] << 24) | 
                               ((uint32_t)probe_data[1] << 16) |
                               ((uint32_t)probe_data[2] << 8) |
                               ((uint32_t)buf[0]));
         if(!bgav_input_read_32_be(input, &ret->header.data_size) ||
            !bgav_input_read_16_be(input, &ret->header.flags))
-           
           return 0;
         break;       
       }
@@ -587,6 +591,12 @@ static int read_frame(bgav_input_context_t * input,
        !bgav_input_read_16_be(input, &ret->header.flags))
       return 0;
     }
+
+  //  fprintf(stderr, "Reading ID3 frame %d ", major_version);
+  //  bgav_dump_fourcc(ret->header.fourcc);
+  //  fprintf(stderr, "\n");
+  
+
   if(ret->header.data_size > input->total_bytes - input->position)
     return 0;
 

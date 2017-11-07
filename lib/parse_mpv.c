@@ -102,6 +102,7 @@ static int extract_header(bgav_video_parser_t * parser, bgav_packet_t * p,
       {
       parser->format->timescale *= (priv->sh.ext.timescale_ext+1) * 2;
       parser->format->frame_duration *= (priv->sh.ext.frame_duration_ext+1) * 2;
+      parser->format->framerate_mode = GAVL_FRAMERATE_VARIABLE;
       }
     }
 
