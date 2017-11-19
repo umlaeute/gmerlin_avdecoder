@@ -846,8 +846,12 @@ read_nav(bgav_input_context_t * ctx, int sector, int *next)
     }
   
   if(!is_nav_pack(buf))
+    {
+    bgav_log(ctx->opt, BGAV_LOG_ERROR, LOG_DOMAIN,
+             "Packet at sector %d is no nav packet", sector);
+    //    gavl_hexdump(buf, 64, 16);
     return -1;
-
+    }
   //  printf("*** Got nav pack ***\n");
   
   navRead_DSI(&dsi_pack, buf + DSI_START_BYTE);
@@ -919,7 +923,10 @@ static int read_sector_dvd(bgav_input_context_t * ctx, uint8_t * data)
       d->pack = d->npack;
       l = read_nav(ctx, d->pack, &d->npack);
       if(l < 0)
-        return -1;
+        {
+        bgav_log(ctx->opt, BGAV_LOG_ERROR, LOG_DOMAIN, "Reading NAV packet failed");
+        return 0;
+        }
       d->blocks = l;
       d->pack++;
       d->state = BLOCK_LOOP;
