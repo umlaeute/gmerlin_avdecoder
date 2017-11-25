@@ -125,6 +125,14 @@ static int open_vts(const bgav_options_t * opt,
         return 0;
         }
       }
+
+    if(!dvd->vts_ifo)
+      dvd->vts_ifo = ifoOpen(dvd->dvd_reader, vts_index);
+    if(!dvd->vts_ifo)
+      {
+      bgav_log(opt, BGAV_LOG_ERROR, LOG_DOMAIN, "Opening IFO for vts %d failed", vts_index);
+      return 0;
+      }
     return 1;
     }
   if(dvd->vts_ifo)
@@ -141,6 +149,7 @@ static int open_vts(const bgav_options_t * opt,
       return 0;
       }
     }
+
   dvd->vts_ifo = ifoOpen(dvd->dvd_reader, vts_index);
 
   if(!dvd->vts_ifo)
@@ -1016,8 +1025,10 @@ static int select_track_dvd(bgav_input_context_t * ctx, int track)
   ttn = ttsrpt->title[track_priv->title].vts_ttn;
 
   /* Open VTS */
-  open_vts(ctx->opt, dvd, ttsrpt->title[track_priv->title].title_set_nr, 1);
-  
+  if(!open_vts(ctx->opt, dvd, ttsrpt->title[track_priv->title].title_set_nr, 1))
+    {
+    return 0;
+    }
   vts_ptt_srpt = dvd->vts_ifo->vts_ptt_srpt;
   pgc_id = vts_ptt_srpt->title[ttn - 1].ptt[track_priv->chapter].pgcn;
   //  pgn    = vts_ptt_srpt->title[ttn - 1].ptt[track_priv->chapter].pgn;
