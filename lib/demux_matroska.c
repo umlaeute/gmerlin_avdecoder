@@ -342,7 +342,10 @@ static void init_stream_common(mkv_t * m,
   if(set_lang)
     {
     if(track->Language)
+      {
+      bgav_correct_language(track->Language);
       gavl_dictionary_set_string(s->m, GAVL_META_LANGUAGE, track->Language);
+      }
     else
       // Seems to be default on most files found in the wild
       gavl_dictionary_set_string(s->m, GAVL_META_LANGUAGE, "eng");

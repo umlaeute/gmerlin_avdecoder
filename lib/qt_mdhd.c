@@ -54,6 +54,7 @@ int bgav_qt_mdhd_get_language(qt_mdhd_t * m, char * ret)
     ret[2] = (m->language & 0x1f)         + 0x60;
     ret[3] = '\0';
     }
+  bgav_correct_language(ret);
   return 1;
   }
 

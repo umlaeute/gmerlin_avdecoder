@@ -199,9 +199,17 @@ bgav_track_attach_subtitle_reader(bgav_track_t * t,
 
   if(r->reader->setup_stream)
     r->reader->setup_stream(ret);
+
+  /* Check, if info is a valid language tag */
+  if(r->info)
+    {
+    if(bgav_lang_name(r->info))
+      gavl_dictionary_set_string(ret->m, GAVL_META_LANGUAGE, r->info);
+    else
+      gavl_dictionary_set_string(ret->m, GAVL_META_LABEL, r->info);
+    }
   
   if(r->info)
-    gavl_dictionary_set_string(ret->m, GAVL_META_LABEL, r->info);
   return ret;
   }
 

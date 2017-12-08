@@ -1166,7 +1166,8 @@ bgav_subtitle_reader_open(bgav_input_context_t * input_ctx)
   //  fprintf(stderr, "Escaped pattern: %s\n", pattern);
   
   memset(&glob_buf, 0, sizeof(glob_buf));
-  
+
+  /* Pathnames are sorted to ensure reproducible orders */
   if((result = glob(pattern, 0,
                     glob_errfunc,
                     // NULL,
