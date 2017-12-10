@@ -157,7 +157,8 @@ int bgav_video_start(bgav_stream_t * s)
     if(bgav_check_fourcc(s->fourcc, bgav_dv_fourccs) ||
        bgav_check_fourcc(s->fourcc, bgav_png_fourccs) ||
        (s->fourcc == BGAV_MK_FOURCC('a', 'v', 'c', '1')) ||
-       (s->fourcc == BGAV_MK_FOURCC('V', 'P', '8', '0')))
+       (s->fourcc == BGAV_MK_FOURCC('V', 'P', '8', '0')) ||
+       (s->fourcc == BGAV_MK_FOURCC('V', 'P', '9', '0')))
       s->flags |= STREAM_PARSE_FRAME;
     }
   

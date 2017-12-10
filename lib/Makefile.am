@@ -515,6 +515,7 @@ parse_mpegaudio.c \
 parse_png.c \
 parse_vc1.c \
 parse_vp8.c \
+parse_vp9.c \
 pes_header.c \
 pnm.c \
 ptscache.c \

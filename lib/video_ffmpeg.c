@@ -55,7 +55,7 @@
 
 // #define DUMP_DECODE
 // #define DUMP_EXTRADATA
-#define DUMP_PACKET
+// #define DUMP_PACKET
 
 #define HAS_DELAY       (1<<0)
 #define SWAP_FIELDS_IN  (1<<1)
@@ -1180,6 +1180,13 @@ static codec_info_t codec_infos[] =
                BGAV_MK_FOURCC('h', '2', '6', '4'),
                0x00 } },
 
+    /*     AV_CODEC_ID_H264, */
+    { "FFmpeg H265 decoder", "H265", AV_CODEC_ID_HEVC,
+      (uint32_t[]){ BGAV_MK_FOURCC('h', 'e', 'v', '1'),
+                    BGAV_MK_FOURCC('h', 'v', 'c', '1'),
+                    BGAV_MK_FOURCC('H', 'E', 'V', 'C'),
+                    0x00 } },
+
     /*     AV_CODEC_ID_INDEO3, */
     { "FFmpeg Inteo 3 decoder", "Intel Indeo 3", AV_CODEC_ID_INDEO3,
       (uint32_t[]){ BGAV_MK_FOURCC('I', 'V', '3', '1'),
@@ -1559,7 +1566,7 @@ static codec_info_t codec_infos[] =
       (uint32_t[]){ BGAV_MK_FOURCC('V', 'P', '8', '0'),
                     0x00 } },
 
-    { "FFmpeg VP9 decoder", "VP8", AV_CODEC_ID_VP9,
+    { "FFmpeg VP9 decoder", "VP9", AV_CODEC_ID_VP9,
       (uint32_t[]){ BGAV_MK_FOURCC('V', 'P', '9', '0'),
                     0x00 } },
     

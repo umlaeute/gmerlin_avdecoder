@@ -38,6 +38,8 @@
 
 // #define USE_FLOAT
 
+// #define DUMP_PACKETS
+
 typedef struct
   {
   OpusMSDecoder *dec;
@@ -58,6 +60,10 @@ static gavl_source_status_t decode_frame_opus(bgav_stream_t * s)
   if((st = bgav_stream_get_packet_read(s, &p)) != GAVL_SOURCE_OK)
     return st;
 
+#ifdef DUMP_PACKETS
+  bgav_packet_dump(p);
+#endif
+  
 #ifdef USE_FLOAT  
   result =
     opus_multistream_decode_float(priv->dec,

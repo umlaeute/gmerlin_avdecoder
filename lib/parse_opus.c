@@ -53,7 +53,7 @@ static int get_format(bgav_audio_parser_t * parser)
     bgav_opus_header_dump(&h);
 
   parser->s->ci.pre_skip = h.pre_skip;
-  p->pts_offset = -parser->s->ci.pre_skip;
+  p->pts_offset = - ((int)parser->s->ci.pre_skip);
   ret = 1;
   fail:
     

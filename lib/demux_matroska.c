@@ -164,23 +164,24 @@ static void init_mpeg(bgav_stream_t * s)
 
 static const codec_info_t video_codecs[] =
   {
-    { "V_MS/VFW/FOURCC", 0x00,                            init_vfw, 0 },
-    { "V_MPEG4/ISO/SP",  BGAV_MK_FOURCC('m','p','4','v'), init_mpeg, 0 },
-    { "V_MPEG4/ISO/ASP", BGAV_MK_FOURCC('m','p','4','v'), init_mpeg, 0 },
-    { "V_MPEG4/ISO/AP",  BGAV_MK_FOURCC('m','p','4','v'), init_mpeg, 0 },
-    { "V_MPEG4/MS/V1",   BGAV_MK_FOURCC('M','P','G','4'), NULL,     0 },
-    { "V_MPEG4/MS/V2",   BGAV_MK_FOURCC('M','P','4','2'), NULL,     0 },
-    { "V_MPEG4/MS/V3",   BGAV_MK_FOURCC('M','P','4','3'), NULL,     0 },
-    { "V_REAL/RV10",     BGAV_MK_FOURCC('R','V','1','0'), NULL,     0 },
-    { "V_REAL/RV20",     BGAV_MK_FOURCC('R','V','2','0'), NULL,     0 },
-    { "V_REAL/RV30",     BGAV_MK_FOURCC('R','V','3','0'), NULL,     0 },
-    { "V_REAL/RV40",     BGAV_MK_FOURCC('R','V','4','0'), NULL,     0 },
-    { "V_VP8",           BGAV_MK_FOURCC('V','P','8','0'), NULL,     0 },
-    { "V_VP9",           BGAV_MK_FOURCC('V','P','9','0'), NULL,     0 },
-    { "V_THEORA",        BGAV_MK_FOURCC('T','H','R','A'), init_theora, 0 },
-    { "V_MPEG4/ISO/AVC", BGAV_MK_FOURCC('a','v','c','1'), init_mpeg, 0 },
-    { "V_MPEG1",         BGAV_MK_FOURCC('m','p','v','1'), init_mpeg, 0 },
-    { "V_MPEG2",         BGAV_MK_FOURCC('m','p','v','2'), init_mpeg, 0 },
+    { "V_MS/VFW/FOURCC",  0x00,                            init_vfw, 0 },
+    { "V_MPEG4/ISO/SP",   BGAV_MK_FOURCC('m','p','4','v'), init_mpeg, 0 },
+    { "V_MPEG4/ISO/ASP",  BGAV_MK_FOURCC('m','p','4','v'), init_mpeg, 0 },
+    { "V_MPEG4/ISO/AP",   BGAV_MK_FOURCC('m','p','4','v'), init_mpeg, 0 },
+    { "V_MPEG4/MS/V1",    BGAV_MK_FOURCC('M','P','G','4'), NULL,     0 },
+    { "V_MPEG4/MS/V2",    BGAV_MK_FOURCC('M','P','4','2'), NULL,     0 },
+    { "V_MPEG4/MS/V3",    BGAV_MK_FOURCC('M','P','4','3'), NULL,     0 },
+    { "V_REAL/RV10",      BGAV_MK_FOURCC('R','V','1','0'), NULL,     0 },
+    { "V_REAL/RV20",      BGAV_MK_FOURCC('R','V','2','0'), NULL,     0 },
+    { "V_REAL/RV30",      BGAV_MK_FOURCC('R','V','3','0'), NULL,     0 },
+    { "V_REAL/RV40",      BGAV_MK_FOURCC('R','V','4','0'), NULL,     0 },
+    { "V_VP8",            BGAV_MK_FOURCC('V','P','8','0'), NULL,     0 },
+    { "V_VP9",            BGAV_MK_FOURCC('V','P','9','0'), NULL,     0 },
+    { "V_THEORA",         BGAV_MK_FOURCC('T','H','R','A'), init_theora, 0 },
+    { "V_MPEG4/ISO/AVC",  BGAV_MK_FOURCC('a','v','c','1'), init_mpeg, 0 },
+    { "V_MPEGH/ISO/HEVC", BGAV_MK_FOURCC('h','e','v','1'), init_mpeg, 0 },
+    { "V_MPEG1",          BGAV_MK_FOURCC('m','p','v','1'), init_mpeg, 0 },
+    { "V_MPEG2",          BGAV_MK_FOURCC('m','p','v','2'), init_mpeg, 0 },
     { /* End */ }
   };
 
@@ -975,6 +976,8 @@ static void setup_packet(mkv_t * m, bgav_stream_t * s,
                          int keyframe, int index)
   {
   bgav_mkv_track_t * t;
+
+  // fprintf(stderr, "setup_packet: %"PRId64"\n", pts);
   
   p->position = m->cluster_pos;
   t = s->priv;
@@ -1008,6 +1011,8 @@ static void setup_packet(mkv_t * m, bgav_stream_t * s,
     if(keyframe)
       PACKET_SET_KEYFRAME(p);
     }
+
+  //  fprintf(stderr, "setup_packet 1: %"PRId64"\n", p->pts);
   }
 
 
@@ -1020,6 +1025,12 @@ static int process_block(bgav_demuxer_context_t * ctx,
   bgav_packet_t * p;
   mkv_t * m = ctx->priv;
   int64_t pts = b->timecode + m->cluster.Timecode - m->pts_offset;
+
+  
+  
+  //  if(pts > (1<<30))
+  //  fprintf(stderr, "b->timecode: %d, m->cluster.Timecode: %"PRId64", m->pts_offset: %"PRId64"\n",
+  //          b->timecode, m->cluster.Timecode, m->pts_offset);
   
   s = bgav_track_find_stream(ctx, b->track);
   if(!s)
