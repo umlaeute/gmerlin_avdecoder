@@ -1596,6 +1596,14 @@ int bgav_mkv_track_read(bgav_input_context_t * ctx,
         if(!mkv_read_uint(ctx, &ret->TrackOverlay, e.size))
           return 0;
         break;
+      case MKV_ID_CodecDelay:
+        if(!mkv_read_uint(ctx, &ret->CodecDelay, e.size))
+          return 0;
+        break;
+      case MKV_ID_SeekPreRoll:
+        if(!mkv_read_uint(ctx, &ret->SeekPreroll, e.size))
+          return 0;
+        break;
 #if 0
       case MKV_ID_TrackTranslate:
         break;
@@ -1711,7 +1719,9 @@ void  bgav_mkv_track_dump(const bgav_mkv_track_t * t)
   bgav_dprintf("  AttachmentLink:     %"PRId64"\n", t->AttachmentLink);
   bgav_dprintf("  CodecDecodeAll:     %d\n", t->CodecDecodeAll);
   bgav_dprintf("  TrackOverlay:       %"PRId64"\n", t->TrackOverlay);
-
+  bgav_dprintf("  CodecDelay:         %"PRId64"\n", t->CodecDelay);
+  bgav_dprintf("  SeekPreroll:        %"PRId64"\n", t->SeekPreroll);
+  
   for(i = 0; i < t->num_encodings; i++)
     bgav_mkv_content_encoding_dump(&t->encodings[i]);
   

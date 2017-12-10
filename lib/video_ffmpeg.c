@@ -34,6 +34,7 @@
 #include AVCODEC_HEADER
 
 #undef HAVE_VDPAU
+#undef HAVE_LIBVA
 
 #ifdef HAVE_LIBVA
 #include <va/va.h>
@@ -54,7 +55,7 @@
 
 // #define DUMP_DECODE
 // #define DUMP_EXTRADATA
-// #define DUMP_PACKET
+#define DUMP_PACKET
 
 #define HAS_DELAY       (1<<0)
 #define SWAP_FIELDS_IN  (1<<1)
@@ -366,23 +367,15 @@ static void update_palette(bgav_stream_t * s, bgav_packet_t * p)
 
   }
 
-static gavl_source_status_t decode_picture(bgav_stream_t * s)
+static gavl_source_status_t get_packet(bgav_stream_t * s)
   {
-  int bytes_used;
-  ffmpeg_video_priv * priv;
-  bgav_pts_cache_entry_t * e;
-  int have_picture = 0;
   bgav_packet_t * p;
   gavl_source_status_t st;
-  
+  ffmpeg_video_priv * priv;
+  bgav_pts_cache_entry_t * e;
+
   priv = s->decoder_priv;
 
-  if(priv->flags & GOT_EOS)
-    {
-    avcodec_flush_buffers(priv->ctx);
-    priv->flags &= ~GOT_EOS;
-    }
-  
   while(1)
     {
     priv->pkt.data = NULL;
@@ -412,85 +405,152 @@ static gavl_source_status_t decode_picture(bgav_stream_t * s)
       p = NULL;
     
     /* Early EOF detection */
-    if(!p && !(priv->flags & HAS_DELAY))
-      {
-      //      fprintf(stderr, "*** EOF 2\n");
+    if(!p)
       return GAVL_SOURCE_EOF;
-      }
-    if(p) /* Got packet */
+
+    /* Check what to skip */
+    
+    if(p->pts == GAVL_TIME_UNDEFINED)
       {
-      /* Check what to skip */
-      
-      if(p->pts == GAVL_TIME_UNDEFINED)
+      done_data(s, p);
+      // fprintf(stderr, "Skipping frame (fast)\n");
+      continue;
+      }
+    
+    if(priv->skip_mode == SKIP_MODE_FAST)
+      {
+      /* Didn't have "our" I/P-frame yet: Don't even look at this */
+      if((PACKET_GET_CODING_TYPE(p) == BGAV_CODING_TYPE_B) &&
+         !PACKET_GET_REF(p))
         {
         done_data(s, p);
         // fprintf(stderr, "Skipping frame (fast)\n");
         continue;
         }
-      
-      if(priv->skip_mode == SKIP_MODE_FAST)
+      else if(p->pts + p->duration >= priv->skip_time)
+        priv->skip_mode = SKIP_MODE_SLOW;
+      }
+
+    if(priv->skip_mode)
+      {
+      if(PACKET_GET_CODING_TYPE(p) == BGAV_CODING_TYPE_B)
         {
-        /* Didn't have "our" I/P-frame yet: Don't even look at this */
-        if((PACKET_GET_CODING_TYPE(p) == BGAV_CODING_TYPE_B) &&
-           !PACKET_GET_REF(p))
+        if(!(priv->flags & B_REFERENCE) &&
+           (p->pts + p->duration < priv->skip_time))
           {
           done_data(s, p);
           // fprintf(stderr, "Skipping frame (fast)\n");
           continue;
           }
-        else if(p->pts + p->duration >= priv->skip_time)
-          priv->skip_mode = SKIP_MODE_SLOW;
         }
-
-      if(priv->skip_mode)
-        {
-        if(PACKET_GET_CODING_TYPE(p) == BGAV_CODING_TYPE_B)
-          {
-          if(!(priv->flags & B_REFERENCE) &&
-             (p->pts + p->duration < priv->skip_time))
-            {
-            done_data(s, p);
-            // fprintf(stderr, "Skipping frame (fast)\n");
-            continue;
-            }
-          }
-        }
-      
-      if((priv->ctx->skip_frame == AVDISCARD_DEFAULT) &&
-         !(p->flags & GAVL_PACKET_NOOUTPUT))
-        bgav_pts_cache_push(&priv->pts_cache, p, NULL, &e);
-      
-      priv->pkt.data = p->data;
-      if(p->field2_offset)
-        priv->pkt.size = p->field2_offset;
-      else
-        priv->pkt.size = p->data_size;
-      
-      /* Palette handling */
-      if(p->palette)
-        update_palette(s, p);
-      
-      /* Check for EOS */
-      if(p->sequence_end_pos > 0)
-        priv->flags |= GOT_EOS;
       }
     
-    /* Decode one frame */
+    break;
+    }
+
+  if((priv->ctx->skip_frame == AVDISCARD_DEFAULT) &&
+     !(p->flags & GAVL_PACKET_NOOUTPUT))
+    bgav_pts_cache_push(&priv->pts_cache, p, NULL, &e);
+    
+  priv->pkt.data = p->data;
+  if(p->field2_offset)
+    priv->pkt.size = p->field2_offset;
+  else
+    priv->pkt.size = p->data_size;
+      
+  /* Palette handling */
+  if(p->palette)
+    update_palette(s, p);
+      
+  /* Check for EOS */
+  if(p->sequence_end_pos > 0)
+    priv->flags |= GOT_EOS;
+
+  avcodec_send_packet(priv->ctx, &priv->pkt);
+
+#ifdef DUMP_DECODE
+  bgav_dprintf("Used %d bytes", priv->pkt.size);
+#endif
+  return GAVL_SOURCE_OK;
+  }
+
+static gavl_source_status_t decode_picture(bgav_stream_t * s)
+  {
+  ffmpeg_video_priv * priv;
+  //  bgav_pts_cache_entry_t * e;
+  gavl_source_status_t st;
+  int result;
+
+  priv = s->decoder_priv;
+  
+  if(priv->flags & GOT_EOS)
+    {
+    avcodec_flush_buffers(priv->ctx);
+    priv->flags &= ~GOT_EOS;
+    }
+  
+  while(1)
+    {
+    result = avcodec_receive_frame(priv->ctx, priv->frame);
+
+    if(!result)
+      {
+      /* Got frame */
+      st = GAVL_SOURCE_OK;
+      break;
+      }
+    else if(result == AVERROR(EAGAIN))
+      {
+      /* Get data */
+      st = get_packet(s);
+
+      /* Nothing we can do right now */
+      if(st == GAVL_SOURCE_AGAIN)
+        return st;
+      }
+    else
+      return GAVL_SOURCE_EOF;
+    }
+  
+#ifdef DUMP_DECODE
+  bgav_dprintf("Got frame: Interlaced: %d TFF: %d Repeat: %d, framerate: %f\n",
+               priv->frame->interlaced_frame,
+               priv->frame->top_field_first,
+               priv->frame->repeat_pict,
+               (float)(priv->ctx->time_base.den) / (float)(priv->ctx->time_base.num)
+               );
+#endif
+
+    /* Ugly hack: Need to free the side data elements manually because
+       ffmpeg has no public API for that */
+#if LIBAVCODEC_VERSION_MAJOR >= 54
+  if(priv->pkt.side_data_elems)
+    {
+    av_free(priv->pkt.side_data[0].data);
+    av_freep(&priv->pkt.side_data);
+    priv->pkt.side_data_elems = 0;
+    }
+#endif
+
+#if 0 // TODO: Decode second field ()if we need this at all */
+    
+  /* Decode 2nd field for field pictures */
+  if(p && p->field2_offset && (bytes_used > 0))
+    {
+    priv->pkt.data = p->data + p->field2_offset;
+    priv->pkt.size = p->data_size - p->field2_offset;
     
 #ifdef DUMP_DECODE
-    bgav_dprintf("Decode: out_time: %" PRId64 " len: %d\n", s->out_time,
+    bgav_dprintf("Decode (f2): out_time: %" PRId64 " len: %d\n", s->out_time,
                  priv->pkt.size);
     if(priv->pkt.data)
       gavl_hexdump(priv->pkt.data, 16, 16);
 #endif
     
-    //    dump_frame(frame_buffer, frame_buffer_len);
-    priv->frame->format = priv->ctx->pix_fmt;
     bytes_used = avcodec_decode_video2(priv->ctx,
                                        priv->frame,
                                        &have_picture,
                                        &priv->pkt);
-    
 #ifdef DUMP_DECODE
     bgav_dprintf("Used %d/%d bytes, got picture: %d ",
                  bytes_used, priv->pkt.size, have_picture);
@@ -508,100 +568,34 @@ static gavl_source_status_t decode_picture(bgav_stream_t * s)
       bgav_dprintf("\n");
       }
 #endif
-
-    /* Ugly hack: Need to free the side data elements manually because
-       ffmpeg has no public API for that */
-#if LIBAVCODEC_VERSION_MAJOR >= 54
-    if(priv->pkt.side_data_elems)
-      {
-      av_free(priv->pkt.side_data[0].data);
-      av_freep(&priv->pkt.side_data);
-      priv->pkt.side_data_elems = 0;
-      }
-#endif
-      
-    /* Decode 2nd field for field pictures */
-    if(p && p->field2_offset && (bytes_used > 0))
-      {
-      priv->pkt.data = p->data + p->field2_offset;
-      priv->pkt.size = p->data_size - p->field2_offset;
-      
-#ifdef DUMP_DECODE
-      bgav_dprintf("Decode (f2): out_time: %" PRId64 " len: %d\n", s->out_time,
-                   priv->pkt.size);
-      if(priv->pkt.data)
-        gavl_hexdump(priv->pkt.data, 16, 16);
-#endif
-
-      bytes_used = avcodec_decode_video2(priv->ctx,
-                                         priv->frame,
-                                         &have_picture,
-                                         &priv->pkt);
-#ifdef DUMP_DECODE
-      bgav_dprintf("Used %d/%d bytes, got picture: %d ",
-                   bytes_used, priv->pkt.size, have_picture);
-      if(!have_picture)
-        bgav_dprintf("\n");
-      else
-        {
-        bgav_dprintf("Interlaced: %d TFF: %d Repeat: %d, framerate: %f",
-                     priv->frame->interlaced_frame,
-                     priv->frame->top_field_first,
-                     priv->frame->repeat_pict,
-                     (float)(priv->ctx->time_base.den) / (float)(priv->ctx->time_base.num)
-                     );
-      
-        bgav_dprintf("\n");
-        }
-#endif
-      }
+    }
+#endif // End (second field
     
-    if(p)
-      done_data(s, p);
-    
-    /* If we passed no data and got no picture, we are done here */
-    if(!priv->pkt.size && !have_picture)
-      {
-      if(priv->flags & GOT_EOS)
-        {
-        avcodec_flush_buffers(priv->ctx);
-        priv->flags &= ~GOT_EOS;
-        }
-      else
-        {
-        //        fprintf(stderr, "*** EOF 3\n");
-        return GAVL_SOURCE_EOF;
-        }
-      }
-    
-    if(have_picture)
-      {
-      int i;
-      s->flags |= STREAM_HAVE_FRAME; 
+  if(!result)
+    {
+    int i;
+    s->flags |= STREAM_HAVE_FRAME; 
       
-      /* Set our internal frame */
-      for(i = 0; i < 3; i++)
-        {
-        priv->gavl_frame->planes[i]  = priv->frame->data[i];
-        priv->gavl_frame->strides[i] = priv->frame->linesize[i];
-        }
-      bgav_pts_cache_get_first(&priv->pts_cache, priv->gavl_frame);
+    /* Set our internal frame */
+    for(i = 0; i < 3; i++)
+      {
+      priv->gavl_frame->planes[i]  = priv->frame->data[i];
+      priv->gavl_frame->strides[i] = priv->frame->linesize[i];
+      }
+    bgav_pts_cache_get_first(&priv->pts_cache, priv->gavl_frame);
 
-      if(gavl_interlace_mode_is_mixed(s->data.video.format->interlace_mode))
+    if(gavl_interlace_mode_is_mixed(s->data.video.format->interlace_mode))
+      {
+      if(priv->frame->interlaced_frame)
         {
-        if(priv->frame->interlaced_frame)
-          {
-          if(priv->frame->top_field_first)
-            priv->gavl_frame->interlace_mode = GAVL_INTERLACE_TOP_FIRST;
-          else
-            priv->gavl_frame->interlace_mode = GAVL_INTERLACE_BOTTOM_FIRST;
-          }
+        if(priv->frame->top_field_first)
+          priv->gavl_frame->interlace_mode = GAVL_INTERLACE_TOP_FIRST;
         else
-          priv->gavl_frame->interlace_mode = GAVL_INTERLACE_NONE;
+          priv->gavl_frame->interlace_mode = GAVL_INTERLACE_BOTTOM_FIRST;
         }
-      break;
+      else
+        priv->gavl_frame->interlace_mode = GAVL_INTERLACE_NONE;
       }
-
     }
   
   return GAVL_SOURCE_OK;
@@ -929,24 +923,7 @@ static void resync_ffmpeg(bgav_stream_t * s)
   {
   ffmpeg_video_priv * priv;
   priv = s->decoder_priv;
-
-  while(1)
-    {
-    int bytes_used, have_picture = 0;
-    priv->pkt.data = NULL;
-    priv->pkt.size = 0;
-    
-    bytes_used = avcodec_decode_video2(priv->ctx,
-                                       priv->frame,
-                                       &have_picture,
-                                       &priv->pkt);
-    
-    if(!have_picture || (bytes_used < 0))
-      break;
-    }
   
-
-
   avcodec_flush_buffers(priv->ctx);
   
   bgav_pts_cache_clear(&priv->pts_cache);
@@ -1580,6 +1557,10 @@ static codec_info_t codec_infos[] =
 
     { "FFmpeg VP8 decoder", "VP8", AV_CODEC_ID_VP8,
       (uint32_t[]){ BGAV_MK_FOURCC('V', 'P', '8', '0'),
+                    0x00 } },
+
+    { "FFmpeg VP9 decoder", "VP8", AV_CODEC_ID_VP9,
+      (uint32_t[]){ BGAV_MK_FOURCC('V', 'P', '9', '0'),
                     0x00 } },
     
     { "Ffmpeg MPEG-1 decoder", "MPEG-1", AV_CODEC_ID_MPEG1VIDEO,

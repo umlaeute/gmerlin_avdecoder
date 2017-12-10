@@ -101,6 +101,9 @@ void bgav_packet_dump(bgav_packet_t * p)
 
   if(p->flags & GAVL_PACKET_REF)
     bgav_dprintf(", ref");
+
+  if(p->flags & PACKET_FLAG_FIELD_PIC)
+    bgav_dprintf(", field-pic");
   
   if(p->tc != GAVL_TIMECODE_UNDEFINED)
     {

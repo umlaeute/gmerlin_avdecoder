@@ -357,6 +357,7 @@ static char const * const mimetypes =
   "audio/3gpp "
   "audio/3gpp2 "
   "video/MP2P "
+  "video/MP2T "
   "video/mp4 "
   "video/mpeg "
   "video/quicktime "

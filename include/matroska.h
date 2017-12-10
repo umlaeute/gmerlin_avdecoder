@@ -432,6 +432,9 @@ typedef struct
   uint64_t TrackOverlay;
   /* TODO: TrackTranslate */
 
+  uint64_t CodecDelay;
+  uint64_t SeekPreroll;
+  
   bgav_mkv_track_video_t video;
   bgav_mkv_track_audio_t audio;
   
@@ -677,6 +680,9 @@ void bgav_mkv_block_group_free(bgav_mkv_block_group_t * g);
 #define MKV_ID_TrackTranslateEditionUID 0x66fc
 #define MKV_ID_TrackTranslateCodec      0x66bf
 #define MKV_ID_TrackTranslateTrackID    0x66a5
+#define MKV_ID_CodecDelay               0x56aa
+#define MKV_ID_SeekPreRoll              0x56bb
+
 
 /* Video specific */
 #define MKV_ID_Video           0xe0

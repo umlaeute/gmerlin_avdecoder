@@ -176,6 +176,7 @@ static const codec_info_t video_codecs[] =
     { "V_REAL/RV30",     BGAV_MK_FOURCC('R','V','3','0'), NULL,     0 },
     { "V_REAL/RV40",     BGAV_MK_FOURCC('R','V','4','0'), NULL,     0 },
     { "V_VP8",           BGAV_MK_FOURCC('V','P','8','0'), NULL,     0 },
+    { "V_VP9",           BGAV_MK_FOURCC('V','P','9','0'), NULL,     0 },
     { "V_THEORA",        BGAV_MK_FOURCC('T','H','R','A'), init_theora, 0 },
     { "V_MPEG4/ISO/AVC", BGAV_MK_FOURCC('a','v','c','1'), init_mpeg, 0 },
     { "V_MPEG1",         BGAV_MK_FOURCC('m','p','v','1'), init_mpeg, 0 },
@@ -197,6 +198,20 @@ static void init_vorbis(bgav_stream_t * s)
   {
   setup_ogg_extradata(s);
   s->fourcc = BGAV_MK_FOURCC('V','B','I','S');
+  s->flags |= STREAM_PARSE_FRAME;
+  s->index_mode = INDEX_MODE_SIMPLE;
+  }
+
+static void init_opus(bgav_stream_t * s)
+  {
+  bgav_mkv_track_t * p = s->priv;
+
+  bgav_stream_set_extradata(s,
+                            p->CodecPrivate,
+                            p->CodecPrivateLen);
+  
+  setup_ogg_extradata(s);
+  s->fourcc = BGAV_MK_FOURCC('O', 'P', 'U', 'S');
   s->flags |= STREAM_PARSE_FRAME;
   s->index_mode = INDEX_MODE_SIMPLE;
   }
@@ -317,6 +332,7 @@ static const codec_info_t audio_codecs[] =
   {
     { "A_MS/ACM",        0x00,                            init_acm,    0  },
     { "A_VORBIS",        0x00,                            init_vorbis, 0  },
+    { "A_OPUS",          0x00,                            init_opus,   0  },
     { "A_MPEG/",         0x00,                            init_mpa,    CODEC_FLAG_INCOMPLETE },
     { "A_AAC/",          BGAV_MK_FOURCC('m','p','4','a'), init_aac,    CODEC_FLAG_INCOMPLETE },
     { "A_AAC",           BGAV_MK_FOURCC('m','p','4','a'), init_aac,    0 },
