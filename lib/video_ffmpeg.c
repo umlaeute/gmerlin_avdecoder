@@ -142,12 +142,6 @@ typedef struct
   
   AVPacket pkt;
 
-#ifdef HAVE_LIBVA
-  AVBufferRef * frame_pool; // avctx->hw_frames_ctx
-  
-  //  bgav_vaapi_t vaapi;
-#endif
-  
   bgav_packet_t * p;
 
   void (*put_frame)(bgav_stream_t * s, gavl_video_frame_t * f);
@@ -169,7 +163,6 @@ static void put_frame_vaapi(bgav_stream_t * s, gavl_video_frame_t * f1)
   f = bgav_vaapi_get_frame_by_id(&priv->vaapi, id);
   s->vframe = f->f;
   gavl_video_frame_copy_metadata(s->vframe, priv->gavl_frame);
-  
   }
 
 static int vaapi_get_buffer2(struct AVCodecContext *avctx,
@@ -272,6 +265,7 @@ static int pixelformat_is_ram(enum AVPixelFormat fmt)
 static enum AVPixelFormat
 vaapi_get_format(struct AVCodecContext *avctx, const enum AVPixelFormat *fmt)
   {
+  int got_hwaccel_fmt = 0;
   int i = 0;
   bgav_stream_t * s = avctx->opaque;
   ffmpeg_video_priv * priv = s->decoder_priv;
@@ -281,59 +275,86 @@ vaapi_get_format(struct AVCodecContext *avctx, const enum AVPixelFormat *fmt)
     {
     if(fmt[i] == AV_PIX_FMT_VAAPI_VLD)
       {
-      if(!avctx->hw_frames_ctx)
+      AVVAAPIDeviceContext * vaapi_ctx;
+      AVHWDeviceContext * devctx;
+      AVBufferRef * device_context;
+      AVHWFramesContext * frames_context;
+
+      got_hwaccel_fmt = 1;
+      
+      /* Device context */
+      if(!priv->hwctx &&
+         !(priv->hwctx = gavl_hw_ctx_create_vaapi_x11(NULL)))
+        continue;
+      
+      device_context = av_hwdevice_ctx_alloc(AV_HWDEVICE_TYPE_VAAPI);
+
+      devctx = (AVHWDeviceContext*)device_context->data;
+      vaapi_ctx = devctx->hwctx;
+      vaapi_ctx->display = gavl_hw_ctx_vaapi_x11_get_va_display(priv->hwctx);
+
+      if(av_hwdevice_ctx_init(device_context))
+        continue;
+        
+      avctx->hw_frames_ctx = av_hwframe_ctx_alloc(device_context);
+      
+      //     avctx->hw_frames_ctx = priv->hw_frames_ctx;
+        
+      frames_context = (AVHWFramesContext*)avctx->hw_frames_ctx->data;
+      frames_context->format = AV_PIX_FMT_VAAPI_VLD;
+      frames_context->sw_format = AV_PIX_FMT_YUV420P;
+      frames_context->width = avctx->width;
+      frames_context->height = avctx->height;
+        
+      if(av_hwframe_ctx_init(avctx->hw_frames_ctx))
         {
-        AVVAAPIDeviceContext * vaapi_ctx;
-        AVHWDeviceContext * devctx;
-        AVBufferRef * device_context;
-        AVHWFramesContext * frames_context;
-        
-        /* Device context */
-        if(!(priv->hwctx = gavl_hw_ctx_create_vaapi_x11(NULL)))
-          continue;
-
-        device_context = av_hwdevice_ctx_alloc(AV_HWDEVICE_TYPE_VAAPI);
-
-        devctx = (AVHWDeviceContext*)device_context->data;
-        vaapi_ctx = devctx->hwctx;
-        vaapi_ctx->display = gavl_hw_ctx_vaapi_x11_get_va_display(priv->hwctx);
-
-        if(av_hwdevice_ctx_init(device_context))
-          continue;
-        
-        avctx->hw_frames_ctx = av_hwframe_ctx_alloc(device_context);
-
-        frames_context = (AVHWFramesContext*)avctx->hw_frames_ctx->data;
-        frames_context->format = AV_PIX_FMT_VAAPI_VLD;
-        frames_context->sw_format = AV_PIX_FMT_YUV420P;
-        frames_context->width = avctx->width;
-        frames_context->height = avctx->height;
-        
-        if(av_hwframe_ctx_init(avctx->hw_frames_ctx))
-          continue;
-        
-
-        s->src_flags |= GAVL_SOURCE_SRC_ALLOC;
-        return fmt[i];
+        av_buffer_unref(&device_context);
+        continue;
         }
-#if 0      
-      if(!priv->vaapi.hwctx && bgav_vaapi_init(&priv->vaapi, priv->ctx, fmt[i]))
-        {
-        bgav_log(s->opt, BGAV_LOG_INFO, LOG_DOMAIN, "Using VAAPI");
-        priv->ctx->get_buffer2 = vaapi_get_buffer2;
-        priv->ctx->draw_horiz_band = vaapi_draw_horiz_band;
-        s->src_flags |= GAVL_SOURCE_SRC_ALLOC;
-        return fmt[i];
-        }
-#endif
-      else if(avctx->hw_frames_ctx)
-        return fmt[i];
+        
+      bgav_log(s->opt, BGAV_LOG_INFO, LOG_DOMAIN, "Using VAAPI");
+
+      av_buffer_unref(&device_context);
+
+      s->data.video.format->pixelformat = GAVL_YUV_420_P;
+      s->data.video.format->hwctx = priv->hwctx;
+        
+      s->src_flags |= GAVL_SOURCE_SRC_ALLOC;
+      return fmt[i];
       }
     else if((fallback == -1) && (pixelformat_is_ram(fmt[i])))
       fallback = fmt[i];
     i++;
     }
+
+  /* Undo hwaccel initialization (seems ffmpeg changed it's mind) */
+  if(!got_hwaccel_fmt && priv->hwctx) 
+    {
+    s->data.video.format->hwctx = NULL;
+    s->src_flags &= ~GAVL_SOURCE_SRC_ALLOC;
+    bgav_log(s->opt, BGAV_LOG_INFO, LOG_DOMAIN, "Disabling VAAPI (ffmpeg changed it's mind)");
+
+    gavl_hw_ctx_destroy(priv->hwctx);
+    priv->hwctx = NULL;
+    }
+  
+    
   return fallback; // Fallback
+  }
+
+static void put_frame_vaapi(bgav_stream_t * s, gavl_video_frame_t * f1)
+  {
+  //  VAStatus result;
+  ffmpeg_video_priv * priv = s->decoder_priv;
+
+  //  id = (VASurfaceID)(uintptr_t)priv->frame->data[0];
+
+  s->vframe = priv->gavl_frame;
+  priv->gavl_frame->user_data = (VASurfaceID*)(&priv->frame->data[3]);
+
+  // fprintf(stderr, "put_frame_vaapi %08x\n", *((VASurfaceID*)priv->gavl_frame->user_data));
+  
+  priv->gavl_frame->hwctx = priv->hwctx;
   }
 
 
@@ -746,24 +767,6 @@ decode_ffmpeg(bgav_stream_t * s, gavl_video_frame_t * f)
       if(f)
         gavl_video_frame_copy_metadata(f, priv->gavl_frame);
       }
-#if 0    
-    if(f)
-      {
-      if(priv->put_frame)
-        {
-        priv->put_frame(s, f);
-        /* Set frame metadata */
-        gavl_video_frame_copy_metadata(f, priv->gavl_frame);
-        }
-      else
-        {
-        /* TODO: Remove this */
-        gavl_video_frame_copy(&s->data.video.format, f, priv->gavl_frame);
-        /* Set frame metadata */
-        gavl_video_frame_copy_metadata(f, priv->gavl_frame);
-        }
-      }
-#endif
     }
   else if(!(priv->flags & NEED_FORMAT))
     {
@@ -1039,6 +1042,12 @@ static void close_ffmpeg(bgav_stream_t * s)
     gavl_video_frame_destroy(priv->gavl_frame);
     }
 
+  if(priv->frame)
+    {
+    av_frame_unref(priv->frame);
+    av_frame_free(&priv->frame);
+    }
+  
   if(priv->src_field)
     {
     gavl_video_frame_null(priv->src_field);
@@ -1050,6 +1059,9 @@ static void close_ffmpeg(bgav_stream_t * s)
     gavl_video_frame_null(priv->dst_field);
     gavl_video_frame_destroy(priv->dst_field);
     }
+
+  if(priv->hwctx)
+    gavl_hw_ctx_destroy(priv->hwctx);
   
   if(priv->p)
     bgav_packet_destroy(priv->p);
@@ -2271,9 +2283,8 @@ static void init_put_frame(bgav_stream_t * s)
   if(priv->ctx->pix_fmt == AV_PIX_FMT_PAL8)
     priv->put_frame = put_frame_palette;
 #ifdef HAVE_LIBVA
-  /* TODO */
-  //  else if(priv->vaapi.hwctx)
-  //    priv->put_frame = put_frame_vaapi;
+  else if(priv->ctx->hw_frames_ctx)
+    priv->put_frame = put_frame_vaapi;
 #endif
 
 #if LIBAVUTIL_VERSION_INT < (50<<16)

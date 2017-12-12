@@ -85,6 +85,8 @@ static gavl_source_status_t decode_frame_opus(bgav_stream_t * s)
   if(result <= 0)
     goto fail;
 
+  //  fprintf(stderr, "Decoded %d samples\n", result);
+  
   priv->frame->valid_samples = result;
 
   if(priv->frame->valid_samples > p->duration)
