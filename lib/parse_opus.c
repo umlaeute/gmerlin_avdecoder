@@ -91,7 +91,7 @@ static void cleanup_opus(bgav_audio_parser_t * parser)
 static void reset_opus(bgav_audio_parser_t * parser)
   {
   opus_priv_t * p = parser->priv;
-  p->pts_offset = -parser->s->ci.pre_skip;
+  p->pts_offset = -((int64_t)parser->s->ci.pre_skip);
   }
 
 void bgav_audio_parser_init_opus(bgav_audio_parser_t * parser)

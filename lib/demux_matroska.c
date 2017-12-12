@@ -977,7 +977,7 @@ static void setup_packet(mkv_t * m, bgav_stream_t * s,
   {
   bgav_mkv_track_t * t;
 
-  // fprintf(stderr, "setup_packet: %"PRId64"\n", pts);
+  //  fprintf(stderr, "setup_packet: %"PRId64"\n", pts);
   
   p->position = m->cluster_pos;
   t = s->priv;
