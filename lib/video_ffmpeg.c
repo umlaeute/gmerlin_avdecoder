@@ -33,13 +33,18 @@
 
 #include AVCODEC_HEADER
 
+#include <libavutil/hwcontext.h>
+
 #undef HAVE_VDPAU
-#undef HAVE_LIBVA
+// #undef HAVE_LIBVA
+
+#include <libavutil/hwcontext.h>
 
 #ifdef HAVE_LIBVA
 #include <va/va.h>
-#include VAAPI_HEADER
-#include <bgav_vaapi.h>
+#include <libavutil/hwcontext_vaapi.h>
+#include <gavl/hw_vaapi.h>
+#include <gavl/hw_vaapi_x11.h>
 #endif
 
 #include <dvframe.h>
@@ -138,16 +143,20 @@ typedef struct
   AVPacket pkt;
 
 #ifdef HAVE_LIBVA
-  bgav_vaapi_t vaapi;
+  AVBufferRef * frame_pool; // avctx->hw_frames_ctx
+  
+  //  bgav_vaapi_t vaapi;
 #endif
   
   bgav_packet_t * p;
 
   void (*put_frame)(bgav_stream_t * s, gavl_video_frame_t * f);
+
+  gavl_hw_context_t * hwctx;
   
   } ffmpeg_video_priv;
 
-#ifdef HAVE_LIBVA
+#if 0 // OLD_LIBVA
 
 static void put_frame_vaapi(bgav_stream_t * s, gavl_video_frame_t * f1)
   {
@@ -237,6 +246,10 @@ vaapi_get_format(struct AVCodecContext *avctx, const enum AVPixelFormat *fmt)
   return fallback; // Fallback
   }
 
+
+#endif  // OLD_LIBVA
+
+#ifdef HAVE_LIBVA // NEW libva API
 static int vaapi_supported(struct AVCodecContext *avctx)
   {
   const AVHWAccel *hwaccel = NULL;
@@ -250,7 +263,82 @@ static int vaapi_supported(struct AVCodecContext *avctx)
   return 0;
   }
 
+static int pixelformat_is_ram(enum AVPixelFormat fmt)
+  {
+  const AVPixFmtDescriptor * desc = av_pix_fmt_desc_get(fmt);
+  return (desc->flags & AV_PIX_FMT_FLAG_HWACCEL) ? 0 : 1;
+  }
+
+static enum AVPixelFormat
+vaapi_get_format(struct AVCodecContext *avctx, const enum AVPixelFormat *fmt)
+  {
+  int i = 0;
+  bgav_stream_t * s = avctx->opaque;
+  ffmpeg_video_priv * priv = s->decoder_priv;
+  enum AVPixelFormat fallback = -1;
+
+  while(fmt[i] != -1)
+    {
+    if(fmt[i] == AV_PIX_FMT_VAAPI_VLD)
+      {
+      if(!avctx->hw_frames_ctx)
+        {
+        AVVAAPIDeviceContext * vaapi_ctx;
+        AVHWDeviceContext * devctx;
+        AVBufferRef * device_context;
+        AVHWFramesContext * frames_context;
+        
+        /* Device context */
+        if(!(priv->hwctx = gavl_hw_ctx_create_vaapi_x11(NULL)))
+          continue;
+
+        device_context = av_hwdevice_ctx_alloc(AV_HWDEVICE_TYPE_VAAPI);
+
+        devctx = (AVHWDeviceContext*)device_context->data;
+        vaapi_ctx = devctx->hwctx;
+        vaapi_ctx->display = gavl_hw_ctx_vaapi_x11_get_va_display(priv->hwctx);
+
+        if(av_hwdevice_ctx_init(device_context))
+          continue;
+        
+        avctx->hw_frames_ctx = av_hwframe_ctx_alloc(device_context);
+
+        frames_context = (AVHWFramesContext*)avctx->hw_frames_ctx->data;
+        frames_context->format = AV_PIX_FMT_VAAPI_VLD;
+        frames_context->sw_format = AV_PIX_FMT_YUV420P;
+        frames_context->width = avctx->width;
+        frames_context->height = avctx->height;
+        
+        if(av_hwframe_ctx_init(avctx->hw_frames_ctx))
+          continue;
+        
+
+        s->src_flags |= GAVL_SOURCE_SRC_ALLOC;
+        return fmt[i];
+        }
+#if 0      
+      if(!priv->vaapi.hwctx && bgav_vaapi_init(&priv->vaapi, priv->ctx, fmt[i]))
+        {
+        bgav_log(s->opt, BGAV_LOG_INFO, LOG_DOMAIN, "Using VAAPI");
+        priv->ctx->get_buffer2 = vaapi_get_buffer2;
+        priv->ctx->draw_horiz_band = vaapi_draw_horiz_band;
+        s->src_flags |= GAVL_SOURCE_SRC_ALLOC;
+        return fmt[i];
+        }
 #endif
+      else if(avctx->hw_frames_ctx)
+        return fmt[i];
+      }
+    else if((fallback == -1) && (pixelformat_is_ram(fmt[i])))
+      fallback = fmt[i];
+    i++;
+    }
+  return fallback; // Fallback
+  }
+
+
+#endif
+
 
 static codec_info_t * lookup_codec(bgav_stream_t * s);
 
@@ -975,11 +1063,7 @@ static void close_ffmpeg(bgav_stream_t * s)
 #endif
 
 #ifdef HAVE_LIBVA
-  if(priv->vaapi.hwctx)
-    {
-    bgav_vaapi_cleanup(&priv->vaapi);
-    priv->vaapi.hwctx = NULL;
-    }
+
 #endif 
   av_frame_free(&priv->frame);
   free(priv);
@@ -2187,8 +2271,9 @@ static void init_put_frame(bgav_stream_t * s)
   if(priv->ctx->pix_fmt == AV_PIX_FMT_PAL8)
     priv->put_frame = put_frame_palette;
 #ifdef HAVE_LIBVA
-  else if(priv->vaapi.hwctx)
-    priv->put_frame = put_frame_vaapi;
+  /* TODO */
+  //  else if(priv->vaapi.hwctx)
+  //    priv->put_frame = put_frame_vaapi;
 #endif
 
 #if LIBAVUTIL_VERSION_INT < (50<<16)

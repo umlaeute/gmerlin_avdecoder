@@ -260,6 +260,9 @@ void bgav_options_set_defaults(bgav_options_t * b)
   b->cache_size = 20;
   b->vdpau = 1;
   b->threads = 1;
+
+  b->vaapi = 1;
+
   b->log_level =
     BGAV_LOG_INFO | \
     BGAV_LOG_ERROR | \

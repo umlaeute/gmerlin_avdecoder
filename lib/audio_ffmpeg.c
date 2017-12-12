@@ -239,7 +239,9 @@ static gavl_source_status_t decode_frame_ffmpeg(bgav_stream_t * s)
         }
 #endif
       avcodec_send_packet(priv->ctx, &priv->pkt);
-      bgav_stream_done_packet_read(s, p);
+
+      if(p)
+        bgav_stream_done_packet_read(s, p);
       }
     else
       return GAVL_SOURCE_EOF;

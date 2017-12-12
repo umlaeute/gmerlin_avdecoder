@@ -254,7 +254,7 @@ xadll_libs =
 endif
 
 if HAVE_LIBVA
-vaapi_sources = vaapi.c
+vaapi_sources = 
 vaapi_libs = @LIBVA_LIBS@ @X_LIBS@
 vaapi_cflags = @LIBVA_CFLAGS@ @X_CFLAGS@
 else

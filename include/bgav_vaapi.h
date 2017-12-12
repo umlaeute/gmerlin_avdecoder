@@ -19,6 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * *****************************************************************/
 
+#if 0
 typedef struct
   {
   VASurfaceID s;
@@ -47,3 +48,4 @@ void bgav_vaapi_cleanup(bgav_vaapi_t *);
 bgav_vaapi_frame_t * bgav_vaapi_get_frame(bgav_vaapi_t *);
 
 bgav_vaapi_frame_t * bgav_vaapi_get_frame_by_id(bgav_vaapi_t *, VASurfaceID id);
+#endif
