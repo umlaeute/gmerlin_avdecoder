@@ -580,6 +580,8 @@ static gavl_source_status_t get_packet(bgav_stream_t * s)
 #ifdef DUMP_DECODE
   bgav_dprintf("Used %d bytes", priv->pkt.size);
 #endif
+
+  done_data(s, p);
   return GAVL_SOURCE_OK;
   }
 
@@ -1044,7 +1046,7 @@ static void close_ffmpeg(bgav_stream_t * s)
 
   if(priv->frame)
     {
-    av_frame_unref(priv->frame);
+    //    av_frame_unref(priv->frame); // Not necessary? At least valgrind doesn't complain
     av_frame_free(&priv->frame);
     }
   

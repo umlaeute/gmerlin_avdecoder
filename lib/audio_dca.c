@@ -224,6 +224,9 @@ static void close_dts(bgav_stream_t * s)
   dts_priv * priv;
   priv = s->decoder_priv;
 
+  if(priv->packet)
+    bgav_stream_done_packet_read(s, priv->packet);
+  
   if(priv->frame)
     gavl_audio_frame_destroy(priv->frame);
   if(priv->state)
