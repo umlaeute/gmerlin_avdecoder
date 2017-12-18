@@ -515,8 +515,10 @@ static gavl_source_status_t get_packet(bgav_stream_t * s)
     
     /* Early EOF detection */
     if(!p)
+      {
+      avcodec_send_packet(priv->ctx, NULL);
       return GAVL_SOURCE_EOF;
-
+      }
     /* Check what to skip */
     
     if(p->pts == GAVL_TIME_UNDEFINED)
