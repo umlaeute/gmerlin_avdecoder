@@ -39,7 +39,7 @@ static void codecs_lock();
 static void codecs_unlock();
 
 
-#if (HAVE_REALDLL || HAVE_XADLL || HAVE_W32DLL)
+#if (HAVE_REALDLL || HAVE_W32DLL)
 static const char * find_directory(char const* const* dirs, const char * env_name)
   {
   struct stat st;
@@ -84,29 +84,6 @@ static void bgav_set_dll_path_real()
   }
 #endif
 
-#ifdef HAVE_XADLL
-static const char * env_name_xanim =  "GMERLIN_AVDEC_CODEC_PATH_XANIM";
-
-static char * xanim_dirs[] =
-  {
-    "/usr/lib/codecs",
-    "/usr/local/lob/codecs",
-    "/usr/lib/codecdlls",
-    "/usr/lib/win32",
-    "/usr/local/lib/win32",
-    NULL
-  };
-
-static void bgav_set_dll_path_xanim()
-  {
-  if(bgav_dll_path_xanim)
-    {
-    free(bgav_dll_path_xanim);
-    }
-  bgav_dll_path_xanim =
-    gavl_strdup(find_directory((const char * const*)xanim_dirs, env_name_xanim));
-  }
-#endif
 
 #ifdef HAVE_W32DLL
 static const char * env_name_win32 = "GMERLIN_AVDEC_CODEC_PATH_WIN32";
@@ -268,18 +245,6 @@ void bgav_codecs_init(bgav_options_t * opt)
 
 #ifdef HAVE_OPUS
   bgav_init_audio_decoders_opus();
-#endif
-
-  
-  
-#ifdef HAVE_XADLL
-
-  bgav_set_dll_path_xanim();
-
-  if(bgav_dll_path_xanim)
-    {
-    bgav_init_video_decoders_xadll(opt);
-    }
 #endif
 
 #ifdef HAVE_REALDLL

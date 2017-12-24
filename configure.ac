@@ -498,30 +498,6 @@ AM_CONDITIONAL(HAVE_REALDLL, test x"$enable_realdll" = "xtrue")
 AC_SUBST(REALDLL_LIBS)
 
 dnl
-dnl Xanim DLLs loader
-dnl
-
-AH_TEMPLATE([HAVE_XADLL], [ Xanim dll loader enabled ])
-
-enable_xadll="false"
-
-if test x"$GCC" = x"yes"; then
- case "$host_cpu" in
-    i?86 | k?-* | athlon | pentium) enable_xadll="true"
- esac
-fi
-
-if test "x$enable_xadll" = "xtrue"; then
-AC_DEFINE([HAVE_XADLL])
-XADLL_LIBS="-ldl"
-else
-XADLL_LIBS=""
-fi
-
-AC_SUBST(XADLL_LIBS)
-AM_CONDITIONAL(HAVE_XADLL, test x"$enable_xadll" = "xtrue")
-
-dnl
 dnl Option for disabling libgsm
 dnl
 

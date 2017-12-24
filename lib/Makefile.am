@@ -245,14 +245,6 @@ real_sources =
 real_libs =
 endif
 
-if HAVE_XADLL
-xadll_sources = video_xadll.c
-xadll_libs = @XADLL_LIBS@
-else
-xadll_sources =
-xadll_libs = 
-endif
-
 if HAVE_LIBVA
 vaapi_sources = 
 vaapi_libs = @LIBVA_LIBS@ @X_LIBS@
