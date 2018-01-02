@@ -212,10 +212,11 @@ int bgav_open(bgav_t * ret, const char * location)
   {
   bgav_codecs_init(&ret->opt);
   ret->input = create_input(ret);
+
+  /* Create global metadata */
+  
   if(!bgav_input_open(ret->input, location))
-    {
     goto fail;
-    }
   if(!bgav_init(ret))
     goto fail;
 
@@ -285,7 +286,6 @@ gavl_dictionary_t * bgav_get_media_info(bgav_t * bgav)
 void bgav_dump(bgav_t * bgav)
   {
   bgav_track_dump(bgav, bgav->tt->cur);
-  
   }
 
 gavl_time_t bgav_get_duration(bgav_t * bgav, int track)

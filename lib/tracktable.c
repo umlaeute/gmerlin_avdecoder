@@ -32,6 +32,9 @@ bgav_track_table_t * bgav_track_table_create(int num_tracks)
   int i;
   
   ret = calloc(1, sizeof(*ret));
+
+  gavl_dictionary_get_dictionary_create(&ret->info, GAVL_META_METADATA);
+  
   if(num_tracks)
     {
     ret->tracks = calloc(num_tracks, sizeof(*(ret->tracks)));
