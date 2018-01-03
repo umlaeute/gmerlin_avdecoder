@@ -73,7 +73,7 @@ int bgav_init(bgav_t * ret)
       {
       bgav_track_table_remove_unsupported(ret->tt);
       bgav_track_table_merge_metadata(ret->tt, &ret->input->m);
-      return 1;
+      goto done;
       }
     }
   /*
@@ -91,7 +91,7 @@ int bgav_init(bgav_t * ret)
       else
         {
         bgav_track_table_merge_metadata(ret->tt, &ret->input->m);
-        return 1;
+        goto done;
         }
       }
     /* Check for ID3V2 tags here, they can be prepended to
@@ -111,7 +111,7 @@ int bgav_init(bgav_t * ret)
       if(bgav_is_redirector(ret))
         {
         bgav_track_table_merge_metadata(ret->tt, &ret->input->m);
-        return 1;
+        goto done;
         }
       }
     if(!ret->demuxer)
@@ -154,6 +154,8 @@ int bgav_init(bgav_t * ret)
     bgav_track_table_ref(ret->input->tt);
     }
 
+  done:
+  
   if(bgav_can_seek(ret) || 
      bgav_can_pause(ret))
     {
