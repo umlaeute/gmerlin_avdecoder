@@ -330,8 +330,11 @@ static int setup_track(bgav_input_context_t * ctx,
                             bgav_sprintf("Title %02d Angle %d", title+1, angle+1));
   else
     gavl_dictionary_set_string_nocopy(new_track->metadata, GAVL_META_LABEL,
-                            bgav_sprintf("Title %02d", title+1));
-    
+                                      bgav_sprintf("Title %02d", title+1));
+  
+  gavl_dictionary_set_string(new_track->metadata, GAVL_META_MEDIA_CLASS,
+                             GAVL_META_MEDIA_CLASS_VIDEO_DISK_TRACK);
+  
   /* Set up chapters */
   
   //  track_priv->num_chapters = ttsrpt->title[title].nr_of_ptts;

@@ -150,103 +150,19 @@ typedef struct
   
   } ffmpeg_video_priv;
 
-#if 0 // OLD_LIBVA
-
-static void put_frame_vaapi(bgav_stream_t * s, gavl_video_frame_t * f1)
-  {
-  //  VAStatus result;
-  VASurfaceID id;
-  bgav_vaapi_frame_t * f;
-  ffmpeg_video_priv * priv = s->decoder_priv;
-
-  id = (VASurfaceID)(uintptr_t)priv->frame->data[0];
-  f = bgav_vaapi_get_frame_by_id(&priv->vaapi, id);
-  s->vframe = f->f;
-  gavl_video_frame_copy_metadata(s->vframe, priv->gavl_frame);
-  }
-
-static int vaapi_get_buffer2(struct AVCodecContext *avctx,
-                             AVFrame *frame, int flags)
-  {
-  bgav_vaapi_frame_t * f;
-  bgav_stream_t * s = avctx->opaque;
-  ffmpeg_video_priv * priv = s->decoder_priv;
-  
-  f = bgav_vaapi_get_frame(&priv->vaapi);
-
-  frame->data[0] = (uint8_t*)(uintptr_t)f->s;
-  frame->data[3] = frame->data[0];
-
-  frame->buf[0] = av_buffer_ref(f->buf);
-  frame->reordered_opaque = avctx->reordered_opaque;
-  
-  return 0;
-  }
-
-static void vaapi_draw_horiz_band(struct AVCodecContext *avctx,
-                                  const AVFrame *src, int offset[AV_NUM_DATA_POINTERS],
-                                  int y, int type, int height)
-  {
-  VAStatus result;
-  VASurfaceID id;
-  bgav_stream_t * s = avctx->opaque;
-  ffmpeg_video_priv * priv = s->decoder_priv;
-
-  id = (VASurfaceID)(uintptr_t)src->data[0];
-
-  //  fprintf(stderr, "vaSyncSurface\n");
-  if((result = vaSyncSurface(priv->vaapi.vaapi_ctx.display, id)) != VA_STATUS_SUCCESS)
-    {
-    //    fprintf(stderr, "vaSyncSurface failed: %s\n", vaErrorStr(result));
-    }
-  
-  
-  }
-
-static int pixelformat_is_ram(enum AVPixelFormat fmt)
-  {
-  const AVPixFmtDescriptor * desc = av_pix_fmt_desc_get(fmt);
-  return (desc->flags & AV_PIX_FMT_FLAG_HWACCEL) ? 0 : 1;
-  }
-
-static enum AVPixelFormat
-vaapi_get_format(struct AVCodecContext *avctx, const enum AVPixelFormat *fmt)
-  {
-  int i = 0;
-  bgav_stream_t * s = avctx->opaque;
-  ffmpeg_video_priv * priv = s->decoder_priv;
-  enum AVPixelFormat fallback = -1;
-
-  while(fmt[i] != -1)
-    {
-    if(fmt[i] == AV_PIX_FMT_VAAPI_VLD)
-      {
-      if(!priv->vaapi.hwctx && bgav_vaapi_init(&priv->vaapi, priv->ctx, fmt[i]))
-        {
-        bgav_log(s->opt, BGAV_LOG_INFO, LOG_DOMAIN, "Using VAAPI");
-        priv->ctx->get_buffer2 = vaapi_get_buffer2;
-        priv->ctx->draw_horiz_band = vaapi_draw_horiz_band;
-        s->src_flags |= GAVL_SOURCE_SRC_ALLOC;
-        return fmt[i];
-        }
-      else if(priv->vaapi.hwctx)
-        return fmt[i];
-      }
-    else if((fallback == -1) && (pixelformat_is_ram(fmt[i])))
-      fallback = fmt[i];
-    i++;
-    }
-  return fallback; // Fallback
-  }
-
-
-#endif  // OLD_LIBVA
-
 #ifdef HAVE_LIBVA // NEW libva API
 static int vaapi_supported(struct AVCodecContext *avctx)
   {
   const AVHWAccel *hwaccel = NULL;
 
+  /*
+   *  Right now, libva and MPEG video (DVD) makes screwed up pictures.
+   *  Retry with later ffmpegs!
+   */
+  if((avctx->codec_id == AV_CODEC_ID_MPEG1VIDEO) ||
+     (avctx->codec_id == AV_CODEC_ID_MPEG2VIDEO))
+    return 0;
+  
   while((hwaccel = av_hwaccel_next(hwaccel)))
     {
     if((hwaccel->id == avctx->codec_id) &&
