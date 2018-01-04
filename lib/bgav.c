@@ -133,8 +133,8 @@ int bgav_init(bgav_t * ret)
 
     /* Check for subtitle file */
   
-    if(ret->opt.seek_subtitles &&
-       (ret->opt.seek_subtitles + ret->tt->cur->num_video_streams > 1))
+    if(ret->tt->cur && ret->opt.seek_subtitles &&
+       (ret->tt->cur->num_video_streams > 1))
       {
       subreaders = bgav_subtitle_reader_open(ret->input);
     
@@ -170,10 +170,6 @@ int bgav_init(bgav_t * ret)
       
       }
     }
-  
-     
-
-  
   return 1;
     
   fail:

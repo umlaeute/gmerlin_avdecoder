@@ -35,7 +35,7 @@
 static int glob_errfunc(const char *epath, int eerrno)
   {
   fprintf(stderr, "glob error: Cannot access %s: %s\n",
-          epath, strerror(errno));
+          epath, strerror(eerrno));
   return 0;
   }
 

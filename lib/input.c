@@ -802,6 +802,9 @@ static int input_open(bgav_input_context_t * ctx,
     {
     /* Check vcd image */
     pos = strrchr(url, '.');
+#if 0
+
+    /* Disable vcdimager support in favor of audio cue support */
 #ifdef HAVE_CDIO
     /* Check for VCD image */
     if(pos && !strcasecmp(pos, ".cue"))
@@ -809,6 +812,8 @@ static int input_open(bgav_input_context_t * ctx,
     else
 #endif
 
+#endif // 0
+      
 #ifdef HAVE_DVDREAD
     if(strlen(url) >= DVD_PATH_LEN)
       {
