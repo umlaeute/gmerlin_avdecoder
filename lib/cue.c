@@ -419,7 +419,9 @@ gavl_dictionary_t * bgav_cue_get_edl(bgav_cue_t * cue,
         }
 
       } // Audio
-
+    else
+      track = NULL;
+    
     if(seg)
       {
       last_seg = seg;
@@ -427,7 +429,8 @@ gavl_dictionary_t * bgav_cue_get_edl(bgav_cue_t * cue,
       seg = NULL;
       }
 
-    gavl_track_finalize(track);
+    if(track)
+      gavl_track_finalize(track);
     
     } // End of tracks loop
 
