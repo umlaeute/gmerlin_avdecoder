@@ -352,6 +352,7 @@ static char const * const mimetypes =
   "audio/x-m4b "
   "audio/x-aac "
   "audio/x-aacp "
+  "audio/aac "
   "audio/ogg "
   "audio/gavf "
   "audio/3gpp "
