@@ -57,12 +57,32 @@ static void log_callback(void*data, bgav_log_level_t level,
   bg_log(l, domain, "%s", message);
   free(domain);
   }
-     
+
+/* Passing commands to source plugins isn't supported yet */
+static int handle_cmd(void * data, gavl_msg_t * msg)
+  {
+  return 1;
+  }
+
+/* Passed to the avdecoder library */
+static void handle_evt(void * data, gavl_msg_t * msg)
+  {
+  avdec_priv * avdec = data;
+  bg_msg_sink_put(avdec->ctrl.evt_sink, msg);
+  return;
+  }
+
 void * bg_avdec_create()
   {
   avdec_priv * ret = calloc(1, sizeof(*ret));
   ret->opt = bgav_options_create();
   bgav_options_set_log_callback(ret->opt, log_callback, NULL);
+
+  bg_controllable_init(&ret->ctrl,
+                       bg_msg_sink_create(handle_cmd, ret, 1),
+                       bg_msg_hub_create(1));
+
+  bgav_options_set_msg_callback(ret->opt, handle_evt, ret);
   return ret;
   }
 
@@ -96,6 +116,14 @@ int bg_avdec_get_overlay_compression_info(void * priv, int stream,
   avdec_priv * avdec = priv;
   return bgav_get_overlay_compression_info(avdec->dec, stream, info);
   }
+
+bg_controllable_t *
+bg_avdec_get_controllable(void * priv)
+  {
+  avdec_priv * avdec = priv;
+  return &avdec->ctrl;
+  }
+
 
 gavl_video_source_t *
 bg_avdec_get_video_source(void * priv, int stream)
@@ -152,13 +180,12 @@ void bg_avdec_destroy(void * priv)
   bg_avdec_close(priv);
 
   if(avdec->dec)
-    {
     bgav_close(avdec->dec);
-    }
   if(avdec->opt)
-    {
     bgav_options_destroy(avdec->opt);
-    }
+  
+  bg_controllable_cleanup(&avdec->ctrl);
+  
   free(avdec);
   }
 

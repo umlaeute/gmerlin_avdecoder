@@ -128,9 +128,7 @@ static int init_track(bgav_track_t * track,
 static void metadata_callback(void * data,const gavl_dictionary_t * m)
   {
   bgav_demuxer_context_t * ctx = data;
-
-  if(ctx->opt->metadata_change_callback)
-    ctx->opt->metadata_change_callback(ctx->opt->metadata_change_callback_data, m);
+  bgav_options_metadata_changed(ctx->opt, m);
   }
 
 static int open_gavf(bgav_demuxer_context_t * ctx)

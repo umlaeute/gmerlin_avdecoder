@@ -362,8 +362,8 @@ void bgav_options_copy(bgav_options_t * dst, const bgav_options_t * src)
 
   CP_INT(log_level);
   
-  CP_INT(metadata_change_callback);
-  CP_INT(metadata_change_callback_data);
+  CP_INT(metadata_callback);
+  CP_INT(metadata_callback_data);
 
   CP_INT(buffer_callback);
   CP_INT(buffer_callback_data);
@@ -376,6 +376,9 @@ void bgav_options_copy(bgav_options_t * dst, const bgav_options_t * src)
 
   CP_INT(index_callback);
   CP_INT(index_callback_data);
+
+  CP_INT(msg_callback);
+  CP_INT(msg_callback_data);
   
   }
 
@@ -388,8 +391,8 @@ bgav_options_set_metadata_change_callback(bgav_options_t * opt,
                                           bgav_metadata_change_callback callback,
                                           void * data)
   {
-  opt->metadata_change_callback      = callback;
-  opt->metadata_change_callback_data = data;
+  opt->metadata_callback      = callback;
+  opt->metadata_callback_data = data;
   }
 
 void
@@ -444,3 +447,34 @@ bgav_options_set_index_callback(bgav_options_t * opt,
   opt->index_callback_data = data;
   }
 
+void
+bgav_options_set_msg_callback(bgav_options_t * opt,
+                              bgav_msg_callback callback,
+                              void * data)
+  {
+  opt->msg_callback      = callback;
+  opt->msg_callback_data = data;
+  }
+
+void bgav_options_metadata_changed(const bgav_options_t * opt, const gavl_dictionary_t * new_metadata)
+  {
+  
+  if(opt->metadata_callback)
+    opt->metadata_callback(opt->metadata_callback_data, new_metadata);
+  
+  if(opt->msg_callback)
+    {
+    gavl_msg_t msg;
+    gavl_msg_init(&msg);
+
+    //    fprintf(stderr, "bgav_options_metadata_changed: %p %p\n", opt->metadata_callback,
+    //            opt->msg_callback);
+    
+    gavl_msg_set_id_ns(&msg, GAVL_MSG_SRC_METADATA_CHANGED, GAVL_MSG_NS_SRC);
+    gavl_msg_set_arg_time(&msg, 0, GAVL_TIME_UNDEFINED);
+    gavl_msg_set_arg_int(&msg, 1, 0);
+    gavl_msg_set_arg_dictionary(&msg, 2, new_metadata);
+    opt->msg_callback(opt->msg_callback_data, &msg);
+    gavl_msg_free(&msg);
+    }
+  }

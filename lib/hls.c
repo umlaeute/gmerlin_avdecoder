@@ -303,14 +303,14 @@ static int load_stream_url(bgav_hls_t * h, int idx)
   handle_id3(h, &m);
 
 
-  if(h->ctx->opt->metadata_change_callback && h->ctx->tt &&
+  if(h->ctx->tt &&
      !gavl_metadata_equal(h->ctx->tt->cur->metadata, &m))
     {
     gavl_dictionary_reset(h->ctx->tt->cur->metadata);
     memcpy(h->ctx->tt->cur->metadata, &m, sizeof(m));
     gavl_dictionary_init(&m);
-    h->ctx->opt->metadata_change_callback(h->ctx->opt->metadata_change_callback_data,
-                                          h->ctx->tt->cur->metadata);
+
+    bgav_options_metadata_changed(h->ctx->opt, h->ctx->tt->cur->metadata);
     }
   gavl_dictionary_free(&m);
   return 1;

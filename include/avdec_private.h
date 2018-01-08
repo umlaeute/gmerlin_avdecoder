@@ -901,8 +901,8 @@ struct bgav_options_s
   bgav_log_callback log_callback;
   void * log_callback_data;
     
-  bgav_metadata_change_callback metadata_change_callback;
-  void * metadata_change_callback_data;
+  bgav_metadata_change_callback metadata_callback;
+  void * metadata_callback_data;
   
   bgav_buffer_callback buffer_callback;
   void * buffer_callback_data;
@@ -916,11 +916,16 @@ struct bgav_options_s
   bgav_index_callback index_callback;
   void * index_callback_data;
   
+  bgav_msg_callback msg_callback;
+  void * msg_callback_data;
+  
   };
 
 BGAV_PUBLIC void bgav_options_set_defaults(bgav_options_t*opt);
 
 void bgav_options_free(bgav_options_t*opt);
+
+void bgav_options_metadata_changed(const bgav_options_t * opt, const gavl_dictionary_t * new_metadata);
 
 /* Overloadable input module */
 

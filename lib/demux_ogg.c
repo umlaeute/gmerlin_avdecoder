@@ -1675,20 +1675,16 @@ static void metadata_changed(bgav_demuxer_context_t * ctx)
   char * name;
   ogg_t * priv = ctx->priv;
 
-  if(ctx->opt->metadata_change_callback)
-    {
-    get_metadata(ctx->tt->cur);
-    gavl_dictionary_merge2(ctx->tt->cur->metadata, &ctx->input->m);
+  get_metadata(ctx->tt->cur);
+  gavl_dictionary_merge2(ctx->tt->cur->metadata, &ctx->input->m);
 
-    if(!gavl_dictionary_get_string(ctx->tt->cur->metadata, GAVL_META_LABEL))
-      {
-      name = get_name(ctx->tt->cur->metadata);
-      if(name)
-        gavl_dictionary_set_string_nocopy(ctx->tt->cur->metadata, GAVL_META_LABEL, name);
-      }
-    ctx->opt->metadata_change_callback(ctx->opt->metadata_change_callback_data,
-                                       ctx->tt->cur->metadata);
+  if(!gavl_dictionary_get_string(ctx->tt->cur->metadata, GAVL_META_LABEL))
+    {
+    name = get_name(ctx->tt->cur->metadata);
+    if(name)
+      gavl_dictionary_set_string_nocopy(ctx->tt->cur->metadata, GAVL_META_LABEL, name);
     }
+  bgav_options_metadata_changed(ctx->opt, ctx->tt->cur->metadata);
   priv->metadata_changed = 0;
   }
 

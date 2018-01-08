@@ -32,6 +32,7 @@
 #include <gavl/chapterlist.h>
 #include <gavl/connectors.h>
 #include <gavl/edl.h>
+#include <gavl/msg.h>
 
 #include "bgavdefs.h" // This is ugly, but works
 
@@ -878,7 +879,14 @@ bgav_options_set_index_callback(bgav_options_t* opt,
                                 bgav_index_callback callback,
                                 void * data);
 
+typedef void (*bgav_msg_callback)(void * data, gavl_msg_t * msg);
 
+BGAV_PUBLIC void
+bgav_options_set_msg_callback(bgav_options_t* opt,
+                              bgav_msg_callback callback,
+                              void * data);
+ 
+  
 /* Device description */
 
 /** \defgroup devices Device description

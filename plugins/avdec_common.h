@@ -28,6 +28,8 @@ typedef struct
   bgav_t * dec;
   bgav_options_t * opt;
   
+  bg_controllable_t ctrl;
+  
   bg_input_callbacks_t * bg_callbacks;
   } avdec_priv;
 
@@ -58,6 +60,9 @@ bg_avdec_get_overlay_source(void * priv, int stream);
 
 gavl_packet_source_t *
 bg_avdec_get_overlay_packet_source(void * priv, int stream);
+
+bg_controllable_t *
+bg_avdec_get_controllable(void * priv);
 
 
 int bg_avdec_read_video(void * priv,

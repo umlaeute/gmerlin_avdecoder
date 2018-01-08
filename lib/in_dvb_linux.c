@@ -1097,33 +1097,24 @@ static void check_eit(bgav_input_context_t* ctx)
             
             tmp = *pos; pos++;// event_name_length
             
-            if(ctx->opt->metadata_change_callback)
-              {
-              gavl_dictionary_set_string_nocopy(m, GAVL_META_TITLE, 
-                                      decode_eit_string(ctx->opt, pos, tmp));
-              }
+            gavl_dictionary_set_string_nocopy(m, GAVL_META_TITLE, 
+                                              decode_eit_string(ctx->opt, pos, tmp));
             pos += tmp;
             
             tmp = *pos; pos++;// text_length
             
-            if(ctx->opt->metadata_change_callback)
-              {
-              gavl_dictionary_set_string_nocopy(m, GAVL_META_COMMENT, 
-                                      decode_eit_string(ctx->opt,
-                                                        pos, tmp));
-              }
+            gavl_dictionary_set_string_nocopy(m, GAVL_META_COMMENT, 
+                                              decode_eit_string(ctx->opt,
+                                                                pos, tmp));
             pos += tmp;
             break;
           default:
             break;
           }
         
-        if(ctx->opt->metadata_change_callback)
-          {
-          gavl_dictionary_set_string(m, GAVL_META_DATE, time_string);
-          ctx->opt->metadata_change_callback(ctx->opt->metadata_change_callback_data,
-                                             m);
-          }
+        gavl_dictionary_set_string(m, GAVL_META_DATE, time_string);
+        bgav_options_metadata_changed(ctx->opt, m);
+        
         pos = end_pos;
         if(pos >= descriptors_end)
           break;
@@ -1136,10 +1127,9 @@ static void check_eit(bgav_input_context_t* ctx)
     
     }
 
-  if(ctx->opt->metadata_change_callback && priv->metadata_changed)
+  if(priv->metadata_changed)
     {
-    ctx->opt->metadata_change_callback(ctx->opt->metadata_change_callback_data,
-                                       ctx->tt->cur->metadata);
+    bgav_options_metadata_changed(ctx->opt, ctx->tt->cur->metadata);
     priv->metadata_changed = 0;
     }
   }

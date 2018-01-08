@@ -209,7 +209,6 @@ bgav_track_attach_subtitle_reader(bgav_track_t * t,
       gavl_dictionary_set_string(ret->m, GAVL_META_LABEL, r->info);
     }
   
-  if(r->info)
   return ret;
   }
 

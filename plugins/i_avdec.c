@@ -403,6 +403,8 @@ const bg_input_plugin_t the_plugin =
       .destroy =        bg_avdec_destroy,
       .get_parameters = get_parameters_avdec,
       .set_parameter =  bg_avdec_set_parameter,
+      .get_controllable = bg_avdec_get_controllable,
+
     },
     .get_protocols = get_protocols,
     .get_mimetypes = get_mimetypes,
