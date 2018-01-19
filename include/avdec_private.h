@@ -1370,6 +1370,11 @@ struct bgav_demuxer_s
 #define BGAV_DEMUXER_BUILD_INDEX          (1<<8) /* We're just building
                                                     an index */
 
+#define BGAV_DEMUXER_SUBREAD_ONLY         (1<<9) /*
+                                                  * True if we have just one active subtitle stream with attached subreader
+                                                  */
+
+
 #define INDEX_MODE_NONE   0 /* Default: No sample accuracy */
 /* Packets have precise timestamps and durations and are adjacent in the file */
 #define INDEX_MODE_SIMPLE 1

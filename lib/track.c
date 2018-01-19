@@ -305,6 +305,7 @@ void bgav_track_stop(bgav_track_t * t)
 typedef struct
   {
   int num_active_subtitle_streams;
+  int num_active_subtitle_readers;
   bgav_track_t * t;
   bgav_demuxer_context_t * demuxer;
   } start_subtitle_t;
@@ -330,6 +331,10 @@ static int start_subtitle(void * data, bgav_stream_t * s)
              "Cannot decode subtitles (no video)");
     return 0;
     }
+
+  if(s->flags & STREAM_SUBREADER)
+    ss->num_active_subtitle_readers++;
+  
   video_stream = s->data.subtitle.video_stream;
     
   /* Check, if we must get the video format from the decoder */
@@ -410,6 +415,7 @@ int bgav_track_start(bgav_track_t * t, bgav_demuxer_context_t * demuxer)
   ss.demuxer = demuxer;
   ss.t = t;
   ss.num_active_subtitle_streams = 0;
+  ss.num_active_subtitle_readers = 0;
   
   if(!bgav_streams_foreach(t->text_streams, t->num_text_streams, start_subtitle, &ss) ||
      !bgav_streams_foreach(t->overlay_streams, t->num_overlay_streams, start_subtitle, &ss))
@@ -421,7 +427,15 @@ int bgav_track_start(bgav_track_t * t, bgav_demuxer_context_t * demuxer)
     demuxer->flags |= BGAV_DEMUXER_PEEK_FORCES_READ;
   else
     demuxer->flags &= ~BGAV_DEMUXER_PEEK_FORCES_READ;
-  
+
+  if(!num_active_audio_streams &&
+     !num_active_video_streams &&
+     (ss.num_active_subtitle_streams == 1) &&
+     (ss.num_active_subtitle_readers == 1))
+    {
+    bgav_log(demuxer->opt, BGAV_LOG_INFO, LOG_DOMAIN, "Detected subreader only mode");
+    demuxer->flags |= BGAV_DEMUXER_SUBREAD_ONLY;
+    }
   return 1;
   }
 
