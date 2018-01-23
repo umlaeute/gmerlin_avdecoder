@@ -268,8 +268,11 @@ static void handle_id3(bgav_hls_t * h, gavl_dictionary_t * m)
     }
 
   bgav_input_close(mem);
+  bgav_input_destroy(mem);
+    
   h->probe_len = 0;
   h->segment_pos += len;
+  free(buf);
   }
 
 static int load_stream_url(bgav_hls_t * h, int idx)

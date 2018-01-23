@@ -269,7 +269,10 @@ static int read_nonblock_http(bgav_input_context_t * ctx,
 static void close_http(bgav_input_context_t * ctx)
   {
   http_priv * p = ctx->priv;
-  bgav_http_close(p->h);
+
+  if(p->h)
+    bgav_http_close(p->h);
+  
   if(p->charset_cnv)
     bgav_charset_converter_destroy(p->charset_cnv);
 

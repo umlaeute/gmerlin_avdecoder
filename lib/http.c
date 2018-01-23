@@ -642,33 +642,35 @@ void bgav_http_set_metadata(bgav_http_t * h, gavl_dictionary_t * m)
   {
   int bitrate = 0;
   const char * var;
-  
-  var = bgav_http_header_get_var(h->header, "Content-Type");
-  if(var)
-    {
-    /* Special hack for radio-browser.info */
-    if(!strcasecmp(var, "application/octet-stream"))
-      {
-      if((var = bgav_http_header_get_var(h->header, "Content-Disposition")) &&
-         (gavl_string_starts_with(var, "attachment;")) &&
-         (var = strstr(var, "filename=")) &&
-         (var = strrchr(var, '.')))
-        {
-        if(!strcmp(var, ".pls"))
-          gavl_dictionary_set_string(gavl_dictionary_get_src_nc(m, GAVL_META_SRC, 0), GAVL_META_MIMETYPE,
-                                     "audio/x-scpls");
-        else if(!strcmp(var, ".m3u"))
-          gavl_dictionary_set_string(gavl_dictionary_get_src_nc(m, GAVL_META_SRC, 0), GAVL_META_MIMETYPE,
-                                     "audio/x-mpegurl");
-        }
-      }
-    else
-      gavl_dictionary_set_string(gavl_dictionary_get_src_nc(m, GAVL_META_SRC, 0), GAVL_META_MIMETYPE, var);
-    }
-  else if(bgav_http_header_get_var(h->header, "icy-notice1"))
-    gavl_dictionary_set_string(gavl_dictionary_get_src_nc(m, GAVL_META_SRC, 0), GAVL_META_MIMETYPE, "audio/mpeg");
+  gavl_dictionary_t * src;
 
-  
+  /* Get content type */
+
+  if((src = gavl_dictionary_get_src_nc(m, GAVL_META_SRC, 0)))
+    {
+    var = bgav_http_header_get_var(h->header, "Content-Type");
+    if(var)
+      {
+      /* Special hack for radio-browser.info */
+      if(!strcasecmp(var, "application/octet-stream"))
+        {
+        if((var = bgav_http_header_get_var(h->header, "Content-Disposition")) &&
+           (gavl_string_starts_with(var, "attachment;")) &&
+           (var = strstr(var, "filename=")) &&
+           (var = strrchr(var, '.')))
+          {
+          if(!strcmp(var, ".pls"))
+            gavl_dictionary_set_string(src, GAVL_META_MIMETYPE, "audio/x-scpls");
+          else if(!strcmp(var, ".m3u"))
+            gavl_dictionary_set_string(src, GAVL_META_MIMETYPE, "audio/x-mpegurl");
+          }
+        }
+      else
+        gavl_dictionary_set_string(src, GAVL_META_MIMETYPE, var);
+      }
+    else if(bgav_http_header_get_var(h->header, "icy-notice1"))
+      gavl_dictionary_set_string(src, GAVL_META_MIMETYPE, "audio/mpeg");
+    }
   
   /* Get Metadata */
   
